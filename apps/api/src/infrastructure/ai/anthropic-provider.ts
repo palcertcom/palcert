@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   AIContract,
+  AI_FORMATTING_OUTPUT_SCHEMA,
+  parseAIFormattingProposal,
+  type AIFormattingRequest,
   AIFailureKind,
   AIProviderError,
   AIProviderPort,
@@ -90,15 +93,33 @@ export class AnthropicAIProvider extends AIProviderPort {
   async countTokens(request: AITokenCountRequest): Promise<AITokenCountResult> {
     const anthropic = this.config.anthropic;
     try {
-      const counted = await this.sdk().messages.countTokens({
-        model: anthropic.model,
-        system: request.systemPrompt,
-        messages: [{ role: 'user', content: request.userPrompt }],
-      });
+      const counted = await this.sdk().messages.countTokens(
+        {
+          model: anthropic.model,
+          system: request.systemPrompt,
+          messages: [{ role: 'user', content: request.userPrompt }],
+        },
+        { signal: request.signal },
+      );
       return { inputTokens: counted.input_tokens, exact: true };
     } catch (error) {
       throw this.classify(error);
     }
+  }
+
+  async proposeFormatting(request: AIFormattingRequest) {
+    return this.structuredCall({
+      ...request,
+      maxOutputTokens: Math.min(this.config.ai.maxOutputTokens ?? 8_000, 8_000),
+      schema: AI_FORMATTING_OUTPUT_SCHEMA,
+      parse: (value) => {
+        try {
+          return parseAIFormattingProposal(value);
+        } catch {
+          throw new AIProviderError(AIFailureKind.OUTPUT_INVALID, 'Invalid formatting proposal');
+        }
+      },
+    });
   }
 
   async assessRules(request: AIRuleAssessmentRequest): Promise<AIRuleAssessmentProviderResponse> {
@@ -295,6 +316,8 @@ export class AnthropicAIProvider extends AIProviderPort {
    * the wrong place to discover it was not honoured (§34).
    */
   private async structuredCall<T>(params: {
+    signal?: AbortSignal;
+    maxOutputTokens?: number;
     systemPrompt: string;
     userPrompt: string;
     /**
@@ -315,26 +338,32 @@ export class AnthropicAIProvider extends AIProviderPort {
 
     let response: Anthropic.Message;
     try {
-      response = await this.sdk().messages.create({
-        model: anthropic.model,
-        max_tokens: anthropic.maxOutputTokens,
-        // The system prompt holds instructions only. Document content, rule
-        // titles and organization guidance never appear here (§20).
-        system: params.systemPrompt,
-        messages: [{ role: 'user', content: params.userPrompt }],
-        output_config: {
-          // PalCert's schema goes through the SDK's own helper, which removes
-          // what the API cannot compile (`minLength`, `pattern`, numeric
-          // bounds, `maxItems` …). Sending it raw was a 400 on every call.
-          // Nothing is lost: the full schema is enforced below.
-          format: providerOutputFormat(params.schema, {
-            transform: params.transformSchema ?? true,
-          }),
-          ...(anthropic.effort !== undefined ? { effort: anthropic.effort } : {}),
+      response = await this.sdk().messages.create(
+        {
+          model: anthropic.model,
+          max_tokens: Math.min(
+            params.maxOutputTokens ?? anthropic.maxOutputTokens,
+            anthropic.maxOutputTokens,
+          ),
+          // The system prompt holds instructions only. Document content, rule
+          // titles and organization guidance never appear here (§20).
+          system: params.systemPrompt,
+          messages: [{ role: 'user', content: params.userPrompt }],
+          output_config: {
+            // PalCert's schema goes through the SDK's own helper, which removes
+            // what the API cannot compile (`minLength`, `pattern`, numeric
+            // bounds, `maxItems` …). Sending it raw was a 400 on every call.
+            // Nothing is lost: the full schema is enforced below.
+            format: providerOutputFormat(params.schema, {
+              transform: params.transformSchema ?? true,
+            }),
+            ...(anthropic.effort !== undefined ? { effort: anthropic.effort } : {}),
+          },
+          // Deliberately absent: tools, tool_choice, temperature, top_p, top_k,
+          // and any assistant prefill. See the class comment.
         },
-        // Deliberately absent: tools, tool_choice, temperature, top_p, top_k,
-        // and any assistant prefill. See the class comment.
-      });
+        { signal: params.signal },
+      );
     } catch (error) {
       throw this.classify(error);
     }

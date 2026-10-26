@@ -285,6 +285,7 @@ class SmartFixPlan:
     engine_name: str = SMARTFIX_ENGINE_NAME
     engine_version: str = SMARTFIX_ENGINE_VERSION
     capability_registry_version: int = 0
+    ai_planning: dict[str, Any] | None = None
 
     def to_json(self) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -300,6 +301,8 @@ class SmartFixPlan:
         }
         if self.refusal is not None:
             payload["refusal"] = {"code": self.refusal.value}
+        if self.ai_planning is not None:
+            payload["aiPlanning"] = self.ai_planning
         return payload
 
     @staticmethod
@@ -314,6 +317,7 @@ class SmartFixPlan:
             engine_name=engine["fixEngineName"],
             engine_version=engine["fixEngineVersion"],
             capability_registry_version=int(engine["capabilityRegistryVersion"]),
+            ai_planning=data.get("aiPlanning"),
         )
 
     def hash_hex(self) -> str:

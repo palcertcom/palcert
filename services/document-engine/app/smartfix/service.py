@@ -14,7 +14,7 @@ corrected document is a new version with its own lineage.
 from __future__ import annotations
 
 import io
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from app.docx.analyzer import verify_source_integrity
@@ -22,20 +22,24 @@ from app.docx.artifact import ANALYZER_NAME, ANALYZER_VERSION
 from app.docx.document import read_document
 from app.docx.facts import build_fact_set
 from app.docx.limits import AnalyzerLimits
-from app.docx.model import ANALYSIS_SCHEMA_VERSION
+from app.docx.model import ANALYSIS_SCHEMA_VERSION, StructuralModel
 from app.docx.package import DocxPackage, resolve_namespaces
 from app.docx.warnings import WarningCollector
-from app.engine.evaluation.engine import RuleDefinition
+from app.engine.evaluation.engine import DeterministicRuleEngine, RuleDefinition
 from app.engine.facts.model import FACT_SCHEMA_VERSION, DocumentFactSet
+from app.engine.rules.outcomes import Outcome
 from app.smartfix import safety
 from app.smartfix.capability import (
     CAPABILITY_REGISTRY_VERSION,
     SMARTFIX_ENGINE_NAME,
     SMARTFIX_ENGINE_VERSION,
+    Fixability,
+    ReasonCode,
 )
 from app.smartfix.contracts import SmartFixContract, assert_contract
-from app.smartfix.model import PlanSource, SmartFixPlan
+from app.smartfix.model import FixAction, PlanSource, SmartFixPlan
 from app.smartfix.mutate import FixError, FixErrorCode, FixOutcome, apply_docx_fix_plan
+from app.smartfix.observe import NodeLookup, observe
 from app.smartfix.planner import PlannerRule, plan_corrections
 
 
@@ -66,7 +70,110 @@ def parse_rules(payload: list[dict[str, Any]]) -> tuple[PlannerRule, ...]:
 
 
 def plan_for_document(request: PlanRequest) -> SmartFixPlan:
-    """Decide what SmartFix would change in one document. Writes nothing."""
+    """Preview a bounded correction before offering one source-bound plan.
+
+    A paragraph style can expose another formatting mismatch. Simulate, recheck
+    and merge those dependent changes, always reapplying to the original bytes.
+    No intermediate document is stored or delivered and no approved plan grows
+    during execution. Remaining failures/unknowns are explicit plan blockers.
+    """
+    plan, original, _ = _plan_once(request)
+    if plan.refusal is not None or not plan.actions:
+        return plan
+    lookup = NodeLookup(original)
+    # Detect conflicting values in the initial batch too, before simulation.
+    plan = _merge_plans(plan, plan, original, lookup)
+    for _ in range(3):
+        corrected = apply_docx_fix_plan(
+            request.content, request.expected_sha256, plan, request.limits
+        )
+        simulated = replace(
+            request,
+            content=corrected.content,
+            expected_sha256=corrected.sha256,
+            source=replace(request.source, document_sha256=corrected.sha256),
+        )
+        additional, _, facts = _plan_once(simulated)
+        if not additional.actions:
+            return _verified_plan(plan, additional, facts, request)
+        updated = _merge_plans(plan, additional, original, lookup)
+        if updated.actions == plan.actions:
+            return _verified_plan(plan, additional, facts, request)
+        plan = updated
+    # Verify the final merged plan too; the bound must not leave an unchecked
+    # last batch looking executable.
+    corrected = apply_docx_fix_plan(request.content, request.expected_sha256, plan, request.limits)
+    additional, _, facts = _plan_once(
+        replace(
+            request,
+            content=corrected.content,
+            expected_sha256=corrected.sha256,
+            source=replace(request.source, document_sha256=corrected.sha256),
+        )
+    )
+    return _verified_plan(plan, additional, facts, request)
+
+
+def _merge_plans(
+    plan: SmartFixPlan, additional: SmartFixPlan, original: StructuralModel, lookup: NodeLookup
+) -> SmartFixPlan:
+    combined: dict[tuple[str, str, str | None, int | None, str], FixAction] = {}
+    edits: dict[tuple[str, str, str | None, int | None], FixAction] = {}
+    for action in (*plan.actions, *additional.actions):
+        key = (
+            action.node_id,
+            action.action_type.value,
+            action.script_channel,
+            action.section_index,
+        )
+        previous = edits.get(key)
+        if previous is not None and not previous.after.matches(action.after):
+            raise FixError(FixErrorCode.PLAN_INVALID, "correction rules require conflicting values")
+        edits[key] = action
+        owned_key = (*key, action.rule_code)
+        if owned_key not in combined:
+            combined[owned_key] = replace(action, before=observe(lookup, action, original))
+    actions = tuple(
+        replace(a, action_id=f"a-{i:04d}") for i, a in enumerate(combined.values(), start=1)
+    )
+    rows = {r.rule_code: r for r in (*plan.rules, *additional.rules)}
+    for code, row in tuple(rows.items()):
+        ids = tuple(a.action_id for a in actions if a.rule_code == code)
+        rows[code] = replace(
+            row,
+            action_ids=ids,
+            target_count=max(row.target_count, len(ids)),
+            fixable_target_count=len(ids),
+        )
+    return replace(plan, actions=actions, rules=tuple(rows[c] for c in sorted(rows)))
+
+
+def _verified_plan(
+    plan: SmartFixPlan, remaining: SmartFixPlan, facts: DocumentFactSet, request: PlanRequest
+) -> SmartFixPlan:
+    engine = DeterministicRuleEngine()
+    outcomes = {
+        r.definition.rule_code: engine.evaluate(facts, r.definition).outcome for r in request.rules
+    }
+    rows = {r.rule_code: r for r in (*remaining.rules, *plan.rules)}
+    for code, row in tuple(rows.items()):
+        if outcomes[code] in {Outcome.PASS, Outcome.NOT_APPLICABLE}:
+            if row.action_ids:
+                rows[code] = replace(row, fixability=Fixability.FIXABLE, reason_code=None)
+            else:
+                del rows[code]
+        else:
+            rows[code] = replace(
+                row,
+                fixability=Fixability.NOT_SUPPORTED,
+                reason_code=row.reason_code or ReasonCode.LOCATION_EVIDENCE_MISSING,
+            )
+    verified = replace(plan, rules=tuple(rows[c] for c in sorted(rows)))
+    assert_contract(SmartFixContract.SMART_FIX_PLAN, verified.to_json())
+    return verified
+
+
+def _plan_once(request: PlanRequest) -> tuple[SmartFixPlan, StructuralModel, DocumentFactSet]:
     verify_source_integrity(request.content, request.expected_sha256)
 
     warnings = WarningCollector(request.limits)
@@ -94,7 +201,7 @@ def plan_for_document(request: PlanRequest) -> SmartFixPlan:
     # A plan that does not satisfy its own contract is a planning failure, not
     # a plan somebody gets to approve.
     assert_contract(SmartFixContract.SMART_FIX_PLAN, plan.to_json())
-    return plan
+    return plan, result.model, fact_set
 
 
 def apply_plan(

@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { SmartFixFailureCode, SmartFixRequestStatus } from '@palcert/contracts';
+import { CatalogueService } from '../../checks/services/catalogue.service';
+import {
+  SmartFixFailureCode,
+  SmartFixRequestStatus,
+  evaluateSmartFixCompletion,
+} from '@palcert/contracts';
 import { PinoLogger } from 'nestjs-pino';
 import { TenantPrismaService } from '../../../infrastructure/tenant/tenant-prisma.service';
 import { ClockPort } from '../../auth/ports/clock.port';
@@ -12,7 +17,7 @@ import { SmartFixFailure } from './smartfix-execution.service';
 export interface ValidationOutcome {
   /** Rules the plan set out to fix that are now satisfied. */
   readonly resolved: readonly string[];
-  /** Rules the plan set out to fix that still fail. */
+  /** Any standard rule still failed, unknown, errored or missing. */
   readonly unresolved: readonly string[];
   /** Rules that passed before the correction and fail after it. */
   readonly regressed: readonly string[];
@@ -25,8 +30,8 @@ export interface ValidationOutcome {
  * Two questions, and both must be answered from the *recheck's own report*
  * rather than from the plan's intentions:
  *
- *   1. **Did the correction do what it said it would?** Every rule the plan
- *      marked FIXABLE has to come back satisfied. One that still fails means
+ *   1. **Did the correction do what it said it would?** Every applicable rule in the
+ *      source standard has to come back satisfied. Any failure or unknown means
  *      the user was promised something they did not get, so nothing is
  *      delivered and nothing is charged.
  *
@@ -43,6 +48,7 @@ export class SmartFixFinalizeService {
   constructor(
     private readonly tenant: TenantPrismaService,
     private readonly plans: SmartFixPlanService,
+    private readonly catalogue: CatalogueService,
     private readonly settlement: SmartFixSettlementService,
     private readonly events: SecurityEventService,
     private readonly clock: ClockPort,
@@ -112,7 +118,7 @@ export class SmartFixFinalizeService {
     if (outcome.unresolved.length > 0) {
       throw new SmartFixFailure(
         SmartFixFailureCode.TARGETS_NOT_RESOLVED,
-        `rules the plan targeted still fail: ${outcome.unresolved.slice(0, 5).join(', ')}`,
+        `standard rules are unresolved after correction: ${outcome.unresolved.slice(0, 5).join(', ')}`,
       );
     }
 
@@ -149,30 +155,28 @@ export class SmartFixFinalizeService {
       this.resultsFor(userId, params.recheckId),
     ]);
 
-    const resolved: string[] = [];
-    const unresolved: string[] = [];
-    for (const code of targeted) {
-      const outcome = after.get(code)?.outcome;
-      // NOT_APPLICABLE is a legitimate resolution: correcting a paragraph can
-      // remove the thing a rule was selecting, and "nothing to judge" is not a
-      // failure. INDETERMINATE is not — it means PalCert cannot tell, and the
-      // user was promised a fix (§100).
-      if (outcome === 'PASS' || outcome === 'NOT_APPLICABLE') resolved.push(code);
-      else unresolved.push(code);
+    const source = plan.source as Record<string, unknown> | undefined;
+    const versionId = source?.standardVersionId;
+    const snapshot =
+      typeof versionId === 'string' ? await this.catalogue.snapshotForVersion(versionId) : null;
+    const canonical = snapshot?.canonical as
+      { rules?: readonly { ruleCode: string }[] } | undefined;
+    if (
+      snapshot === null ||
+      snapshot.contentHash !== source?.standardContentHash ||
+      !canonical?.rules?.length
+    ) {
+      throw new SmartFixFailure(
+        SmartFixFailureCode.TARGETS_NOT_RESOLVED,
+        'the complete source standard is unavailable for validation',
+      );
     }
-
-    const regressed: string[] = [];
-    for (const [code, previous] of before) {
-      if (previous.outcome !== 'PASS') continue;
-      // Only deterministic rules. An AI-assisted rule's outcome depends on a
-      // model's reading, and calling a changed opinion a regression would
-      // discard a correct document because a language model changed its mind.
-      if (previous.evaluationMode !== 'DETERMINISTIC') continue;
-      const now = after.get(code);
-      if (now !== undefined && now.outcome === 'FAIL') regressed.push(code);
-    }
-
-    return { resolved, unresolved, regressed: regressed.sort() };
+    return evaluateSmartFixCompletion(
+      canonical.rules.map((rule) => rule.ruleCode),
+      targeted,
+      before,
+      after,
+    );
   }
 
   /**

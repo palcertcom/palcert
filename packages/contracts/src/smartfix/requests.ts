@@ -88,10 +88,9 @@ export function smartFixIsSettled(status: SmartFixRequestStatus): boolean {
 /**
  * Why a correction ended without delivery.
  *
- * Every one of these releases the reservation and charges nothing. A document
- * that still fails its rules afterwards is *not* here: that is a delivered
- * correction with an honest result, and the user was told before they paid
- * exactly which rules it would address.
+ * Every one of these releases the reservation and charges nothing. Delivery
+ * requires the whole standard to be resolved, including rules not edited by
+ * the plan. Failed, missing and indeterminate outcomes prevent delivery.
  */
 export const SmartFixFailureCode = {
   /** The user stopped it. */
@@ -108,7 +107,7 @@ export const SmartFixFailureCode = {
   OUTPUT_UNREADABLE: 'OUTPUT_UNREADABLE',
   /** The automatic recheck did not complete. */
   RECHECK_FAILED: 'RECHECK_FAILED',
-  /** A rule SmartFix targeted still fails. Nothing is delivered, nothing charged. */
+  /** Any standard rule is unresolved. Nothing is delivered, nothing charged. */
   TARGETS_NOT_RESOLVED: 'SMARTFIX_TARGETS_NOT_RESOLVED',
   /** A rule that used to pass now fails. The correction is discarded (§101). */
   REGRESSION_DETECTED: 'SMARTFIX_REGRESSION_DETECTED',

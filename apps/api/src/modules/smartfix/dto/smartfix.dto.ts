@@ -1,5 +1,25 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsUUID, IsOptional, IsBoolean, IsIn } from 'class-validator';
+import { SMARTFIX_AI_CONSENT_VERSION } from '@palcert/contracts';
+
+export class PlanSmartFixDto {
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'SMARTFIX quote reserved before external AI planning.',
+  })
+  @IsOptional()
+  @IsUUID('4')
+  priceQuoteId?: string;
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  useAI?: boolean;
+
+  @ApiPropertyOptional({ enum: [SMARTFIX_AI_CONSENT_VERSION] })
+  @IsOptional()
+  @IsIn([SMARTFIX_AI_CONSENT_VERSION])
+  formattingAIConsentVersion?: string;
+}
 
 export class CheckParamDto {
   @ApiProperty({ format: 'uuid' })

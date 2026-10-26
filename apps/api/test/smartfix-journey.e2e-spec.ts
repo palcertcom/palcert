@@ -1,14 +1,23 @@
-import { CAPABILITY_REGISTRY_VERSION } from '@palcert/contracts';
-import { API, type AuthClient } from './support/auth-client';
+import {
+  CAPABILITY_REGISTRY_VERSION,
+  SMARTFIX_AI_CONSENT_VERSION,
+  canonicalizeJson,
+} from '@palcert/contracts';
+import { createHash } from 'node:crypto';
+import { SmartFixAIPlannerService } from '../src/modules/smartfix/services/smartfix-ai-planner.service';
+import { SmartFixPlanningBillingService } from '../src/modules/smartfix/services/smartfix-planning-billing.service';
+import { TenantPrismaService } from '../src/infrastructure/tenant/tenant-prisma.service';
+import { API, signIn, type AuthClient } from './support/auth-client';
 import {
   publishCheckableStandard,
+  manualRule,
   startCheck,
   waitForCheck,
   type PublishedStandard,
 } from './support/checks-client';
 import { createDocument, uploadAndProcess } from './support/documents-client';
 import { minimalDocx } from './support/fixtures';
-import { createTenant, createUser } from './support/organization-client';
+import { createTenant, createUser, PASSWORD } from './support/organization-client';
 import { chargesForPurchase, grantCredit } from './support/paid-check-client';
 import {
   SMARTFIX_PRICE_MINOR,
@@ -24,6 +33,7 @@ import {
   startSmartFix,
 } from './support/smartfix-client';
 import { FakeDocumentEngine } from './support/fake-document-engine';
+import { validRule } from './support/standards-client';
 import {
   createTestContext,
   destroyTestContext,
@@ -134,6 +144,7 @@ describe('SmartFix - journey (e2e)', () => {
 
   async function available(currency = 'USD'): Promise<bigint> {
     const balance = await student.client.get(`${API}/balance?currency=${currency}`);
+    expect(balance.status).toBe(200);
     return BigInt(balance.body.available.minorUnits);
   }
 
@@ -352,6 +363,47 @@ describe('SmartFix - journey (e2e)', () => {
     ).toBe(0);
   });
 
+  it('refuses a partial preview before reserving any money', async () => {
+    standard = await publishCheckableStandard(context, tenant.owner.client, tenant.organizationId, {
+      standardCode: 'FULL.CORRECTION.BLOCKED',
+      documentTypeName: 'Partial correction preview',
+      rules: [validRule(), manualRule()],
+    });
+    const { checkId } = await completedCheck();
+    const planned = await planSmartFix(student.client, checkId);
+    expect(planned.status).toBe(200);
+    expect(planned.body.actionCount).toBeGreaterThan(0);
+    const { quoteId } = await fundForSmartFix(context, student.userId);
+    const before = await available();
+    const started = await startSmartFix(student.client, {
+      planId: planned.body.id,
+      priceQuoteId: quoteId,
+    });
+    expect(started.status).toBe(409);
+    expect(started.body.error.code).toBe('SMARTFIX_NOT_AVAILABLE');
+    expect(await available()).toBe(before);
+    expect(await context.adminDb.smartFixRequest.count()).toBe(0);
+    expect(
+      await context.adminDb.servicePurchase.count({ where: { resourceType: 'SMARTFIX' } }),
+    ).toBe(0);
+  });
+
+  it('requires a new preview for a plan made by the former engine', async () => {
+    const { checkId } = await completedCheck();
+    context.documentEngine.fixEngineVersion = '1.0.0';
+    const planned = await planSmartFix(student.client, checkId);
+    const { quoteId } = await fundForSmartFix(context, student.userId);
+    const before = await available();
+    const started = await startSmartFix(student.client, {
+      planId: planned.body.id,
+      priceQuoteId: quoteId,
+    });
+    expect(started.status).toBe(409);
+    expect(started.body.error.code).toBe('SMARTFIX_NOT_AVAILABLE');
+    expect(await available()).toBe(before);
+    expect(await context.adminDb.smartFixRequest.count()).toBe(0);
+  });
+
   it('refuses a second correction of the same plan', async () => {
     const { checkId } = await completedCheck();
     const planned = await planSmartFix(student.client, checkId);
@@ -370,5 +422,228 @@ describe('SmartFix - journey (e2e)', () => {
     expect(again.status).toBe(409);
     expect(again.body.error.code).toBe('SMARTFIX_NOT_AVAILABLE');
     await waitForSmartFix(started.body.id);
+  });
+  describe('AI planning shares the correction purchase', () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    function planner(complete = true) {
+      return jest
+        .spyOn(context.app.get(SmartFixAIPlannerService), 'plan')
+        .mockImplementation(async (input, audit) => {
+          if (!audit) throw new Error('missing funded context');
+          await context.app
+            .get(SmartFixPlanningBillingService)
+            .assertReservationLive(audit.ownerUserId, audit.planId);
+          const reservation = await context.adminDb.smartFixPlanningReservation.findUniqueOrThrow({
+            where: { id: audit.planId },
+          });
+          expect(await chargesForPurchase(context, reservation.servicePurchaseId)).toHaveLength(0);
+          const result = await context.documentEngine.planSmartFix(input);
+          const plan = {
+            ...result.plan,
+            aiPlanning: {
+              provider: 'test',
+              model: 'test',
+              rounds: 1,
+              stopReason: complete ? 'VERIFIED' : 'NO_PROGRESS',
+              inputTokens: 10,
+              outputTokens: 5,
+            },
+          };
+          const planBytes = Buffer.from(canonicalizeJson(plan));
+          return {
+            ...result,
+            plan,
+            planBytes,
+            planSha256: createHash('sha256').update(planBytes).digest('hex'),
+          };
+        });
+    }
+    function aiPlan(checkId: string, priceQuoteId: string) {
+      return student.client.post(`${API}/smartfix/checks/${checkId}/ai-plan`, {
+        useAI: true,
+        formattingAIConsentVersion: SMARTFIX_AI_CONSENT_VERSION,
+        priceQuoteId,
+      });
+    }
+    it('reserves before AI, recovers a retry, and charges that purchase once on delivery', async () => {
+      const { checkId } = await completedCheck();
+      const quote = await fundForSmartFix(context, student.userId);
+      const before = await available();
+      const mock = planner();
+      const planned = await aiPlan(checkId, quote.quoteId);
+      expect(planned.status).toBe(200);
+      expect(planned.body.reservation.status).toBe('READY');
+      expect(await available()).toBe(before - SMARTFIX_PRICE_MINOR);
+      const retry = await aiPlan(checkId, quote.quoteId);
+      expect(retry.body.id).toBe(planned.body.id);
+      expect(mock).toHaveBeenCalledTimes(1);
+      const starts = await Promise.all(
+        [1, 2].map(() =>
+          startSmartFix(student.client, {
+            planId: planned.body.id,
+            priceQuoteId: quote.quoteId,
+          }),
+        ),
+      );
+      expect(starts.map((r) => r.status)).toEqual([202, 202]);
+      expect(starts[0]!.body.id).toBe(starts[1]!.body.id);
+      expect((await waitForSmartFix(starts[0]!.body.id)).status).toBe('DELIVERED');
+      const session = await context.adminDb.smartFixPlanningReservation.findUniqueOrThrow({
+        where: { id: planned.body.id },
+      });
+      const row = await smartFixRow(context, starts[0]!.body.id);
+      expect(session.status).toBe('CONSUMED');
+      expect(row.servicePurchaseId).toBe(session.servicePurchaseId);
+      expect(
+        await context.adminDb.servicePurchase.count({ where: { resourceType: 'SMARTFIX' } }),
+      ).toBe(1);
+      expect(await chargesForPurchase(context, session.servicePurchaseId)).toHaveLength(1);
+    });
+    it('serializes concurrent reservations for one quote under the application role', async () => {
+      const { checkId } = await completedCheck();
+      const quote = await fundForSmartFix(context, student.userId);
+      const before = await available();
+      const service = context.app.get(SmartFixPlanningBillingService);
+      const attempts = await Promise.allSettled([
+        service.reserve(student.userId, checkId, quote.quoteId),
+        service.reserve(student.userId, checkId, quote.quoteId),
+      ]);
+      expect(attempts.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+      const refused = attempts.find((result) => result.status === 'rejected');
+      expect(refused).toMatchObject({
+        status: 'rejected',
+        reason: { code: 'SMARTFIX_NOT_AVAILABLE' },
+      });
+      expect(await context.adminDb.smartFixPlanningReservation.count()).toBe(1);
+      expect(
+        await context.adminDb.servicePurchase.count({ where: { priceQuoteId: quote.quoteId } }),
+      ).toBe(1);
+      expect(await available()).toBe(before - SMARTFIX_PRICE_MINOR);
+      const row = await context.adminDb.smartFixPlanningReservation.findFirstOrThrow();
+      expect(await chargesForPurchase(context, row.servicePurchaseId)).toHaveLength(0);
+      await service.release(student.userId, row.id, true);
+      expect(await available()).toBe(before);
+    });
+    it('refuses unfunded AI work before invoking the planner', async () => {
+      const { checkId } = await completedCheck();
+      // completedCheck() funds the paid check and leaves spendable credit.
+      // Price this correction above that actual balance to exercise refusal.
+      const before = await available();
+      await ensureSmartFixPrice(context, before + 1n);
+      const quote = await quoteForSmartFix(context, student.userId);
+      const mock = planner();
+      const result = await aiPlan(checkId, quote.id);
+      expect(result.status).toBe(402);
+      expect(result.body.error.code).toBe('INSUFFICIENT_BALANCE');
+      expect(await available()).toBe(before);
+      expect(mock).not.toHaveBeenCalled();
+      expect(await context.adminDb.smartFixPlanningReservation.count()).toBe(0);
+    });
+    it('releases an incomplete preview without charging', async () => {
+      const { checkId } = await completedCheck();
+      const quote = await fundForSmartFix(context, student.userId);
+      const before = await available();
+      planner(false);
+      const result = await aiPlan(checkId, quote.quoteId);
+      expect(result.status).toBe(200);
+      expect(result.body.reservation.status).toBe('FAILED');
+      expect(await available()).toBe(before);
+      const row = await context.adminDb.smartFixPlanningReservation.findUniqueOrThrow({
+        where: { id: result.body.id },
+      });
+      expect(await chargesForPurchase(context, row.servicePurchaseId)).toHaveLength(0);
+      // Every reserved AI service has a matching release in the audit trail.
+      const audits = await context.adminDb.auditEvent.findMany({
+        where: { targetId: row.servicePurchaseId },
+        select: { action: true },
+      });
+      expect(audits.map((a) => a.action).sort()).toEqual([
+        'AI_SERVICE_RELEASED',
+        'AI_SERVICE_RESERVED',
+      ]);
+    });
+    it('releases a provider failure and preserves the original document', async () => {
+      const { checkId, versionId } = await completedCheck();
+      const quote = await fundForSmartFix(context, student.userId);
+      const before = await available();
+      const mock = planner().mockRejectedValue(new Error('test provider outage'));
+      expect((await aiPlan(checkId, quote.quoteId)).status).not.toBe(200);
+      expect(mock).toHaveBeenCalledTimes(1);
+      expect(await available()).toBe(before);
+      const row = await context.adminDb.smartFixPlanningReservation.findFirstOrThrow();
+      expect(row.status).toBe('FAILED');
+      expect(await chargesForPurchase(context, row.servicePurchaseId)).toHaveLength(0);
+      expect(
+        (await context.adminDb.documentVersion.findUniqueOrThrow({ where: { id: versionId } }))
+          .status,
+      ).toBe('READY');
+    });
+    it('enforces ownership, cancellation and no approval after release', async () => {
+      const { checkId } = await completedCheck();
+      const quote = await fundForSmartFix(context, student.userId);
+      const before = await available();
+      planner();
+      const result = await aiPlan(checkId, quote.quoteId);
+      expect(result.status).toBe(200);
+      const other = await createUser(context, 'other-planner@example.com');
+      const tenantDb = context.app.get(TenantPrismaService);
+      expect(
+        await tenantDb.withUser(other.userId, (tx) => tx.smartFixPlanningReservation.count()),
+      ).toBe(0);
+      expect(
+        (await other.client.post(`${API}/smartfix/plans/${result.body.id}/cancel`, {})).status,
+      ).toBe(404);
+      for (let i = 0; i < 2; i++)
+        expect(
+          (await student.client.post(`${API}/smartfix/plans/${result.body.id}/cancel`, {})).status,
+        ).toBe(200);
+      expect(await available()).toBe(before);
+      expect(
+        (
+          await startSmartFix(student.client, {
+            planId: result.body.id,
+            priceQuoteId: quote.quoteId,
+          })
+        ).status,
+      ).toBe(409);
+    });
+    it('recovers abandoned work and releases an expired unapproved plan', async () => {
+      const { checkId } = await completedCheck();
+      const quote = await fundForSmartFix(context, student.userId);
+      const before = await available();
+      const service = context.app.get(SmartFixPlanningBillingService);
+      const crashed = await service.reserve(student.userId, checkId, quote.quoteId);
+      context.clock.advanceMinutes(2);
+      await service.sweep();
+      expect(await available()).toBe(before);
+      expect(
+        (
+          await context.adminDb.smartFixPlanningReservation.findUniqueOrThrow({
+            where: { id: crashed.reservation.id },
+          })
+        ).status,
+      ).toBe('FAILED');
+      const nextQuote = await quoteForSmartFix(context, student.userId);
+      planner();
+      const result = await aiPlan(checkId, nextQuote.id);
+      expect(result.status).toBe(200);
+      context.clock.advanceMinutes(61);
+      await service.sweep();
+      // The same clock jump also exceeds the user's 60-minute idle session window.
+      // Preserve that security boundary, then sign in again to inspect the released funds.
+      const expiredSession = await student.client.get(`${API}/balance?currency=USD`);
+      expect(expiredSession.status).toBe(401);
+      expect(expiredSession.body.error.code).toBe('SESSION_EXPIRED');
+      student.client = await signIn(context, student.email, PASSWORD);
+      expect(await available()).toBe(before);
+      expect(
+        (
+          await context.adminDb.smartFixPlanningReservation.findUniqueOrThrow({
+            where: { id: result.body.id },
+          })
+        ).status,
+      ).toBe('FAILED');
+    });
   });
 });

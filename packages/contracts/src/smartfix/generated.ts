@@ -40,7 +40,8 @@ export type FixEngineVersion = string;
  * This interface was referenced by `PalCertSmartFixContracts`'s JSON-Schema
  * via the `definition` "FixTargetScope".
  */
-export type FixTargetScope = 'SECTION_PROPERTIES' | 'PARAGRAPH_PROPERTIES' | 'RUN_PROPERTIES';
+export type FixTargetScope =
+  'SECTION_PROPERTIES' | 'PARAGRAPH_PROPERTIES' | 'RUN_PROPERTIES' | 'DRAWING_PROPERTIES';
 /**
  * Which OOXML script channel a run-level action writes. WordprocessingML keeps Latin, complex-script and East Asian typography in separate attributes and elements, and writing the Latin channel for Arabic text changes nothing a reader can see while claiming the fix was applied. LATIN covers w:rFonts/@w:ascii and @w:hAnsi, w:sz, w:b and w:i; COMPLEX_SCRIPT covers @w:cs, w:szCs, w:bCs and w:iCs.
  *
@@ -73,7 +74,12 @@ export type FixActionType =
   | 'SET_SECTION_MARGIN_LEFT'
   | 'SET_SECTION_MARGIN_RIGHT'
   | 'SET_SECTION_HEADER_DISTANCE'
-  | 'SET_SECTION_FOOTER_DISTANCE';
+  | 'SET_SECTION_FOOTER_DISTANCE'
+  | 'SET_RUN_LANGUAGE'
+  | 'SET_RUN_COLOR'
+  | 'SET_PARAGRAPH_STYLE'
+  | 'SET_LIST_START'
+  | 'SET_DRAWING_PLACEMENT';
 /**
  * A value an action sets or expects, as a closed three-way union. Written as alternatives rather than as one object with optional fields so that a numeric target can never be compared against a string by accident: a NUMBER value has a number and nothing else, and both runtimes reject the mixture.
  *
@@ -183,6 +189,14 @@ export interface PlannedRule {
  * via the `definition` "SmartFixPlan".
  */
 export interface SmartFixPlan {
+  aiPlanning?: {
+    provider: string;
+    model: string;
+    rounds: number;
+    stopReason: 'VERIFIED' | 'NO_PROGRESS' | 'ROUND_LIMIT';
+    inputTokens: number;
+    outputTokens: number;
+  };
   planSchemaVersion: number;
   source: {
     checkId?: string;

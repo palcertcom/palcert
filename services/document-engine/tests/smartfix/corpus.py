@@ -440,8 +440,7 @@ def build_corpus() -> tuple[Case, ...]:
             name="an-ai-assisted-rule-is-never-executed",
             why=(
                 "No model decides or performs a document change. An AI-assisted rule "
-                "never reaches a deterministic FAIL, so it never reaches the planner — "
-                "and the plan says nothing about it rather than promising something."
+                "is an explicit unresolved blocker. No change is offered for it."
             ),
             build=_docx(_paragraph(_run("Body text", '<w:sz w:val="20"/>')) + SECTION),
             rules=(
@@ -454,7 +453,7 @@ def build_corpus() -> tuple[Case, ...]:
                     evaluation_mode="AI_ASSISTED",
                 ),
             ),
-            absent=("AI_SIZE",),
+            refused=(("AI_SIZE", "NOT_SUPPORTED", "SMARTFIX_LOCATION_EVIDENCE_MISSING"),),
             expected_actions=0,
         ),
         Case(

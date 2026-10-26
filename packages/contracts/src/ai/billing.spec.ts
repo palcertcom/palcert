@@ -17,12 +17,20 @@ describe('AI operation registry (ADR-0149)', () => {
     expect(Object.keys(AI_OPERATION_REGISTRY).sort()).toEqual(Object.values(AIOperation).sort());
   });
 
-  it('bills exactly the two customer-initiated services', () => {
+  it('bills customer AI services and bundles formatting in SMARTFIX', () => {
     const billable = Object.entries(AI_OPERATION_REGISTRY)
       .filter(([, entry]) => entry.classification === AIOperationClassification.BILLABLE_AI_SERVICE)
       .map(([operation]) => operation)
       .sort();
-    expect(billable).toEqual([AIOperation.AI_REVIEW, AIOperation.AI_RULE_EXTRACTION]);
+    expect(billable).toEqual([
+      AIOperation.AI_REVIEW,
+      AIOperation.AI_RULE_EXTRACTION,
+      AIOperation.SMARTFIX_FORMATTING,
+    ]);
+    expect(billableAIOperation(AIOperation.SMARTFIX_FORMATTING)).toMatchObject({
+      productCode: ServiceProductCode.SMARTFIX,
+      bundled: true,
+    });
     expect([...AI_SERVICE_PRODUCT_CODES].sort()).toEqual([
       ServiceProductCode.AI_REVIEW,
       ServiceProductCode.AI_RULE_EXTRACTION,

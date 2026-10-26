@@ -88,9 +88,8 @@ describe('SmartFix message catalogue', () => {
         /now complies|fully compliant|meets all|مطابق تمامًا|يستوفي كل/i.test(value),
       ]).toEqual([key, false]);
     }
-    // And it says so out loud where it matters most.
-    expect(SMARTFIX_MESSAGES.en.stillFailing).toMatch(/does not mean/i);
-    expect(SMARTFIX_MESSAGES.ar.stillFailing).toMatch(/لا يعني/);
+    expect(SMARTFIX_MESSAGES.en.stillFailing).toMatch(/re-check report/i);
+    expect(SMARTFIX_MESSAGES.ar.stillFailing).toMatch(/تقرير إعادة الفحص/);
   });
 
   it('promises the original is untouched, in both languages', () => {

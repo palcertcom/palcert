@@ -20,9 +20,9 @@ styles, sections, relationships. It does **not** store the result of laying that
 out — page boundaries, line positions, the page a paragraph lands on, or an
 authoritative page count.
 
-So the analyzer reports page *setup* (declared) and never page *position*
+So the analyzer reports page _setup_ (declared) and never page _position_
 (computed). No fact carries a page number; `PAGE` coverage is `UNAVAILABLE`;
-the page count Word saved in `app.xml` is recorded as an application *hint* and
+the page count Word saved in `app.xml` is recorded as an application _hint_ and
 never promoted to a fact. See [ADR-0043](../adr/0043-structural-analysis-knows-no-pages.md).
 
 The same discipline applies to application defaults. If a property is declared
@@ -67,26 +67,31 @@ which is attacker controlled.
   coverage. An unrecognized profile fails explicitly.
 - **Markup compatibility** is resolved to exactly one branch: `mc:Choice` when
   present, `mc:Fallback` otherwise. Taking both would double-count a shape;
-  taking neither would lose it. Either way the drawing and text-box domains
-  drop to PARTIAL, because an alternative representation went unread.
+  taking neither would lose it. Drawing geometry remains PARTIAL. Text-box
+  formatting can be COMPLETE when every branch has identical expanded XML
+  structure, attributes and text. `figurePlacement` has its own coverage: native
+  inline/anchor placement must agree with a single, supported VML shape in
+  each fallback. Different boxes, unknown branches, groups, malformed CSS or
+  conflicting placement remain PARTIAL. Warnings are retained; no global
+  warning is simply ignored to obtain a passing score.
 
 ## 4. Stories
 
 Content lives in independent flows, and each keeps its own identity:
 
-| Story | Element type for its paragraphs |
-| --- | --- |
-| main document | `PARAGRAPH`, or `HEADING` when it has an outline level |
-| header / footer | `HEADER` / `FOOTER` |
-| footnote / endnote | `FOOTNOTE` / `ENDNOTE` |
-| text box | `TEXTBOX` |
-| comments | counted only; text is never extracted |
+| Story              | Element type for its paragraphs                        |
+| ------------------ | ------------------------------------------------------ |
+| main document      | `PARAGRAPH`, or `HEADING` when it has an outline level |
+| header / footer    | `HEADER` / `FOOTER`                                    |
+| footnote / endnote | `FOOTNOTE` / `ENDNOTE`                                 |
+| text box           | `TEXTBOX`                                              |
+| comments           | counted only; text is never extracted                  |
 
 Filing a header's page number under `PARAGRAPH` would make a rule about body
 text fail because of a running head. `ENDNOTE` and `TEXTBOX` did not exist in
 fact schema v1, which is why Phase 6 introduces v2 (§7 below).
 
-The walker descends *through* containers — `w:sdt`, `w:hyperlink`,
+The walker descends _through_ containers — `w:sdt`, `w:hyperlink`,
 `w:customXml`, smart tags — so text is never lost because of its wrapper.
 
 ## 5. Deterministic locations
@@ -117,15 +122,27 @@ document defaults → table style → numbering style
 
 **Toggle properties XOR** across the style hierarchy (ECMA-376 §17.7.3), with
 direct formatting absolute. A style based on a bold style that declares
-`<w:b/>` again is *not* bold — the case naive last-writer-wins resolution gets
+`<w:b/>` again is _not_ bold — the case naive last-writer-wins resolution gets
 backwards. Twelve properties are in that family; everything else overrides.
 
 **Declared-false is not absent.** `<w:b w:val="0"/>` is an instruction; silence
 means "ask the next layer".
 
-**Theme references are resolved.** `@w:asciiTheme="minorHAnsi"` yields the
-theme's minor Latin typeface. An unresolvable reference leaves the font
-*unresolved* and drops coverage to PARTIAL; no font is substituted.
+**Theme references are resolved.** `@w:asciiTheme="minorHAnsi"` selects the
+theme's minor Latin region. Analyzer version 6 also reads `w:themeFontLang`
+from document settings: `val`, `eastAsia` and `bidi` select supplemental
+`a:font` entries for the Latin, East Asian and complex-script regions. For
+example, `bidi="ar-PS"` selects `script="Arab"`. A bounded language-to-script
+mapping and explicit BCP 47 script subtags are supported; unknown or ambiguous
+languages remain unresolved. Run text, `w:lang` and the host locale are not
+used to guess the theme language. Without a regional language setting, the
+theme's regional typeface is used.
+
+An unresolvable reference leaves that font _unresolved_, including when a
+lower style layer had a literal font. A later direct font can resolve it.
+Coverage is PARTIAL only for the affected element type and used font property;
+an unresolved, unused complex-script font does not invalidate a fully known
+Latin font or independently known font size. Warnings remain diagnostic.
 
 **Style chains are bounded and cycle-safe.** A missing parent ends the chain
 with a warning; a cycle is detected, warned and cut; an over-deep chain is cut
@@ -142,11 +159,11 @@ run or from a style four hundred paragraphs share.
 A run holding "Hello مرحبا" has two fonts and two sizes. Run text is therefore
 segmented by script channel, and each segment reads its own slot:
 
-| Channel | Font slot | Size | Bold / italic |
-| --- | --- | --- | --- |
-| Latin | `@w:ascii` (< U+0080), `@w:hAnsi` | `w:sz` | `w:b`, `w:i` |
-| Complex script | `@w:cs` | `w:szCs` | `w:bCs`, `w:iCs` |
-| East Asian | `@w:eastAsia` | `w:sz` | `w:b`, `w:i` |
+| Channel        | Font slot                         | Size     | Bold / italic    |
+| -------------- | --------------------------------- | -------- | ---------------- |
+| Latin          | `@w:ascii` (< U+0080), `@w:hAnsi` | `w:sz`   | `w:b`, `w:i`     |
+| Complex script | `@w:cs`                           | `w:szCs` | `w:bCs`, `w:iCs` |
+| East Asian     | `@w:eastAsia`                     | `w:sz`   | `w:b`, `w:i`     |
 
 Classification is by Unicode block and is documented in `app/docx/script.py`;
 Arabic is never identified by "not ASCII". Facts are named for their channel:
@@ -175,7 +192,7 @@ element types and nothing else.
 
 Sections and page setup (per section, never averaged): page size, orientation
 as declared, the four margins, header and footer distance, gutter, column
-count, section break type. A `w:sectPr` inside a paragraph *closes* the section
+count, section break type. A `w:sectPr` inside a paragraph _closes_ the section
 that paragraph is in; the one at body level closes the last. Mirrored margins
 turn left and right into inside and outside, so those two facts drop to PARTIAL.
 
@@ -191,7 +208,7 @@ Runs: font family per channel, size per channel, bold, italic, underline,
 colour, highlight, language, RTL.
 
 Headings: from the **effective outline level** only (0–8 → heading 1–9). Never
-from boldness or size, and never from a localized style *name*, which can be
+from boldness or size, and never from a localized style _name_, which can be
 customized or translated.
 
 Numbering: level, format, start value and effective indentation, resolved
@@ -201,7 +218,7 @@ differ. The analyzer does not render number text.
 
 Tables: rows, columns (widest row, `gridSpan` included), alignment, absolute
 width, nested tables with their own locators. **Conditional table-style
-formatting** (first row, banded rows) is *not* resolved; that drops the table
+formatting** (first row, banded rows) is _not_ resolved; that drops the table
 domain to PARTIAL with a warning, because an honest partial answer beats a
 confident wrong one.
 
@@ -248,15 +265,16 @@ analyzer-version decision rather than a tweak.
 
 Coverage is declared deliberately, never defaulted:
 
-| Domain | Status |
-| --- | --- |
-| `PAGE` (any) | UNAVAILABLE — not stored in the file |
-| `DOCUMENT/pageCount` | UNAVAILABLE — a saved count is a stale hint |
-| `ELEMENT/CITATION`, `REFERENCE_ENTRY` | UNAVAILABLE — semantic, not structural |
-| `ELEMENT/CAPTION` | PARTIAL — SEQ fields only |
-| `ELEMENT/TABLE` | PARTIAL when conditional style formatting is unresolved |
-| formatting domains | PARTIAL on a style cycle, missing parent, unresolved theme or unsupported markup |
-| everything else read completely | COMPLETE |
+| Domain                                | Status                                                                                                                              |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `PAGE` (any)                          | UNAVAILABLE — not stored in the file                                                                                                |
+| `DOCUMENT/pageCount`                  | UNAVAILABLE — a saved count is a stale hint                                                                                         |
+| `ELEMENT/CITATION`, `REFERENCE_ENTRY` | UNAVAILABLE — semantic, not structural                                                                                              |
+| `ELEMENT/CAPTION`                     | PARTIAL — SEQ fields only                                                                                                           |
+| `ELEMENT/TABLE`                       | PARTIAL when conditional style formatting is unresolved                                                                             |
+| formatting domains                    | PARTIAL on a style cycle, missing parent or unsupported markup                                                                      |
+| font family / size properties         | PARTIAL for the affected element type and property when visible final text has a missing value; other formatting guards still apply |
+| everything else read completely       | COMPLETE                                                                                                                            |
 
 Exact OOXML extraction carries `sourceKind: OOXML` and **no confidence**:
 inventing 1.0 for an attribute read would make a meaningless number look
@@ -292,7 +310,7 @@ claiming is atomic, so a duplicate delivery is a no-op.
 
 Failures are classified. A `DOCUMENT_*` code describes the file and will
 recur identically, so it is recorded and the job succeeds — deciding "this
-cannot be analyzed" *is* the job's work. An `ENGINE_*` or `STORAGE_*` code is
+cannot be analyzed" _is_ the job's work. An `ENGINE_*` or `STORAGE_*` code is
 transient and spends an attempt.
 
 ## 14. Privacy
@@ -305,7 +323,7 @@ An artifact inherits its source document's sensitivity exactly.
 - The database stores identity, integrity and counters. Never text.
 - Logs and metrics carry counts, codes and durations. Never body text,
   headings, comments, metadata values, filenames or full digests.
-- Paragraph text *is* retained inside the artifact, bounded per paragraph,
+- Paragraph text _is_ retained inside the artifact, bounded per paragraph,
   because Phase 7 report localization and Phase 12 SmartFix need it to anchor
   an edit. That is the documented exception, and it is why the artifact is
   private, encrypted and purged with its source.
@@ -327,15 +345,27 @@ three distinct buckets and encryption at rest.
 
 ## 17. Runbook
 
-| Symptom | Where to look |
-| --- | --- |
-| Analyses stuck in PENDING | Is a worker running? Is Redis up? `SELECT status, attempt_count, last_failure_code FROM processing_jobs WHERE job_type = 'DOCX_ANALYSIS'` |
-| `ENGINE_UNAVAILABLE` failures | The Python analyzer is down or unreachable; the worker's readiness probe reports `document-analysis` |
-| `DOCUMENT_SOURCE_INTEGRITY_FAILED` | The clean object does not match the version digest. Investigate the object, never re-point the analysis |
-| `DOCUMENT_TOO_COMPLEX` | A documented analyzer limit was hit; the failure detail names which |
-| Coverage unexpectedly PARTIAL | Read `warning_codes` on the analysis row |
-| Artifact missing | `artifact_object_key` is null unless the analysis succeeded; a succeeded row without one is impossible by check constraint |
+| Symptom                            | Where to look                                                                                                                             |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Analyses stuck in PENDING          | Is a worker running? Is Redis up? `SELECT status, attempt_count, last_failure_code FROM processing_jobs WHERE job_type = 'DOCX_ANALYSIS'` |
+| `ENGINE_UNAVAILABLE` failures      | The Python analyzer is down or unreachable; the worker's readiness probe reports `document-analysis`                                      |
+| `DOCUMENT_SOURCE_INTEGRITY_FAILED` | The clean object does not match the version digest. Investigate the object, never re-point the analysis                                   |
+| `DOCUMENT_TOO_COMPLEX`             | A documented analyzer limit was hit; the failure detail names which                                                                       |
+| Coverage unexpectedly PARTIAL      | Read `warning_codes` on the analysis row                                                                                                  |
+| Artifact missing                   | `artifact_object_key` is null unless the analysis succeeded; a succeeded row without one is impossible by check constraint                |
 
+### Analyzer version 6 deployment
+
+Deploy the API, worker and document-engine images from the same release: the
+API/worker select `palcert-docx` version `6`, and the engine emits that version.
+Historical analyses and reports are immutable. Start a new check after rollout
+so it requests a version 6 analysis, then create a new SmartFix plan from that
+report. Retrying an existing plan does not refresh its source analysis.
+
+The SmartFix acceptance gate is unchanged: every targeted rule must pass or be
+not applicable, and a previously passing rule must not regress. Incomplete
+evidence still yields `INDETERMINATE`; it is never converted to `PASS` merely
+because the extracted facts contain no violations.
 
 ## The other analyzer
 

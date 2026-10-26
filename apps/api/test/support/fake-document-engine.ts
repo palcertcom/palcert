@@ -1,4 +1,8 @@
-import { CAPABILITY_REGISTRY_VERSION, type RuleEvaluationResult } from '@palcert/contracts';
+import {
+  CAPABILITY_REGISTRY_VERSION,
+  SMARTFIX_ENGINE_VERSION,
+  type RuleEvaluationResult,
+} from '@palcert/contracts';
 import { createHash } from 'node:crypto';
 import {
   DocumentEngineError,
@@ -134,7 +138,7 @@ export class FakeDocumentEngine extends DocumentEnginePort {
   /** Set to make the next plan refuse the document outright. */
   smartFixRefusal: string | null = null;
   fixEngineName = 'palcert-docx-fixer';
-  fixEngineVersion = '1.0.0';
+  fixEngineVersion = SMARTFIX_ENGINE_VERSION;
   /**
    * The capability registry the double claims to be running.
    *
@@ -493,7 +497,7 @@ export class FakeDocumentEngine extends DocumentEnginePort {
     this.evaluationCalls.length = 0;
     this.smartFixMode = 'normal';
     this.smartFixRefusal = null;
-    this.fixEngineVersion = '1.0.0';
+    this.fixEngineVersion = SMARTFIX_ENGINE_VERSION;
     this.capabilityRegistryVersion = CAPABILITY_REGISTRY_VERSION;
     this.planCalls.length = 0;
     this.applyCalls.length = 0;

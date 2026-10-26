@@ -40,9 +40,11 @@ from app.smartfix.capability import (
     CAPABILITY_REGISTRY_VERSION,
     SMARTFIX_ENGINE_NAME,
     SMARTFIX_ENGINE_VERSION,
+    ActionType,
     TargetScope,
 )
 from app.smartfix.contracts import SmartFixContract, assert_contract
+from app.smartfix.extended import apply_inline_drawing, apply_list_starts, validate_extended_action
 from app.smartfix.locate import DocumentIndex, build_index
 from app.smartfix.model import (
     ChangeManifest,
@@ -255,6 +257,10 @@ def _resolve(
             part_name, element = located
 
         current = observe(lookup, action, index.model)
+        try:
+            validate_extended_action(action, element, index, lookup)
+        except UnwritableValueError as error:
+            raise FixError(FixErrorCode.VALUE_UNWRITABLE, str(error)) from error
         if action.before is not None and not action.before.matches(current):
             raise FixError(
                 FixErrorCode.SOURCE_CHANGED,
@@ -273,10 +279,18 @@ def _apply(
 ) -> set[str]:
     """Write every resolved action. Nothing here can fail to find its target."""
     changed: set[str] = set()
+    try:
+        changed.update(apply_list_starts(tuple(e.action for e in resolved), index, lookup))
+    except UnwritableValueError as error:
+        raise FixError(FixErrorCode.VALUE_UNWRITABLE, str(error)) from error
     for entry in resolved:
         action = entry.action
         try:
-            if action.target_scope is TargetScope.SECTION_PROPERTIES:
+            if action.action_type is ActionType.SET_LIST_START:
+                continue
+            if action.target_scope is TargetScope.DRAWING_PROPERTIES:
+                apply_inline_drawing(entry.target)
+            elif action.target_scope is TargetScope.SECTION_PROPERTIES:
                 apply_section_action(entry.target, action, index.namespaces)
             elif action.target_scope is TargetScope.RUN_PROPERTIES:
                 apply_run_action(entry.target, action, index.namespaces)

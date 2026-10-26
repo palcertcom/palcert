@@ -1,4 +1,9 @@
-import type { DocumentFormat, EvaluationResponse } from '@palcert/contracts';
+import type {
+  DocumentFormat,
+  EvaluationResponse,
+  AIFormattingTarget,
+  SmartFixAIContext,
+} from '@palcert/contracts';
 
 /**
  * The document engine, as PalCert's API sees it.
@@ -162,6 +167,9 @@ export interface DocxPropertyDescriptor {
  * reason.
  */
 export interface PlanSmartFixRequest {
+  readonly signal?: AbortSignal;
+  readonly aiTargets?: readonly AIFormattingTarget[];
+  readonly includeAIContext?: boolean;
   /** Opaque to the engine. Correlation only. */
   readonly documentId: string;
   readonly content: Buffer;
@@ -175,6 +183,7 @@ export interface PlanSmartFixRequest {
 }
 
 export interface PlanSmartFixResult {
+  readonly aiContext?: SmartFixAIContext;
   /** The plan document, parsed. */
   readonly plan: Record<string, unknown>;
   /**

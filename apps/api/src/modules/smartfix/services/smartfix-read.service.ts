@@ -1,10 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { AppError, PalCertErrorCode, type SmartFixRequestStatus } from '@palcert/contracts';
+import {
+  AppError,
+  PalCertErrorCode,
+  type SmartFixRequestStatus,
+  type SmartFixAIPlanning,
+  money,
+  type MoneyView,
+} from '@palcert/contracts';
 import { PinoLogger } from 'nestjs-pino';
 import { TenantPrismaService } from '../../../infrastructure/tenant/tenant-prisma.service';
 
 /** What a plan looks like to the person deciding whether to buy it. */
 export interface SmartFixPlanView {
+  readonly reservation?: {
+    readonly status: string;
+    readonly priceQuoteId: string;
+    readonly amount: MoneyView;
+  };
+  readonly aiPlanning?: SmartFixAIPlanning;
   readonly id: string;
   readonly checkId: string;
   readonly documentVersionId: string;
@@ -86,7 +99,25 @@ export class SmartFixReadService {
       });
     }
     const rules = Array.isArray(artifact.rules) ? artifact.rules : [];
+    const reservation = await this.tenant.withUser(userId, (tx) =>
+      tx.smartFixPlanningReservation.findFirst({
+        where: { id: planId, ownerUserId: userId },
+        include: { servicePurchase: true },
+      }),
+    );
     return {
+      ...(reservation
+        ? {
+            reservation: {
+              status: reservation.status,
+              priceQuoteId: reservation.servicePurchase.priceQuoteId,
+              amount: money(
+                reservation.servicePurchase.currency,
+                reservation.servicePurchase.amountMinor,
+              ),
+            },
+          }
+        : {}),
       id: row.id,
       checkId: row.checkId,
       documentVersionId: row.documentVersionId,
@@ -97,6 +128,7 @@ export class SmartFixReadService {
       ruleCount: row.ruleCount,
       fixableRuleCount: row.fixableRuleCount,
       actionCount: row.actionCount,
+      ...(artifact.aiPlanning ? { aiPlanning: artifact.aiPlanning as SmartFixAIPlanning } : {}),
       rules: rules.map((rule) => {
         const entry = rule as Record<string, unknown>;
         return {

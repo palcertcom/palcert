@@ -228,16 +228,12 @@ describe('Document analysis - lifecycle (e2e)', () => {
     expect(untouched.artifactSha256).toBe('b'.repeat(64));
   });
 
-  it.each(['2', '3'])(
+  it.each(['2', '3', '4', '5'])(
     'never reuses a DOCX analysis from analyzer version %s',
     async (staleVersion) => {
-      // Phase 18 moved the DOCX analyzer three times: 2 gained citation
-      // evidence, 3 projected four properties of it into facts, 4 added the
-      // coverage entry declaring that DOCX cannot answer
-      // citationTargetResolved. The last one is the reason this matters most:
-      // a version 3 analysis carries no entry for the new property, so a rule
-      // about it would be read under this format's COMPLETE citation coverage
-      // rather than being refused — wrong, not merely incomplete.
+      // Older citation evidence and coverage cannot be reused. Version 6 also
+      // resolves supplemental theme fonts and scopes missing font evidence:
+      // version 5 can leave a corrected document's font rules INDETERMINATE.
       const { versionId } = await readyDocx();
 
       const stale = await context.adminDb.documentAnalysis.create({

@@ -10,10 +10,9 @@ import type { Locale } from './locales';
  * the correction has been delivered, nothing has been fixed — it is being
  * prepared. Arabic keeps the same distinction: قيد التنفيذ, then تم التصحيح.
  *
- * **Never claim full compliance.** SmartFix corrects formatting. The document
- * may still fail rules it never addressed, and the user was told exactly which
- * ones before they paid. "Your document now complies" is a sentence this file
- * does not contain in either language.
+ * **Describe the checked standard, not academic acceptance.** New corrections
+ * require every applicable rule to pass. Historical deliveries may have used
+ * the earlier partial policy, so their recheck remains the source of truth.
  *
  * **Reuse the finance vocabulary exactly.** Reserved / charged / reservation
  * released mean the same things here as in Phase 11 — محجوز / تم الخصم /
@@ -24,6 +23,16 @@ export interface SmartFixMessages {
   readonly title: string;
   readonly intro: string;
   readonly originalSafe: string;
+  readonly aiConsent: string;
+  readonly aiScope: string;
+  readonly aiBundled: string;
+  readonly aiApprove: string;
+  readonly aiReserveAndPlan: string;
+  readonly aiReserved: (amount: string) => string;
+  readonly aiCancelReservation: string;
+  readonly aiReservationEnded: string;
+  readonly aiRounds: (rounds: number) => string;
+  readonly aiStopReasons: Readonly<Record<string, string>>;
 
   readonly planTitle: string;
   readonly planIntro: string;
@@ -42,6 +51,7 @@ export interface SmartFixMessages {
   readonly reasons: Readonly<Record<string, string>>;
   readonly refusals: Readonly<Record<string, string>>;
 
+  readonly fullCorrectionUnavailable: string;
   readonly startTitle: string;
   readonly startHint: string;
   readonly start: string;
@@ -81,6 +91,13 @@ export interface SmartFixMessages {
 }
 
 const en: SmartFixMessages = {
+  aiApprove: 'Approve the plan and correct',
+  aiBundled:
+    'AI planning is included in the correction price. Review the plan before approving execution; no second reservation or separate AI charge.',
+  aiReserveAndPlan: 'Reserve the correction price and plan with AI',
+  aiReserved: (amount) => `Already reserved for this correction: ${amount}.`,
+  aiCancelReservation: 'Cancel this plan and release the reservation',
+  aiReservationEnded: 'This planning reservation has ended. Nothing is charged for the preview.',
   title: 'SmartFix',
   intro:
     'SmartFix corrects formatting your report flagged — sizes, fonts, spacing, margins — and ' +
@@ -90,6 +107,17 @@ const en: SmartFixMessages = {
     'version.',
 
   planTitle: 'What SmartFix would change',
+  aiConsent:
+    'Use AI to plan formatting corrections. I agree to sharing formatting measurements and the selected standard rules with the configured external AI provider for this plan.',
+  aiScope:
+    'Document paragraphs, images and file bytes are not sent. AI proposes formatting values; PalCert checks all rules and preserves the content.',
+  aiRounds: (rounds) => `AI planning rounds: ${rounds}.`,
+  aiStopReasons: {
+    VERIFIED: 'The preview passes all applicable rules. The delivered copy will be checked again.',
+    NO_PROGRESS: 'AI could not resolve all requirements. Review the remaining rules below.',
+    ROUND_LIMIT:
+      'The planning limit was reached. The remaining rules still prevent full correction.',
+  },
   planIntro: 'Every change is listed below before you decide. Nothing is charged for this list.',
   planFree: 'Free',
   planExpires: 'This plan is valid until',
@@ -143,10 +171,11 @@ const en: SmartFixMessages = {
     SMARTFIX_SOURCE_FORMAT_UNSUPPORTED: 'SmartFix can only correct Word documents.',
   },
 
+  fullCorrectionUnavailable:
+    'Full correction is not available for this plan. Review the unresolved rules or create a new plan. Any AI planning reservation is released.',
   startTitle: 'Start the correction',
   startHint:
-    'PalCert will correct a copy, check it again against the same standard, and only then ' +
-    'charge you.',
+    'PalCert will correct a copy and recheck every rule in the same standard. Delivery and charging require every applicable rule to pass.',
   start: 'Reserve and correct',
   starting: 'Starting…',
   cancel: 'Cancel this correction',
@@ -180,7 +209,7 @@ const en: SmartFixMessages = {
     OUTPUT_UNREADABLE: 'PalCert could not read the corrected copy back.',
     RECHECK_FAILED: 'The re-check could not be completed.',
     SMARTFIX_TARGETS_NOT_RESOLVED:
-      'Some of the rules SmartFix set out to correct still do not pass, so nothing was ' +
+      'Some standard rules are still failed or unresolved, so nothing was ' +
       'delivered and nothing was charged.',
     SMARTFIX_REGRESSION_DETECTED:
       'The corrected copy would have broken a rule that previously passed, so PalCert discarded ' +
@@ -192,9 +221,7 @@ const en: SmartFixMessages = {
   deliveredHint:
     'SmartFix corrected the formatting listed below. Your original version is unchanged and ' +
     'still available.',
-  stillFailing:
-    'This does not mean your document now meets every requirement. Rules SmartFix could not ' +
-    'correct are still listed in your report.',
+  stillFailing: 'See the re-check report for the result of every rule in this standard version.',
   openCorrected: 'Open the corrected version',
   openRecheck: 'See the re-check report',
 
@@ -216,6 +243,10 @@ const en: SmartFixMessages = {
   notSet: 'Not set',
 
   errors: {
+    AI_DISABLED: 'AI formatting is not enabled on this server.',
+    AI_CONSENT_REQUIRED: 'Agree to sharing formatting measurements before requesting AI planning.',
+    AI_PROVIDER_UNAVAILABLE: 'The AI provider is unavailable. No correction was purchased.',
+    AI_RESPONSE_INVALID: 'The AI response could not be validated. No correction was purchased.',
     SMARTFIX_NOT_AVAILABLE: 'SmartFix is not available for this check.',
     SMARTFIX_FAILED: 'PalCert could not complete this correction.',
     INSUFFICIENT_BALANCE: 'Your balance is not enough for this correction.',
@@ -226,6 +257,13 @@ const en: SmartFixMessages = {
 };
 
 const ar: SmartFixMessages = {
+  aiApprove: 'اعتمد الخطة وابدأ التصحيح',
+  aiBundled:
+    'تخطيط الذكاء الاصطناعي ضمن سعر التصحيح. راجع الخطة قبل الموافقة على تنفيذها؛ لا يُحجز المبلغ مرتين ولا توجد رسوم منفصلة للذكاء الاصطناعي.',
+  aiReserveAndPlan: 'احجز سعر التصحيح وأنشئ الخطة بالذكاء الاصطناعي',
+  aiReserved: (amount) => `المبلغ المحجوز لهذا التصحيح: ${amount}.`,
+  aiCancelReservation: 'إلغاء الخطة وتحرير المبلغ المحجوز',
+  aiReservationEnded: 'انتهى حجز هذه الخطة. لا يُخصم مبلغ مقابل المعاينة.',
   title: 'التصحيح الذكي',
   intro:
     'يصحّح التصحيح الذكي التنسيق الذي رصده تقريرك — الأحجام والخطوط والتباعد والهوامش — ولا ' +
@@ -233,6 +271,17 @@ const ar: SmartFixMessages = {
   originalSafe: 'لا يُعدَّل مستندك الأصلي أبدًا. ينتج التصحيح الذكي نسخة مصحَّحة كإصدار جديد.',
 
   planTitle: 'ما الذي سيغيّره التصحيح الذكي',
+  aiConsent:
+    'استخدام الذكاء الاصطناعي لتخطيط تصحيح التنسيق. أوافق على إرسال قياسات التنسيق وقواعد المعيار المختار إلى مزوّد الذكاء الاصطناعي الخارجي المعتمد لهذه الخطة.',
+  aiScope:
+    'لا تُرسل فقرات المستند أو صوره أو الملف نفسه. يقترح الذكاء الاصطناعي قيم التنسيق، ويتحقق النظام من جميع القواعد مع الحفاظ على المحتوى.',
+  aiRounds: (rounds) => `جولات التخطيط بالذكاء الاصطناعي: ${rounds}.`,
+  aiStopReasons: {
+    VERIFIED:
+      'اجتازت النسخة التجريبية جميع القواعد المنطبقة. سيُعاد فحص النسخة النهائية قبل تسليمها.',
+    NO_PROGRESS: 'لم يتمكن الذكاء الاصطناعي من حسم جميع المتطلبات. راجع القواعد المتبقية أدناه.',
+    ROUND_LIMIT: 'اكتملت جولات التخطيط المتاحة، وما زالت القواعد المتبقية تمنع اكتمال التصحيح.',
+  },
   planIntro: 'كل تغيير مذكور أدناه قبل أن تقرّر. ولا يُخصم أي مبلغ مقابل هذه القائمة.',
   planFree: 'مجانًا',
   planExpires: 'هذه الخطة سارية حتى',
@@ -281,8 +330,11 @@ const ar: SmartFixMessages = {
     SMARTFIX_SOURCE_FORMAT_UNSUPPORTED: 'يصحّح التصحيح الذكي مستندات وورد فقط.',
   },
 
+  fullCorrectionUnavailable:
+    'لا يمكن إكمال التصحيح بهذه الخطة. راجع القواعد غير المحسومة أو أنشئ خطة جديدة. يُحرَّر أي مبلغ حُجز لتخطيط الذكاء الاصطناعي.',
   startTitle: 'ابدأ التصحيح',
-  startHint: 'سيصحّح بال‌سيرت نسخة، ويفحصها مجددًا وفق المعيار نفسه، ثم يخصم المبلغ بعد ذلك فقط.',
+  startHint:
+    'سيصحّح بال‌سيرت نسخة ويعيد فحص جميع قواعد المعيار نفسه. لن تُسلَّم النسخة ولن يُخصم المبلغ إلا بعد اجتياز جميع القواعد المنطبقة.',
   start: 'احجز المبلغ وصحّح',
   starting: 'جارٍ البدء…',
   cancel: 'ألغِ هذا التصحيح',
@@ -316,7 +368,7 @@ const ar: SmartFixMessages = {
     OUTPUT_UNREADABLE: 'تعذّر على بال‌سيرت قراءة النسخة المصحَّحة.',
     RECHECK_FAILED: 'تعذّر إكمال إعادة الفحص.',
     SMARTFIX_TARGETS_NOT_RESOLVED:
-      'ما زالت بعض الشروط التي استهدفها التصحيح الذكي غير محقَّقة، فلم يُسلَّم شيء ولم يُخصم ' +
+      'ما زالت بعض قواعد المعيار غير محقَّقة أو غير محسومة، فلم يُسلَّم شيء ولم يُخصم ' +
       'أي مبلغ.',
     SMARTFIX_REGRESSION_DETECTED:
       'كانت النسخة المصحَّحة ستُخلّ بشرط كان محقَّقًا من قبل، فاستبعدها بال‌سيرت. ولم يُخصم أي ' +
@@ -327,9 +379,7 @@ const ar: SmartFixMessages = {
   deliveredTitle: 'نسختك المصحَّحة جاهزة',
   deliveredHint:
     'صحّح التصحيح الذكي التنسيق المذكور أدناه. ونسختك الأصلية لم تتغيّر وما زالت متاحة.',
-  stillFailing:
-    'هذا لا يعني أن مستندك صار مستوفيًا لكل المتطلبات. فالشروط التي تعذّر تصحيحها ما زالت ' +
-    'مذكورة في تقريرك.',
+  stillFailing: 'اطّلع على تقرير إعادة الفحص لمعرفة نتيجة كل قاعدة في هذه النسخة من المعيار.',
   openCorrected: 'افتح النسخة المصحَّحة',
   openRecheck: 'اطّلع على تقرير إعادة الفحص',
 
@@ -352,6 +402,10 @@ const ar: SmartFixMessages = {
 
   errors: {
     SMARTFIX_NOT_AVAILABLE: 'التصحيح الذكي غير متاح لهذا الفحص.',
+    AI_DISABLED: 'تصحيح التنسيق بالذكاء الاصطناعي غير مفعّل على الخادم.',
+    AI_CONSENT_REQUIRED: 'وافق على إرسال قياسات التنسيق قبل طلب التخطيط بالذكاء الاصطناعي.',
+    AI_PROVIDER_UNAVAILABLE: 'مزوّد الذكاء الاصطناعي غير متاح حاليًا. لم يتم شراء أي تصحيح.',
+    AI_RESPONSE_INVALID: 'تعذّر التحقق من استجابة الذكاء الاصطناعي. لم يتم شراء أي تصحيح.',
     SMARTFIX_FAILED: 'تعذّر على بال‌سيرت إتمام هذا التصحيح.',
     INSUFFICIENT_BALANCE: 'رصيدك لا يكفي لهذا التصحيح.',
     QUOTE_EXPIRED: 'لم يعد هذا السعر ساريًا. يرجى الحصول على السعر الحالي.',

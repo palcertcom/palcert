@@ -31,3 +31,6 @@ export * from './capability.js';
 export * from './validator.js';
 export * from './requests.js';
 export * from './registry.generated.js';
+
+export * from './completion.js';
+export * from './ai-formatting.js';

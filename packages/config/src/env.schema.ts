@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 /**
  * Centralized environment schema (§46: centralized configuration).
+ * Zod 4 prefault preserves Zod 3 input-default parsing, including transforms.
  *
  * Configuration is validated ONCE at process start. A process must refuse to
  * boot with invalid configuration rather than fail later at request time.
@@ -56,9 +57,9 @@ const port = z.coerce.number().int().min(1).max(65535);
 const secret = z.string().min(32, 'must be at least 32 characters');
 
 export const baseEnvSchema = z.object({
-  NODE_ENV: NodeEnv.default('development'),
-  APP_NAME: z.string().min(1).default('palcert'),
-  APP_VERSION: z.string().min(1).default('0.1.0'),
+  NODE_ENV: NodeEnv.prefault('development'),
+  APP_NAME: z.string().min(1).prefault('palcert'),
+  APP_VERSION: z.string().min(1).prefault('0.1.0'),
 
   /**
    * The Git commit this build came from (Phase 20 Checkpoint 2).
@@ -88,8 +89,8 @@ export const baseEnvSchema = z.object({
    */
   APP_BUILT_AT: emptyAsUndefined.pipe(z.string().datetime({ offset: true }).optional()),
 
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
-  LOG_PRETTY: booleanFromEnv.default('false'),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).prefault('info'),
+  LOG_PRETTY: booleanFromEnv.prefault('false'),
 });
 
 const postgresUrl = z
@@ -114,12 +115,12 @@ export const databaseEnvSchema = z.object({
    * The running application never connects with it.
    */
   DATABASE_ADMIN_URL: postgresUrl.optional(),
-  DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).default(10),
+  DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).prefault(10),
   /**
    * Refuse to serve traffic when the request-path role can bypass row-level
    * security. Disabling it is only ever appropriate for a local experiment.
    */
-  DATABASE_ENFORCE_LEAST_PRIVILEGE: booleanFromEnv.default('true'),
+  DATABASE_ENFORCE_LEAST_PRIVILEGE: booleanFromEnv.prefault('true'),
 });
 
 export const redisEnvSchema = z.object({
@@ -158,7 +159,7 @@ export const storageEnvSchema = z.object({
    * storage (Phase 20 Checkpoint 9).
    */
   STORAGE_PUBLIC_ENDPOINT: z.string().url().optional(),
-  STORAGE_REGION: z.string().min(1).default('us-east-1'),
+  STORAGE_REGION: z.string().min(1).prefault('us-east-1'),
   /** Clean, private, authoritative documents. */
   STORAGE_BUCKET: bucketName,
   /** Unscanned uploads. Never served to users. */
@@ -171,15 +172,15 @@ export const storageEnvSchema = z.object({
 
   // --- Document engine (Phase 6) -------------------------------------------
   /** Base URL of the Python analyzer. Internal; never reached by a browser. */
-  DOC_ENGINE_URL: z.string().url().default('http://localhost:8000'),
+  DOC_ENGINE_URL: z.string().url().prefault('http://localhost:8000'),
   /** Budget for one analysis call, which streams a whole document. */
   DOC_ENGINE_ANALYSIS_TIMEOUT_MS: z.coerce
     .number()
     .int()
     .min(1_000)
     .max(1_800_000)
-    .default(300_000),
-  DOC_ENGINE_READINESS_TIMEOUT_MS: z.coerce.number().int().min(100).max(10_000).default(2_000),
+    .prefault(300_000),
+  DOC_ENGINE_READINESS_TIMEOUT_MS: z.coerce.number().int().min(100).max(10_000).prefault(2_000),
   /**
    * Budget for one rule evaluation call (Phase 7).
    *
@@ -192,7 +193,7 @@ export const storageEnvSchema = z.object({
     .int()
     .min(1_000)
     .max(600_000)
-    .default(120_000),
+    .prefault(120_000),
 
   // --- Checks (Phase 7) ------------------------------------------------------
   /**
@@ -203,11 +204,11 @@ export const storageEnvSchema = z.object({
    * `totalViolationCount` always carries the true number, and the result is
    * marked truncated, so the stored list never pretends to be exhaustive.
    */
-  CHECK_MAX_STORED_VIOLATIONS_PER_RULE: z.coerce.number().int().min(1).max(1_000).default(200),
+  CHECK_MAX_STORED_VIOLATIONS_PER_RULE: z.coerce.number().int().min(1).max(1_000).prefault(200),
   /** How many violations one API response may return for a single rule. */
-  CHECK_MAX_RETURNED_VIOLATIONS_PER_RULE: z.coerce.number().int().min(1).max(500).default(50),
+  CHECK_MAX_RETURNED_VIOLATIONS_PER_RULE: z.coerce.number().int().min(1).max(500).prefault(50),
   /** Upper bound on a check list page, whatever the caller asks for. */
-  CHECK_MAX_PAGE_SIZE: z.coerce.number().int().min(1).max(200).default(50),
+  CHECK_MAX_PAGE_SIZE: z.coerce.number().int().min(1).max(200).prefault(50),
 
   // --- AI review (Phase 8) ---------------------------------------------------
   /**
@@ -224,8 +225,8 @@ export const storageEnvSchema = z.object({
   // every environment had one. It was the sole coercion left in this schema;
   // every other flag already used the enum, which accepts only
   // true/false/1/0 and rejects anything else instead of guessing.
-  AI_ENABLED: booleanFromEnv.default('false'),
-  AI_PRIMARY_PROVIDER: z.enum(['anthropic', 'fake']).default('anthropic'),
+  AI_ENABLED: booleanFromEnv.prefault('false'),
+  AI_PRIMARY_PROVIDER: z.enum(['anthropic', 'fake']).prefault('anthropic'),
   /**
    * The server-side provider credential.
    *
@@ -242,9 +243,9 @@ export const storageEnvSchema = z.object({
    * vendor's product (§4, §95). The value is persisted with every invocation,
    * so changing it here never rewrites what past reviews recorded.
    */
-  ANTHROPIC_MODEL: z.string().min(1).default('claude-opus-5'),
-  ANTHROPIC_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(256).max(64_000).default(8_000),
-  ANTHROPIC_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(600_000).default(120_000),
+  ANTHROPIC_MODEL: z.string().min(1).prefault('claude-opus-5'),
+  ANTHROPIC_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(256).max(64_000).prefault(8_000),
+  ANTHROPIC_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(600_000).prefault(120_000),
   /**
    * Optional, model-aware effort. Left unset by default: not every model
    * accepts it, and sending an unsupported control is how an integration
@@ -255,17 +256,17 @@ export const storageEnvSchema = z.object({
   ANTHROPIC_BASE_URL: z.string().url().optional(),
 
   /** Budgets. An academic document is never sent unbounded (§49). */
-  AI_MAX_INPUT_TOKENS: z.coerce.number().int().min(1_000).max(500_000).default(60_000),
-  AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(256).max(64_000).default(8_000),
-  AI_MAX_RULES_PER_REQUEST: z.coerce.number().int().min(1).max(100).default(10),
-  AI_MAX_CONTEXT_CHARS: z.coerce.number().int().min(1_000).max(400_000).default(60_000),
+  AI_MAX_INPUT_TOKENS: z.coerce.number().int().min(1_000).max(500_000).prefault(60_000),
+  AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(256).max(64_000).prefault(8_000),
+  AI_MAX_RULES_PER_REQUEST: z.coerce.number().int().min(1).max(100).prefault(10),
+  AI_MAX_CONTEXT_CHARS: z.coerce.number().int().min(1_000).max(400_000).prefault(60_000),
   /** Per-node text cap, so one reference list cannot consume the whole budget (§88). */
-  AI_MAX_NODE_CHARS: z.coerce.number().int().min(100).max(8_000).default(2_000),
-  AI_MAX_CONTEXT_NODES: z.coerce.number().int().min(1).max(400).default(120),
+  AI_MAX_NODE_CHARS: z.coerce.number().int().min(100).max(8_000).prefault(2_000),
+  AI_MAX_CONTEXT_NODES: z.coerce.number().int().min(1).max(400).prefault(120),
   /** Bounded retries with jitter; never indefinite (§56). */
-  AI_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(3),
-  AI_RETRY_BASE_MS: z.coerce.number().int().min(100).max(60_000).default(1_000),
-  AI_RETRY_MAX_MS: z.coerce.number().int().min(100).max(300_000).default(30_000),
+  AI_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).prefault(3),
+  AI_RETRY_BASE_MS: z.coerce.number().int().min(100).max(60_000).prefault(1_000),
+  AI_RETRY_MAX_MS: z.coerce.number().int().min(100).max(300_000).prefault(30_000),
   /**
    * What PalCert tells users about the provider's data handling.
    *
@@ -274,7 +275,7 @@ export const storageEnvSchema = z.object({
    */
   AI_PROVIDER_RETENTION_POLICY: z
     .enum(['PROVIDER_STANDARD', 'ZERO_DATA_RETENTION'])
-    .default('PROVIDER_STANDARD'),
+    .prefault('PROVIDER_STANDARD'),
   AI_PROVIDER_POLICY_URL: z.string().url().optional(),
 
   /**
@@ -285,44 +286,49 @@ export const storageEnvSchema = z.object({
    * send to a model, and conflating the two would mean either refusing uploads
    * PalCert can keep or attempting requests no provider will accept.
    */
-  AI_EXTRACTION_MAX_SOURCES: z.coerce.number().int().min(1).max(50).default(10),
+  AI_EXTRACTION_MAX_SOURCES: z.coerce.number().int().min(1).max(50).prefault(10),
   /** The provider's own PDF request ceiling is 32 MB; stay well inside it. */
   AI_EXTRACTION_MAX_PDF_BYTES: z.coerce
     .number()
     .int()
     .min(1_000)
     .max(31_457_280)
-    .default(20_971_520),
-  AI_EXTRACTION_MAX_SOURCE_PAGES: z.coerce.number().int().min(1).max(600).default(200),
+    .prefault(20_971_520),
+  AI_EXTRACTION_MAX_SOURCE_PAGES: z.coerce.number().int().min(1).max(600).prefault(200),
   AI_EXTRACTION_MAX_DOCX_TEXT_CHARS: z.coerce
     .number()
     .int()
     .min(1_000)
     .max(2_000_000)
-    .default(400_000),
-  AI_EXTRACTION_MAX_DOCX_BLOCKS: z.coerce.number().int().min(10).max(5_000).default(1_200),
-  AI_EXTRACTION_MAX_EVIDENCE_BLOCKS: z.coerce.number().int().min(1).max(2_000).default(400),
-  AI_EXTRACTION_MAX_EVIDENCE_CHARS: z.coerce.number().int().min(100).max(20_000).default(2_000),
-  AI_EXTRACTION_MAX_TEMPLATE_OBSERVATIONS: z.coerce.number().int().min(1).max(1_000).default(200),
-  AI_EXTRACTION_MAX_PROPOSALS: z.coerce.number().int().min(1).max(200).default(150),
+    .prefault(400_000),
+  AI_EXTRACTION_MAX_DOCX_BLOCKS: z.coerce.number().int().min(10).max(5_000).prefault(1_200),
+  AI_EXTRACTION_MAX_EVIDENCE_BLOCKS: z.coerce.number().int().min(1).max(2_000).prefault(400),
+  AI_EXTRACTION_MAX_EVIDENCE_CHARS: z.coerce.number().int().min(100).max(20_000).prefault(2_000),
+  AI_EXTRACTION_MAX_TEMPLATE_OBSERVATIONS: z.coerce.number().int().min(1).max(1_000).prefault(200),
+  AI_EXTRACTION_MAX_PROPOSALS: z.coerce.number().int().min(1).max(200).prefault(150),
   /** Characters of evidence handed to the structuring pass in one request. */
-  AI_EXTRACTION_MAX_CONTEXT_CHARS: z.coerce.number().int().min(1_000).max(400_000).default(120_000),
+  AI_EXTRACTION_MAX_CONTEXT_CHARS: z.coerce
+    .number()
+    .int()
+    .min(1_000)
+    .max(400_000)
+    .prefault(120_000),
   /** Largest document the API will hand the analyzer. */
-  ANALYSIS_MAX_SOURCE_BYTES: z.coerce.number().int().min(1).default(209_715_200),
+  ANALYSIS_MAX_SOURCE_BYTES: z.coerce.number().int().min(1).prefault(209_715_200),
   /** Largest artifact PalCert will store. */
-  ANALYSIS_MAX_ARTIFACT_BYTES: z.coerce.number().int().min(1).default(134_217_728),
+  ANALYSIS_MAX_ARTIFACT_BYTES: z.coerce.number().int().min(1).prefault(134_217_728),
   STORAGE_ACCESS_KEY_ID: z.string().min(1),
   STORAGE_SECRET_ACCESS_KEY: z.string().min(1),
-  STORAGE_FORCE_PATH_STYLE: booleanFromEnv.default('true'),
+  STORAGE_FORCE_PATH_STYLE: booleanFromEnv.prefault('true'),
   /** Server-side encryption requested on every write the API makes. */
-  STORAGE_SERVER_SIDE_ENCRYPTION: z.enum(['none', 'AES256', 'aws:kms']).default('none'),
+  STORAGE_SERVER_SIDE_ENCRYPTION: z.enum(['none', 'AES256', 'aws:kms']).prefault('none'),
   STORAGE_KMS_KEY_ID: z.string().min(1).optional(),
   /** Every storage call is bounded; a hung PUT must not hang a worker. */
-  STORAGE_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30_000),
+  STORAGE_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).prefault(30_000),
   /** Lifetime of a presigned upload authorization — bearer material. */
-  STORAGE_UPLOAD_URL_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).default(900),
+  STORAGE_UPLOAD_URL_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).prefault(900),
   /** Lifetime of a presigned download. Short: the link is a credential. */
-  STORAGE_DOWNLOAD_URL_TTL_SECONDS: z.coerce.number().int().min(10).max(3600).default(300),
+  STORAGE_DOWNLOAD_URL_TTL_SECONDS: z.coerce.number().int().min(10).max(3600).prefault(300),
 });
 
 /**
@@ -337,60 +343,60 @@ export const uploadEnvSchema = z.object({
     .number()
     .int()
     .min(1)
-    .default(100 * 1024 * 1024),
+    .prefault(100 * 1024 * 1024),
   UPLOAD_MAX_PDF_BYTES: z.coerce
     .number()
     .int()
     .min(1)
-    .default(200 * 1024 * 1024),
+    .prefault(200 * 1024 * 1024),
   /** How long an upload session (and its staged object) may stay unfinalized. */
   UPLOAD_SESSION_TTL_SECONDS: z.coerce
     .number()
     .int()
     .min(60)
-    .default(30 * 60),
+    .prefault(30 * 60),
   /** How often the API sweeps expired sessions and pending outbox rows. */
-  UPLOAD_SWEEP_INTERVAL_MS: z.coerce.number().int().min(1000).default(60_000),
+  UPLOAD_SWEEP_INTERVAL_MS: z.coerce.number().int().min(1000).prefault(60_000),
 
   // --- DOCX container limits (ZIP-bomb defence, §17) ------------------------
-  INGEST_MAX_ARCHIVE_ENTRIES: z.coerce.number().int().min(1).default(2000),
+  INGEST_MAX_ARCHIVE_ENTRIES: z.coerce.number().int().min(1).prefault(2000),
   INGEST_MAX_ARCHIVE_ENTRY_BYTES: z.coerce
     .number()
     .int()
     .min(1)
-    .default(256 * 1024 * 1024),
+    .prefault(256 * 1024 * 1024),
   INGEST_MAX_ARCHIVE_TOTAL_BYTES: z.coerce
     .number()
     .int()
     .min(1)
-    .default(1024 * 1024 * 1024),
+    .prefault(1024 * 1024 * 1024),
   /** Uncompressed / compressed, over the whole archive. XML compresses ~10:1. */
-  INGEST_MAX_COMPRESSION_RATIO: z.coerce.number().int().min(1).default(100),
+  INGEST_MAX_COMPRESSION_RATIO: z.coerce.number().int().min(1).prefault(100),
   /** Largest package part PalCert will read into memory to inspect (content types, rels). */
   INGEST_MAX_INSPECTED_PART_BYTES: z.coerce
     .number()
     .int()
     .min(1024)
-    .default(4 * 1024 * 1024),
+    .prefault(4 * 1024 * 1024),
 
   // --- Time budgets ---------------------------------------------------------
-  INGEST_VALIDATION_TIMEOUT_MS: z.coerce.number().int().min(1000).default(120_000),
-  INGEST_SCAN_TIMEOUT_MS: z.coerce.number().int().min(1000).default(300_000),
+  INGEST_VALIDATION_TIMEOUT_MS: z.coerce.number().int().min(1000).prefault(120_000),
+  INGEST_SCAN_TIMEOUT_MS: z.coerce.number().int().min(1000).prefault(300_000),
 
   // --- Queue and worker policy ---------------------------------------------
   /** Total attempts for a transient failure before the job is DEAD. */
-  QUEUE_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(5),
-  QUEUE_BACKOFF_BASE_MS: z.coerce.number().int().min(100).default(5_000),
+  QUEUE_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).prefault(5),
+  QUEUE_BACKOFF_BASE_MS: z.coerce.number().int().min(100).prefault(5_000),
   QUEUE_BACKOFF_MAX_MS: z.coerce
     .number()
     .int()
     .min(1000)
-    .default(10 * 60_000),
+    .prefault(10 * 60_000),
   /** A RUNNING job whose lease lapses is treated as abandoned and re-dispatched. */
-  QUEUE_LEASE_SECONDS: z.coerce.number().int().min(10).default(600),
-  WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(64).default(2),
-  WORKER_PORT: port.default(4100),
-  WORKER_HOST: z.string().min(1).default('0.0.0.0'),
+  QUEUE_LEASE_SECONDS: z.coerce.number().int().min(10).prefault(600),
+  WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(64).prefault(2),
+  WORKER_PORT: port.prefault(4100),
+  WORKER_HOST: z.string().min(1).prefault('0.0.0.0'),
 });
 
 /**
@@ -400,16 +406,16 @@ export const uploadEnvSchema = z.object({
  * exercises the same port. Production refuses `fake` at configuration time.
  */
 export const scannerEnvSchema = z.object({
-  MALWARE_SCANNER: z.enum(['clamav', 'fake']).default('clamav'),
-  CLAMAV_HOST: z.string().min(1).default('localhost'),
-  CLAMAV_PORT: port.default(3310),
-  CLAMAV_TIMEOUT_MS: z.coerce.number().int().min(1000).default(120_000),
+  MALWARE_SCANNER: z.enum(['clamav', 'fake']).prefault('clamav'),
+  CLAMAV_HOST: z.string().min(1).prefault('localhost'),
+  CLAMAV_PORT: port.prefault(3310),
+  CLAMAV_TIMEOUT_MS: z.coerce.number().int().min(1000).prefault(120_000),
   /** clamd's StreamMaxLength must be at least this, or large files are refused mid-stream. */
   CLAMAV_CHUNK_BYTES: z.coerce
     .number()
     .int()
     .min(1024)
-    .default(1024 * 1024),
+    .prefault(1024 * 1024),
 });
 
 /**
@@ -421,32 +427,32 @@ export const scannerEnvSchema = z.object({
  */
 export const authEnvSchema = z.object({
   /** Public origin of the web app, used to build verification/reset links. */
-  APP_PUBLIC_WEB_URL: z.string().url().default('http://localhost:3000'),
+  APP_PUBLIC_WEB_URL: z.string().url().prefault('http://localhost:3000'),
 
   // --- Session lifetimes ---------------------------------------------------
   /** Rolling inactivity window for a standard session. */
-  AUTH_SESSION_IDLE_MINUTES: z.coerce.number().int().min(1).default(60),
+  AUTH_SESSION_IDLE_MINUTES: z.coerce.number().int().min(1).prefault(60),
   /** Hard ceiling for a standard session, regardless of activity. */
   AUTH_SESSION_ABSOLUTE_MINUTES: z.coerce
     .number()
     .int()
     .min(1)
-    .default(12 * 60),
+    .prefault(12 * 60),
   /** Stricter inactivity window for sessions holding a privileged role. */
-  AUTH_PRIVILEGED_SESSION_IDLE_MINUTES: z.coerce.number().int().min(1).default(15),
+  AUTH_PRIVILEGED_SESSION_IDLE_MINUTES: z.coerce.number().int().min(1).prefault(15),
   /** Stricter hard ceiling for privileged sessions. */
   AUTH_PRIVILEGED_SESSION_ABSOLUTE_MINUTES: z.coerce
     .number()
     .int()
     .min(1)
-    .default(8 * 60),
+    .prefault(8 * 60),
   /** Lifetime of the constrained pre-MFA session. */
-  AUTH_MFA_PENDING_MINUTES: z.coerce.number().int().min(1).default(5),
+  AUTH_MFA_PENDING_MINUTES: z.coerce.number().int().min(1).prefault(5),
   /** How recently a user must have authenticated to perform sensitive actions. */
-  AUTH_REAUTH_WINDOW_MINUTES: z.coerce.number().int().min(1).default(15),
+  AUTH_REAUTH_WINDOW_MINUTES: z.coerce.number().int().min(1).prefault(15),
 
   // --- Cookies -------------------------------------------------------------
-  AUTH_COOKIE_SAMESITE: z.enum(['strict', 'lax', 'none']).default('lax'),
+  AUTH_COOKIE_SAMESITE: z.enum(['strict', 'lax', 'none']).prefault('lax'),
   AUTH_COOKIE_DOMAIN: z.string().optional(),
 
   // --- Credential token lifetimes ------------------------------------------
@@ -454,28 +460,28 @@ export const authEnvSchema = z.object({
     .number()
     .int()
     .min(1)
-    .default(24 * 60),
-  AUTH_PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().min(1).default(30),
+    .prefault(24 * 60),
+  AUTH_PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().min(1).prefault(30),
 
   // --- Password policy (NIST SP 800-63B: length over composition) ----------
-  AUTH_PASSWORD_MIN_LENGTH: z.coerce.number().int().min(8).default(12),
+  AUTH_PASSWORD_MIN_LENGTH: z.coerce.number().int().min(8).prefault(12),
   /** Upper bound exists only to bound hashing cost; passwords are never truncated. */
-  AUTH_PASSWORD_MAX_LENGTH: z.coerce.number().int().min(64).max(4096).default(256),
+  AUTH_PASSWORD_MAX_LENGTH: z.coerce.number().int().min(64).max(4096).prefault(256),
   /** Enables the breached-password check when a provider is configured. */
-  AUTH_BREACHED_PASSWORD_CHECK_ENABLED: booleanFromEnv.default('false'),
+  AUTH_BREACHED_PASSWORD_CHECK_ENABLED: booleanFromEnv.prefault('false'),
 
   // --- Argon2id parameters -------------------------------------------------
   /** Memory cost in KiB. OWASP baseline for Argon2id is 19456 (19 MiB). */
-  AUTH_ARGON2_MEMORY_KIB: z.coerce.number().int().min(512).default(19456),
-  AUTH_ARGON2_TIME_COST: z.coerce.number().int().min(1).default(2),
-  AUTH_ARGON2_PARALLELISM: z.coerce.number().int().min(1).default(1),
+  AUTH_ARGON2_MEMORY_KIB: z.coerce.number().int().min(512).prefault(19456),
+  AUTH_ARGON2_TIME_COST: z.coerce.number().int().min(1).prefault(2),
+  AUTH_ARGON2_PARALLELISM: z.coerce.number().int().min(1).prefault(1),
 
   // --- Throttling ----------------------------------------------------------
-  AUTH_LOGIN_MAX_ATTEMPTS_PER_ACCOUNT: z.coerce.number().int().min(1).default(10),
-  AUTH_LOGIN_MAX_ATTEMPTS_PER_IP: z.coerce.number().int().min(1).default(50),
-  AUTH_LOGIN_THROTTLE_WINDOW_MINUTES: z.coerce.number().int().min(1).default(15),
-  AUTH_MFA_MAX_ATTEMPTS: z.coerce.number().int().min(1).default(5),
-  AUTH_PASSWORD_RESET_MAX_REQUESTS: z.coerce.number().int().min(1).default(5),
+  AUTH_LOGIN_MAX_ATTEMPTS_PER_ACCOUNT: z.coerce.number().int().min(1).prefault(10),
+  AUTH_LOGIN_MAX_ATTEMPTS_PER_IP: z.coerce.number().int().min(1).prefault(50),
+  AUTH_LOGIN_THROTTLE_WINDOW_MINUTES: z.coerce.number().int().min(1).prefault(15),
+  AUTH_MFA_MAX_ATTEMPTS: z.coerce.number().int().min(1).prefault(5),
+  AUTH_PASSWORD_RESET_MAX_REQUESTS: z.coerce.number().int().min(1).prefault(5),
 
   // --- MFA -----------------------------------------------------------------
   /**
@@ -485,8 +491,8 @@ export const authEnvSchema = z.object({
   AUTH_MFA_SECRET_KEY: z.string().refine((value) => bytesLengthOfBase64(value) === 32, {
     message: 'must be exactly 32 bytes, base64-encoded (openssl rand -base64 32)',
   }),
-  AUTH_MFA_ISSUER: z.string().min(1).default('PalCert'),
-  AUTH_MFA_RECOVERY_CODE_COUNT: z.coerce.number().int().min(4).max(32).default(10),
+  AUTH_MFA_ISSUER: z.string().min(1).prefault('PalCert'),
+  AUTH_MFA_RECOVERY_CODE_COUNT: z.coerce.number().int().min(4).max(32).prefault(10),
 
   // --- Certificates --------------------------------------------------------
   /**
@@ -549,7 +555,7 @@ const notificationEmailEnvSchema = z.object({
    * retries against a transport that was never going to exist. `fake` is a
    * deterministic in-memory double for tests and is refused in production.
    */
-  NOTIFICATION_EMAIL_PROVIDER: z.enum(['disabled', 'fake', 'smtp']).default('disabled'),
+  NOTIFICATION_EMAIL_PROVIDER: z.enum(['disabled', 'fake', 'smtp']).prefault('disabled'),
 
   /** The envelope sender. A bare address — the display name is separate. */
   NOTIFICATION_EMAIL_FROM: z.string().email().optional(),
@@ -560,20 +566,20 @@ const notificationEmailEnvSchema = z.object({
    * whose sender name contains a newline is misconfigured and should be told at
    * boot, not on the first notification of the day.
    */
-  NOTIFICATION_EMAIL_FROM_NAME: headerSafeText('NOTIFICATION_EMAIL_FROM_NAME', 200).default(
+  NOTIFICATION_EMAIL_FROM_NAME: headerSafeText('NOTIFICATION_EMAIL_FROM_NAME', 200).prefault(
     'PalCert',
   ),
 
   NOTIFICATION_SMTP_HOST: z.string().min(1).optional(),
-  NOTIFICATION_SMTP_PORT: port.default(587),
-  NOTIFICATION_SMTP_SECURE: booleanFromEnv.default('false'),
+  NOTIFICATION_SMTP_PORT: port.prefault(587),
+  NOTIFICATION_SMTP_SECURE: booleanFromEnv.prefault('false'),
   NOTIFICATION_SMTP_USER: z.string().min(1).optional(),
   NOTIFICATION_SMTP_PASSWORD: secret.optional(),
   /** Bounded so one unreachable relay cannot hold a worker lease open. */
-  NOTIFICATION_SMTP_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).default(15_000),
+  NOTIFICATION_SMTP_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).prefault(15_000),
 
   /** How many recipients one fan-out page resolves. Matches the SQL bound. */
-  NOTIFICATION_FANOUT_PAGE_SIZE: z.coerce.number().int().min(1).max(500).default(100),
+  NOTIFICATION_FANOUT_PAGE_SIZE: z.coerce.number().int().min(1).max(500).prefault(100),
 });
 
 /**
@@ -672,7 +678,7 @@ const webhookEnvSchema = z.object({
    * one: letting an organization name a port turns a webhook endpoint into a
    * port scanner that reports its findings through delivery error codes.
    */
-  WEBHOOK_ALLOWED_PORTS: z.string().default('443'),
+  WEBHOOK_ALLOWED_PORTS: z.string().prefault('443'),
 
   /**
    * PalCert's own public hostnames, comma-separated.
@@ -681,7 +687,7 @@ const webhookEnvSchema = z.object({
    * would make PalCert's outbound requests arrive as inbound ones carrying
    * whatever ambient trust the network grants them.
    */
-  WEBHOOK_OWN_HOSTS: z.string().default(''),
+  WEBHOOK_OWN_HOSTS: z.string().prefault(''),
 
   /**
    * Bounds on one attempt (§60).
@@ -691,10 +697,10 @@ const webhookEnvSchema = z.object({
    * receiver that accepts a connection and then says nothing costs PalCert a
    * worker for as long as it cares to stay silent.
    */
-  WEBHOOK_DNS_TIMEOUT_MS: z.coerce.number().int().min(100).max(30_000).default(3_000),
-  WEBHOOK_CONNECT_TIMEOUT_MS: z.coerce.number().int().min(100).max(30_000).default(5_000),
-  WEBHOOK_TLS_TIMEOUT_MS: z.coerce.number().int().min(100).max(30_000).default(5_000),
-  WEBHOOK_TOTAL_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(15_000),
+  WEBHOOK_DNS_TIMEOUT_MS: z.coerce.number().int().min(100).max(30_000).prefault(3_000),
+  WEBHOOK_CONNECT_TIMEOUT_MS: z.coerce.number().int().min(100).max(30_000).prefault(5_000),
+  WEBHOOK_TLS_TIMEOUT_MS: z.coerce.number().int().min(100).max(30_000).prefault(5_000),
+  WEBHOOK_TOTAL_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).prefault(15_000),
 
   /**
    * Caps on bytes (§57, §59).
@@ -703,8 +709,13 @@ const webhookEnvSchema = z.object({
    * response body at all — which is stricter than any cap. The header bound
    * below is real and is enforced by the HTTP parser.
    */
-  WEBHOOK_MAX_REQUEST_BYTES: z.coerce.number().int().min(1_024).max(1_048_576).default(65_536),
-  WEBHOOK_MAX_RESPONSE_HEADER_BYTES: z.coerce.number().int().min(1_024).max(65_536).default(16_384),
+  WEBHOOK_MAX_REQUEST_BYTES: z.coerce.number().int().min(1_024).max(1_048_576).prefault(65_536),
+  WEBHOOK_MAX_RESPONSE_HEADER_BYTES: z.coerce
+    .number()
+    .int()
+    .min(1_024)
+    .max(65_536)
+    .prefault(16_384),
 });
 
 function bytesLengthOfBase64(value: string): number {
@@ -764,9 +775,9 @@ const emailEnvSchema = z.object({
    */
   RESEND_API_BASE_URL: emptyAsUndefined.pipe(z.string().url().optional()),
   /** Bounded so a slow provider cannot hold a request or a worker lease. */
-  RESEND_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).default(10_000),
+  RESEND_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(60_000).prefault(10_000),
   /** How long the dashboard's settings are cached in each process. */
-  EMAIL_SETTINGS_CACHE_SECONDS: z.coerce.number().int().min(0).max(300).default(15),
+  EMAIL_SETTINGS_CACHE_SECONDS: z.coerce.number().int().min(0).max(300).prefault(15),
 });
 
 export const apiEnvSchema = baseEnvSchema
@@ -780,10 +791,10 @@ export const apiEnvSchema = baseEnvSchema
   .merge(webhookEnvSchema)
   .merge(emailEnvSchema)
   .extend({
-    API_PORT: port.default(4000),
-    API_HOST: z.string().min(1).default('0.0.0.0'),
+    API_PORT: port.prefault(4000),
+    API_HOST: z.string().min(1).prefault('0.0.0.0'),
     /** Comma-separated list of allowed browser origins (§38). */
-    API_CORS_ORIGINS: z.string().default('http://localhost:3000'),
+    API_CORS_ORIGINS: z.string().prefault('http://localhost:3000'),
 
     /**
      * Which upstream addresses may speak for a client (Phase 20 Checkpoint 7).
@@ -829,10 +840,10 @@ export const apiEnvSchema = baseEnvSchema
         )
         .optional(),
     ),
-    API_RATE_LIMIT_TTL_SECONDS: z.coerce.number().int().min(1).default(60),
-    API_RATE_LIMIT_LIMIT: z.coerce.number().int().min(1).default(120),
+    API_RATE_LIMIT_TTL_SECONDS: z.coerce.number().int().min(1).prefault(60),
+    API_RATE_LIMIT_LIMIT: z.coerce.number().int().min(1).prefault(120),
     /** Enables the Swagger/OpenAPI explorer. Must be false in production. */
-    API_DOCS_ENABLED: booleanFromEnv.default('true'),
+    API_DOCS_ENABLED: booleanFromEnv.prefault('true'),
 
     /**
      * Bearer token a scraper must present at `/metrics` (Phase 20 §13).
@@ -849,17 +860,17 @@ export const apiEnvSchema = baseEnvSchema
      */
     METRICS_TOKEN: emptyAsUndefined.pipe(secret.optional()),
     /** Turns the endpoint off entirely for a deployment that scrapes nothing. */
-    METRICS_ENABLED: booleanFromEnv.default('true'),
+    METRICS_ENABLED: booleanFromEnv.prefault('true'),
 
-    DOCUMENT_ENGINE_URL: z.string().url().default('http://localhost:8000'),
+    DOCUMENT_ENGINE_URL: z.string().url().prefault('http://localhost:8000'),
 
     // --- Phase 10: payments and the customer credit balance -----------------
     //
     // Off by default. A deployment that has not configured a payment provider
     // still runs: balances are visible, existing credit is spendable, and only
     // topping up is unavailable (§111).
-    PAYMENTS_ENABLED: booleanFromEnv.default('false'),
-    PAYMENT_PROVIDER: z.enum(['stripe', 'fake']).default('stripe'),
+    PAYMENTS_ENABLED: booleanFromEnv.prefault('false'),
+    PAYMENT_PROVIDER: z.enum(['stripe', 'fake']).prefault('stripe'),
 
     /**
      * Billing currencies (§7).
@@ -870,7 +881,7 @@ export const apiEnvSchema = baseEnvSchema
      */
     PALCERT_ENABLED_CURRENCIES: z
       .string()
-      .default('USD')
+      .prefault('USD')
       .refine((value) => /^[A-Z]{3}(,[A-Z]{3})*$/.test(value.trim()), {
         message: 'must be a comma-separated list of uppercase ISO 4217 codes, e.g. USD,EUR',
       }),
@@ -878,7 +889,7 @@ export const apiEnvSchema = baseEnvSchema
       .string()
       .length(3)
       .regex(/^[A-Z]{3}$/)
-      .default('USD'),
+      .prefault('USD'),
 
     STRIPE_SECRET_KEY: secret.optional(),
     STRIPE_WEBHOOK_SECRET: secret.optional(),
@@ -889,27 +900,27 @@ export const apiEnvSchema = baseEnvSchema
      * account-level upgrade in the dashboard cannot silently change what the
      * adapter's requests mean.
      */
-    STRIPE_API_VERSION: z.string().min(1).default('2026-08-26.dahlia'),
+    STRIPE_API_VERSION: z.string().min(1).prefault('2026-08-26.dahlia'),
     /** Overridden in adapter tests to point at a controlled mock server (§137). */
     STRIPE_BASE_URL: z.string().url().optional(),
 
     PAYMENT_SUCCESS_URL: z
       .string()
       .url()
-      .default('http://localhost:3000/en/balance/payment-return'),
+      .prefault('http://localhost:3000/en/balance/payment-return'),
     PAYMENT_CANCEL_URL: z
       .string()
       .url()
-      .default('http://localhost:3000/en/balance/payment-cancelled'),
+      .prefault('http://localhost:3000/en/balance/payment-cancelled'),
 
     /** Server-controlled top-up bounds. A client never states its own (§43). */
-    TOPUP_MIN_MINOR: z.coerce.number().int().min(1).default(500),
-    TOPUP_MAX_MINOR: z.coerce.number().int().min(1).default(200_000),
+    TOPUP_MIN_MINOR: z.coerce.number().int().min(1).prefault(500),
+    TOPUP_MAX_MINOR: z.coerce.number().int().min(1).prefault(200_000),
     /** How long a provider checkout session stays open. */
-    TOPUP_SESSION_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(3_600),
+    TOPUP_SESSION_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).prefault(3_600),
 
     /** How long a hold reserves credit before the sweeper expires it (§22). */
-    CREDIT_HOLD_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(900),
+    CREDIT_HOLD_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).prefault(900),
     /**
      * How long a paid check's reservation stands (Phase 11 §25).
      *
@@ -920,13 +931,13 @@ export const apiEnvSchema = baseEnvSchema
      * and still a hard upper bound, so a reservation cannot be forgotten
      * indefinitely (§26).
      */
-    CHECK_RESERVATION_TTL_SECONDS: z.coerce.number().int().min(300).max(86_400).default(3_600),
+    CHECK_RESERVATION_TTL_SECONDS: z.coerce.number().int().min(300).max(86_400).prefault(3_600),
     // ADR-0149: how long an AI service's reservation stands. An AI review or
     // a rule extraction can wait in a queue and run for longer than a check,
     // so it has its own bound; the worker re-checks the reservation before
     // every provider call and never calls the provider on credit that has
     // lapsed. Bounded like every hold, so none is forgotten.
-    AI_RESERVATION_TTL_SECONDS: z.coerce.number().int().min(600).max(86_400).default(7_200),
+    AI_RESERVATION_TTL_SECONDS: z.coerce.number().int().min(600).max(86_400).prefault(7_200),
     // Certificate attestation. How long the clean copy of a certificate that
     // was never attested (a rejected or cancelled request, or a file that was
     // replaced) is kept before it is purged. An attested artifact is never
@@ -936,11 +947,11 @@ export const apiEnvSchema = baseEnvSchema
       .int()
       .min(1)
       .max(3_650)
-      .default(90),
+      .prefault(90),
     // The most open (undecided) requests one person may have at once.
-    ATTESTATION_MAX_OPEN_REQUESTS_PER_USER: z.coerce.number().int().min(1).max(500).default(20),
+    ATTESTATION_MAX_OPEN_REQUESTS_PER_USER: z.coerce.number().int().min(1).max(500).prefault(20),
     /** How long a price quote stands (§32). */
-    PRICE_QUOTE_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(1_800),
+    PRICE_QUOTE_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).prefault(1_800),
 
     /**
      * How stale a pending top-up must be before reconciliation asks the
@@ -948,8 +959,8 @@ export const apiEnvSchema = baseEnvSchema
      * race; short enough that a missed one is caught while the customer is
      * still wondering.
      */
-    PAYMENT_RECONCILE_AFTER_SECONDS: z.coerce.number().int().min(30).max(86_400).default(300),
-    PAYMENT_PROVIDER_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).default(20_000),
+    PAYMENT_RECONCILE_AFTER_SECONDS: z.coerce.number().int().min(30).max(86_400).prefault(300),
+    PAYMENT_PROVIDER_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).prefault(20_000),
   })
   .superRefine((env, ctx) => {
     // --- Phase 17: the webhook keyring -------------------------------------
@@ -1378,10 +1389,10 @@ export const apiEnvSchema = baseEnvSchema
 export type ApiEnv = z.infer<typeof apiEnvSchema>;
 
 export const webEnvSchema = z.object({
-  NODE_ENV: NodeEnv.default('development'),
-  NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
-  NEXT_PUBLIC_APP_NAME: z.string().min(1).default('PalCert'),
-  NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(['en', 'ar']).default('en'),
+  NODE_ENV: NodeEnv.prefault('development'),
+  NEXT_PUBLIC_API_URL: z.string().url().prefault('http://localhost:4000'),
+  NEXT_PUBLIC_APP_NAME: z.string().min(1).prefault('PalCert'),
+  NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(['en', 'ar']).prefault('en'),
 });
 
 export type WebEnv = z.infer<typeof webEnvSchema>;

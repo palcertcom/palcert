@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  SmartFixAIPlanning,
   StandardImportPreviewView,
   StandardImportProvenanceView,
   StandardImportResultView,
@@ -2050,6 +2051,8 @@ export interface SmartFixPlanRuleResponse {
 }
 
 export interface SmartFixPlanResponse {
+  reservation?: { status: string; priceQuoteId: string; amount: MoneyResponse };
+  aiPlanning?: SmartFixAIPlanning;
   id: string;
   checkId: string;
   documentVersionId: string;
@@ -2102,14 +2105,25 @@ export interface SmartFixManifestResponse {
 }
 
 export const smartFixApi = {
-  /** Free: what SmartFix would change in the document one check examined. */
-  plan: (checkId: string) =>
-    apiRequest<SmartFixPlanResponse>(`/smartfix/checks/${checkId}/plan`, {
+  /** Deterministic preview is free; AI reserves the quoted SMARTFIX price. */
+  plan: (
+    checkId: string,
+    options: { useAI?: boolean; formattingAIConsentVersion?: string; priceQuoteId?: string } = {},
+  ) =>
+    apiRequest<SmartFixPlanResponse>(
+      `/smartfix/checks/${checkId}/${options.useAI ? 'ai-plan' : 'plan'}`,
+      {
+        method: 'POST',
+        body: options,
+      },
+    ),
+
+  getPlan: (planId: string) => apiRequest<SmartFixPlanResponse>(`/smartfix/plans/${planId}`),
+  cancelPlan: (planId: string) =>
+    apiRequest<{ cancelled: true }>(`/smartfix/plans/${planId}/cancel`, {
       method: 'POST',
       body: {},
     }),
-
-  getPlan: (planId: string) => apiRequest<SmartFixPlanResponse>(`/smartfix/plans/${planId}`),
 
   /**
    * Buy and start a correction.

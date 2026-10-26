@@ -4,6 +4,7 @@ import type {
   AIRuleAssessmentResponse,
 } from './assessment.generated.js';
 import type { AIFailureKind, AIInvocationPurpose } from './review.js';
+import type { AIFormattingRequest, AIFormattingProposal } from '../smartfix/ai-formatting.js';
 import type {
   EvidenceDiscoveryProviderResponse,
   EvidenceDiscoveryRequest,
@@ -41,6 +42,7 @@ export interface AIProviderCapabilities {
 }
 
 export interface AITokenCountRequest {
+  readonly signal?: AbortSignal;
   readonly purpose: AIInvocationPurpose;
   readonly systemPrompt: string;
   readonly userPrompt: string;
@@ -115,6 +117,11 @@ export class AIProviderError extends Error {
  * matching how every other port in the codebase is wired.
  */
 export abstract class AIProviderPort {
+  /** Formatting suggestions only: no executable code, XML, content rewrites or verdicts. */
+  abstract proposeFormatting(request: AIFormattingRequest): Promise<{
+    output: AIFormattingProposal;
+    usage: AIProviderUsage;
+  }>;
   abstract getCapabilities(): AIProviderCapabilities;
 
   /** Optional: absent where a provider offers no counting endpoint (§49). */

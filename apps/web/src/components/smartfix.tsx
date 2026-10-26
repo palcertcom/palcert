@@ -1,6 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import {
+  canCompleteSmartFixPlan,
+  SMARTFIX_AI_CONSENT_VERSION,
+} from '@palcert/contracts/smartfix/client';
 import { getBillingMessages } from '@/i18n/billing-messages';
 import type { Locale } from '@/i18n/locales';
 import { getSmartFixMessages } from '@/i18n/smartfix-messages';
@@ -21,6 +25,7 @@ export type SmartFixApi = {
   readonly plan: typeof smartFixApi.plan;
   readonly start: typeof smartFixApi.start;
   readonly cancel: typeof smartFixApi.cancel;
+  readonly cancelPlan: typeof smartFixApi.cancelPlan;
   readonly quote: typeof balanceApi.quote;
   readonly balance: typeof balanceApi.balance;
 };
@@ -29,6 +34,7 @@ const DEFAULT_API: SmartFixApi = {
   plan: smartFixApi.plan,
   start: smartFixApi.start,
   cancel: smartFixApi.cancel,
+  cancelPlan: smartFixApi.cancelPlan,
   quote: balanceApi.quote,
   balance: balanceApi.balance,
 };
@@ -67,13 +73,45 @@ export function SmartFixPlanPanel({
   const messages = getSmartFixMessages(locale);
   const [plan, setPlan] = useState<SmartFixPlanResponse | null>(null);
   const [planning, setPlanning] = useState(false);
+  const [useAI, setUseAI] = useState(false);
+  const [aiQuote, setAIQuote] = useState<PriceQuoteResponse | null>(null);
+  const [aiAvailable, setAIAvailable] = useState<MoneyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const billing = getBillingMessages(locale);
+  useEffect(() => {
+    setAIQuote(null);
+    setAIAvailable(null);
+    if (!useAI) return;
+    let stopped = false;
+    void (async () => {
+      try {
+        const quote = await api.quote('SMARTFIX');
+        const balance = await api.balance(quote.amount.currency);
+        if (!stopped) {
+          setAIQuote(quote);
+          setAIAvailable(balance.available);
+        }
+      } catch (caught) {
+        if (!stopped) setError(describe(caught, locale));
+      }
+    })();
+    return () => {
+      stopped = true;
+    };
+  }, [api, useAI, locale]);
 
   const makePlan = useCallback(async () => {
+    if (useAI && aiQuote === null) return;
     setPlanning(true);
     setError(null);
     try {
-      const created = await api.plan(checkId);
+      const created = useAI
+        ? await api.plan(checkId, {
+            useAI: true,
+            formattingAIConsentVersion: SMARTFIX_AI_CONSENT_VERSION,
+            priceQuoteId: aiQuote!.id,
+          })
+        : await api.plan(checkId);
       setPlan(created);
       onPlanned?.(created);
     } catch (caught) {
@@ -81,7 +119,7 @@ export function SmartFixPlanPanel({
     } finally {
       setPlanning(false);
     }
-  }, [api, checkId, locale, onPlanned]);
+  }, [api, checkId, locale, onPlanned, useAI, aiQuote]);
 
   if (plan === null) {
     return (
@@ -89,11 +127,43 @@ export function SmartFixPlanPanel({
         <h2>{messages.title}</h2>
         <p>{messages.intro}</p>
         <p>{messages.originalSafe}</p>
+        <label>
+          <input
+            type="checkbox"
+            checked={useAI}
+            disabled={planning}
+            onChange={(event) => setUseAI(event.target.checked)}
+          />
+          {messages.aiConsent}
+        </label>
+        <p>{messages.aiScope}</p>
+        {useAI && aiQuote && (
+          <>
+            <p>
+              {billing.price}: {formatMoney(aiQuote.amount, locale)}
+            </p>
+            <p>{billing.willReserve(formatMoney(aiQuote.amount, locale))}</p>
+            <p>{billing.chargedOnDelivery}</p>
+            <p>{billing.releasedIfIncomplete}</p>
+            <p>{messages.aiBundled}</p>
+            {aiAvailable && !atLeast(aiAvailable, aiQuote.amount) && (
+              <p role="alert">{messages.errors.INSUFFICIENT_BALANCE}</p>
+            )}
+          </>
+        )}
         {error !== null && <p role="alert">{error}</p>}
-        <button type="button" onClick={() => void makePlan()} disabled={planning}>
-          {planning ? messages.planning : messages.planTitle}
+        <button
+          type="button"
+          onClick={() => void makePlan()}
+          disabled={
+            planning ||
+            (useAI &&
+              (aiQuote === null || aiAvailable === null || !atLeast(aiAvailable, aiQuote.amount)))
+          }
+        >
+          {planning ? messages.planning : useAI ? messages.aiReserveAndPlan : messages.planTitle}
         </button>
-        <p>{messages.planFree}</p>
+        {!useAI && <p>{messages.planFree}</p>}
       </section>
     );
   }
@@ -112,15 +182,19 @@ export function SmartFixPlanPanel({
     );
   }
 
-  const fixable = plan.rules.filter(
-    (rule) => rule.fixability === 'FIXABLE' || rule.fixability === 'PARTIALLY_FIXABLE',
-  );
+  const fixable = plan.rules.filter((rule) => rule.fixability === 'FIXABLE');
   const manual = plan.rules.filter((rule) => !fixable.includes(rule));
 
   return (
     <section aria-label={messages.planTitle}>
       <h2>{messages.planTitle}</h2>
       <p>{messages.planIntro}</p>
+      {plan.aiPlanning && (
+        <p role="status">
+          {messages.aiRounds(plan.aiPlanning.rounds)}{' '}
+          {messages.aiStopReasons[plan.aiPlanning.stopReason]}
+        </p>
+      )}
       <p>{messages.originalSafe}</p>
       <p>
         {messages.planExpires} <time dateTime={plan.expiresAt}>{plan.expiresAt}</time>
@@ -144,6 +218,10 @@ export function SmartFixPlanPanel({
             </li>
           ))}
         </ul>
+      )}
+
+      {plan.rules.length > 0 && !canCompleteSmartFixPlan(plan) && (
+        <p role="status">{messages.fullCorrectionUnavailable}</p>
       )}
 
       {manual.length > 0 && (
@@ -188,9 +266,13 @@ export function SmartFixPurchasePanel({
   const [quote, setQuote] = useState<PriceQuoteResponse | null>(null);
   const [available, setAvailable] = useState<MoneyResponse | null>(null);
   const [starting, setStarting] = useState(false);
+  const complete = canCompleteSmartFixPlan(plan);
   const [error, setError] = useState<string | null>(null);
+  const [reservationCancelled, setReservationCancelled] = useState(false);
+  const prepaid = plan.reservation;
 
   useEffect(() => {
+    if (!complete || prepaid) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -206,21 +288,55 @@ export function SmartFixPurchasePanel({
     return () => {
       cancelled = true;
     };
-  }, [api, locale]);
+  }, [api, locale, complete, prepaid]);
 
   const start = useCallback(async () => {
-    if (quote === null) return;
+    if ((!prepaid && quote === null) || !complete) return;
     setStarting(true);
     setError(null);
     try {
-      const created = await api.start(plan.id, quote.id);
+      const created = await api.start(plan.id, prepaid?.priceQuoteId ?? quote!.id);
       onStarted?.(created);
     } catch (caught) {
       setError(describe(caught, locale));
     } finally {
       setStarting(false);
     }
-  }, [api, locale, onStarted, plan.id, quote]);
+  }, [api, locale, onStarted, plan.id, quote, complete, prepaid]);
+
+  if (!complete) return <p role="status">{messages.fullCorrectionUnavailable}</p>;
+
+  if (prepaid) {
+    if (reservationCancelled || prepaid.status !== 'READY')
+      return <p role="status">{messages.aiReservationEnded}</p>;
+    return (
+      <section aria-label={messages.startTitle}>
+        <h3>{messages.startTitle}</h3>
+        <p>{messages.aiReserved(formatMoney(prepaid.amount, locale))}</p>
+        <p>{messages.aiBundled}</p>
+        <p>{billing.chargedOnDelivery}</p>
+        <p>{messages.startHint}</p>
+        {error && <p role="alert">{error}</p>}
+        <button type="button" disabled={starting} onClick={() => void start()}>
+          {starting ? messages.starting : messages.aiApprove}
+        </button>
+        <button
+          type="button"
+          disabled={starting}
+          onClick={() => {
+            setStarting(true);
+            void api
+              .cancelPlan(plan.id)
+              .then(() => setReservationCancelled(true))
+              .catch((caught: unknown) => setError(describe(caught, locale)))
+              .finally(() => setStarting(false));
+          }}
+        >
+          {messages.aiCancelReservation}
+        </button>
+      </section>
+    );
+  }
 
   if (quote === null) {
     return (
@@ -493,7 +609,7 @@ export function SmartFixSection({
   return (
     <>
       <SmartFixPlanPanel checkId={checkId} locale={locale} api={api} onPlanned={setPlan} />
-      {plan.refusalCode === null && plan.actionCount > 0 && (
+      {canCompleteSmartFixPlan(plan) && (
         <SmartFixPurchasePanel plan={plan} locale={locale} api={api} onStarted={setRequest} />
       )}
     </>

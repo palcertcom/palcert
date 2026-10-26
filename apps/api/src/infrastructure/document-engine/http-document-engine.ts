@@ -244,15 +244,26 @@ export class HttpDocumentEngine extends DocumentEnginePort {
 
     const response = await this.post(
       `${engine.baseUrl}/smartfix/plan`,
-      encodeFrame({ rules: request.rules, source: request.source }, request.content),
+      encodeFrame(
+        {
+          rules: request.rules,
+          source: request.source,
+          ...(request.aiTargets ? { aiTargets: request.aiTargets } : {}),
+          ...(request.includeAIContext ? { includeAIContext: true } : {}),
+        },
+        request.content,
+      ),
       engine.analysisTimeoutMs,
       {
         'x-palcert-document-id': request.documentId,
         ...(request.requestId ? { [REQUEST_ID_HEADER]: request.requestId } : {}),
       },
+      request.signal,
     );
 
-    const planBytes = Buffer.from(await response.arrayBuffer());
+    const responseBytes = Buffer.from(await response.arrayBuffer());
+    const frame = request.includeAIContext ? decodeFrame(responseBytes) : null;
+    const planBytes = frame?.document ?? responseBytes;
     const declared = response.headers.get('x-palcert-plan-sha256') ?? '';
     const actual = createHash('sha256').update(planBytes).digest('hex');
     if (declared !== actual) {
@@ -268,6 +279,9 @@ export class HttpDocumentEngine extends DocumentEnginePort {
 
     return {
       plan,
+      ...(frame
+        ? { aiContext: frame.payload as unknown as import('@palcert/contracts').SmartFixAIContext }
+        : {}),
       planBytes,
       planSha256: actual,
       ruleCount: headerNumber(response, 'x-palcert-rule-count'),
@@ -338,6 +352,7 @@ export class HttpDocumentEngine extends DocumentEnginePort {
     body: Buffer,
     timeoutMs: number,
     headers: Record<string, string>,
+    signal?: AbortSignal,
   ): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -346,7 +361,7 @@ export class HttpDocumentEngine extends DocumentEnginePort {
       response = await fetch(url, {
         method: 'POST',
         body: new Uint8Array(body),
-        signal: controller.signal,
+        signal: signal ? AbortSignal.any([signal, controller.signal]) : controller.signal,
         headers: { 'content-type': 'application/octet-stream', ...headers },
       });
     } catch (error) {

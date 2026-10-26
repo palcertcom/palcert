@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '../../config/config.module';
+import { AIProviderModule } from '../../infrastructure/ai/ai-provider.module';
+import { SmartFixAIPlannerService } from './services/smartfix-ai-planner.service';
+import { SmartFixPlanningBillingService } from './services/smartfix-planning-billing.service';
 import { DocumentEngineModule } from '../../infrastructure/document-engine/document-engine.module';
 import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
 import { QueueModule } from '../../infrastructure/queue/queue.module';
@@ -26,6 +29,7 @@ import { SmartFixSettlementService } from './services/smartfix-settlement.servic
 @Module({
   imports: [
     ConfigModule,
+    AIProviderModule,
     PrismaModule,
     QueueModule,
     StorageModule,
@@ -39,6 +43,8 @@ import { SmartFixSettlementService } from './services/smartfix-settlement.servic
     SecurityEventService,
     { provide: ClockPort, useClass: SystemClock },
     SmartFixPlanService,
+    SmartFixAIPlannerService,
+    SmartFixPlanningBillingService,
     SmartFixReadService,
     SmartFixSettlementService,
     SmartFixRequestService,
@@ -46,8 +52,8 @@ import { SmartFixSettlementService } from './services/smartfix-settlement.servic
     SmartFixFinalizeService,
   ],
   exports: [
+    SmartFixPlanningBillingService,
     SmartFixPlanService,
-    SmartFixReadService,
     SmartFixReadService,
     SmartFixSettlementService,
     SmartFixRequestService,

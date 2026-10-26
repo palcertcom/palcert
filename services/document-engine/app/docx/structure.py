@@ -15,7 +15,7 @@ Three decisions are applied while walking rather than afterwards:
 * **Markup compatibility** (§21). ``mc:AlternateContent`` offers the same
   content twice; taking both would double-count it and taking neither would
   lose it. The first ``mc:Choice`` is preferred, ``mc:Fallback`` is used when
-  there is no choice, and either way the affected domains drop to PARTIAL.
+  there is no choice, and geometry stays PARTIAL; formatting needs branch equivalence.
 * **Hidden text** (§58). A run whose effective properties hide it is kept in
   the model — the document does contain it — but marked, so no count treats it
   as ordinary body text.
@@ -230,16 +230,92 @@ def _style_layers(
     return tuple(layers)
 
 
+def _equivalent_textboxes(element: Element, namespaces: Namespaces) -> bool:
+    """Prove identical text-box XML in every alternative before claiming coverage.
+
+    Compare expanded names, attributes and text, not serialized namespace prefixes.
+    Different text, formatting, box counts or unknown branches remain uncertain.
+    Drawing geometry is deliberately outside this proof.
+    """
+    branches = list(element)
+    allowed = {f"{{{NS_MARKUP_COMPATIBILITY}}}{name}" for name in ("Choice", "Fallback")}
+    if (
+        len(branches) < 2
+        or branches[-1].tag != namespaces.qn("mc:Fallback")
+        or any(branch.tag != namespaces.qn("mc:Choice") for branch in branches[:-1])
+        or any(branch.tag not in allowed for branch in branches)
+    ):
+        return False
+    boxes = [list(branch.iter(namespaces.qn("w:txbxContent"))) for branch in branches]
+    first = boxes[0]
+    for alternatives in boxes[1:]:
+        if len(first) != len(alternatives):
+            return False
+        for left, right in zip(first, alternatives, strict=True):
+            left_nodes, right_nodes = list(left.iter()), list(right.iter())
+            if len(left_nodes) != len(right_nodes):
+                return False
+            for a, b in zip(left_nodes, right_nodes, strict=True):
+                if (a.tag, a.attrib, a.text, len(a)) != (b.tag, b.attrib, b.text, len(b)):
+                    return False
+    return True
+
+
+def _branch_placements(branch: Element, namespaces: Namespaces) -> tuple[str, ...] | None:
+    """Compare only placement; never infer dimensions from a fallback drawing."""
+    placements: list[str] = []
+    vml = "urn:schemas-microsoft-com:vml"
+    if any(e.tag == f"{{{vml}}}group" for e in branch.iter()):
+        return None
+    for element in branch.iter():
+        if element.tag == namespaces.qn("w:drawing"):
+            modes = [
+                local_name(c.tag)
+                for c in element
+                if c.tag in {namespaces.qn("wp:inline"), namespaces.qn("wp:anchor")}
+            ]
+            if len(modes) != 1:
+                return None
+            placements.append(modes[0])
+        elif element.tag == namespaces.qn("w:pict"):
+            shapes = list(element.iter(f"{{{vml}}}shape"))
+            if len(shapes) != 1:
+                return None
+            style = shapes[0].get("style", "")
+            pairs = [part.split(":", 1) for part in style.split(";") if part.strip()]
+            if any(len(pair) != 2 for pair in pairs):
+                return None
+            positions = [v.strip().lower() for k, v in pairs if k.strip().lower() == "position"]
+            if len(positions) > 1:
+                return None
+            position = positions[0] if positions else "static"
+            if position not in {"static", "absolute"}:
+                return None
+            placements.append("anchor" if position == "absolute" else "inline")
+    return tuple(placements)
+
+
 def _alternate_branch(element: Element, context: WalkContext) -> Element | None:
     """Which branch of an ``mc:AlternateContent`` to read (§21).
 
     Exactly one branch is read: taking both would count the same shape twice,
     taking neither would lose it. The richer ``mc:Choice`` is preferred. Either
-    way an alternative representation went unread, so the domains it could
-    have described — drawings and text boxes — drop to PARTIAL. Paragraph
-    formatting does not, because the branches describe the same content.
+    way drawing geometry remains PARTIAL. Text-box formatting and placement
+    are complete only when their separate branch-equivalence proofs hold.
     """
     context.warnings.add(WarningCode.ALTERNATE_CONTENT_BRANCH_SELECTED)
+    if not _equivalent_textboxes(element, context.namespaces):
+        context.warnings.add(WarningCode.ALTERNATE_TEXTBOX_CONTENT_UNRESOLVED)
+    placements = [_branch_placements(branch, context.namespaces) for branch in element]
+    allowed = {context.namespaces.qn("mc:Choice"), context.namespaces.qn("mc:Fallback")}
+    if (
+        len(placements) < 2
+        or element[-1].tag != context.namespaces.qn("mc:Fallback")
+        or any(branch.tag != context.namespaces.qn("mc:Choice") for branch in list(element)[:-1])
+        or any(branch.tag not in allowed for branch in element)
+        or any(p is None or p != placements[0] for p in placements)
+    ):
+        context.warnings.add(WarningCode.ALTERNATE_DRAWING_PLACEMENT_UNRESOLVED)
     choice: Element | None = None
     fallback: Element | None = None
     for child in element:
@@ -463,6 +539,9 @@ def _record_drawing(drawing: Element, context: WalkContext, walk: StoryWalk) -> 
     walk.path.push(KIND_DRAWING)
     locator = build_locator(walk.story, walk.path.snapshot())
     walk.path.pop()
+
+    if context.elements is not None and not locator.truncated:
+        context.elements[locator.node_id] = (walk.part_name, drawing)
 
     context.drawings.append(
         DrawingNode(

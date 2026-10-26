@@ -43,11 +43,15 @@ export const DOCX_ANALYZER_NAME = 'palcert-docx';
  * counted each as a figure, so its figure and equation counts for such a
  * document are wrong, not merely incomplete.
  *
+ * '6' resolves themeFontLang supplemental fonts and scopes font coverage to
+ * visible evidence, independently for family and size. Analyses with the old
+ * global theme-warning coverage must not be reused for a new check.
+ *
  * It has to move in lockstep with the engine's own constant, and the worker
  * enforces that rather than trusting it — an analysis whose row says one
  * version and whose artifact says another is refused rather than stored.
  */
-export const DOCX_ANALYZER_VERSION = '5';
+export const DOCX_ANALYZER_VERSION = '6';
 export const PDF_ANALYZER_NAME = 'palcert-pdf';
 /**
  * Phase 18 moved this five times. '2.0.0' read the citation evidence a tagged

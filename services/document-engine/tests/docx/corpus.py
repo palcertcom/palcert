@@ -82,6 +82,8 @@ class Fixture:
     expected_error: str | None = None
     #: Coverage expectations as (kind, elementType|property|None, status).
     expected_coverage: tuple[tuple[str, str | None, str], ...] = ()
+    #: Exact property coverage as (elementType, property, status).
+    expected_property_coverage: tuple[tuple[str, str, str], ...] = ()
     notes: str = ""
 
 
@@ -350,8 +352,12 @@ def build_corpus() -> tuple[Fixture, ...]:
             ),
             forbidden_facts=(("ELEMENT", "fontFamily"),),
             expected_warnings=frozenset({"THEME_MISSING"}),
-            expected_coverage=(("ELEMENT", "PARAGRAPH", "PARTIAL"),),
-            notes="No font is invented; the domain drops to PARTIAL.",
+            expected_coverage=(("ELEMENT", "PARAGRAPH", "COMPLETE"),),
+            expected_property_coverage=(
+                ("PARAGRAPH", "fontFamily", "PARTIAL"),
+                ("PARAGRAPH", "fontSize", "COMPLETE"),
+            ),
+            notes="No font is invented; only the missing font domain drops to PARTIAL.",
         )
     )
 

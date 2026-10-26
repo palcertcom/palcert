@@ -45,7 +45,7 @@ export interface FixCapability {
   /** The value form the action carries. */
   readonly valueKind: 'NUMBER' | 'STRING' | 'BOOLEAN';
   /** The canonical unit of a NUMBER capability. */
-  readonly unit?: 'POINT' | 'MILLIMETRE' | 'LINES';
+  readonly unit?: 'POINT' | 'MILLIMETRE' | 'LINES' | 'COUNT';
 }
 
 /** Every property SmartFix can change. */

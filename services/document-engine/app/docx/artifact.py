@@ -64,7 +64,10 @@ ANALYZER_NAME = "palcert-docx"
 #: its ``figureCount`` was one too many and its ``equationCount`` one too few,
 #: so a version 4 analysis of a document with legacy equations would be read
 #: wrongly, and this number is what stops it being reused.
-ANALYZER_VERSION = "5"
+#: Version 6 resolves supplemental theme fonts using themeFontLang and scopes
+#: font coverage to visible evidence, independently for family and size.
+#: Old global PARTIAL coverage and unresolved overrides must not be reused.
+ANALYZER_VERSION = "6"
 
 #: The *envelope's* version, which is not the structural model's.
 #:

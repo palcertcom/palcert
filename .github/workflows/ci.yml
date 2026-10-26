@@ -35,9 +35,12 @@ jobs:
           POSTGRES_PASSWORD: palcert_ci
           POSTGRES_DB: palcert_test
         ports: ['5432:5432']
+        # TCP probe: on first boot the image's temporary init server answers
+        # on the Unix socket only, so a socket probe reports ready too early.
         options: >-
-          --health-cmd "pg_isready -U palcert -d palcert_test"
+          --health-cmd "pg_isready -h 127.0.0.1 -p 5432 -U palcert -d palcert_test"
           --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-start-period 120s
       redis:
         image: redis:7-alpine
         ports: ['6379:6379']
@@ -88,6 +91,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # Evidence for a slow or stalled run: what else this shared runner was
+      # doing when the job began. Read-only; see the script.
+      - name: Record runner resources (start)
+        run: scripts/diagnostics/runner-resources.sh node-start
 
       - uses: pnpm/action-setup@v4
 
@@ -142,6 +150,25 @@ jobs:
           server_major=$((server_num / 10000))
           client_major=$("$pg_bin/pg_dump" --version | awk '{print $NF}' | cut -d. -f1)
           test "$client_major" = "$server_major"
+
+      # This job's database is discarded when the job ends, so it needs no
+      # crash durability. On this runner an fsync averages ~4 ms and has taken
+      # over a second: one checkpoint in run 235 spent 129 s syncing 33,022
+      # files, because every test's TRUNCATE ... RESTART IDENTITY creates new
+      # relation files. Durability off removes that I/O from every commit and
+      # checkpoint. No test asserts crash durability, nothing else changes, and
+      # the production-like release stack keeps production settings.
+      - name: Run the throwaway test database without crash durability
+        run: |
+          set -euo pipefail
+          db_url="${DATABASE_ADMIN_URL%%\?schema=*}"
+          psql "$db_url" --no-psqlrc --quiet -v ON_ERROR_STOP=1 \
+            -c 'ALTER SYSTEM SET fsync = off' \
+            -c 'ALTER SYSTEM SET synchronous_commit = off' \
+            -c 'ALTER SYSTEM SET full_page_writes = off' \
+            -c 'SELECT pg_reload_conf()'
+          psql "$db_url" --no-psqlrc --tuples-only --no-align \
+            -c "SELECT name || '=' || setting FROM pg_settings WHERE name IN ('fsync', 'synchronous_commit', 'full_page_writes') ORDER BY name"
 
       # Build the same upstream server/client releases from source. No registry
       # mirror or storage-test skip: the existing S3 e2e gate still runs.
@@ -226,20 +253,36 @@ jobs:
       - name: Provision object storage (buckets, versioning, CORS, lifecycle)
         run: pnpm storage:provision
 
+      - name: SmartFix journey regression tests
+        # Fail early on the changed real-database flow before running the
+        # complete suites below. This does not replace the full E2E gate.
+        env:
+          NODE_OPTIONS: --max-old-space-size=3072
+        run: pnpm --filter @palcert/api test:e2e --runTestsByPath test/smartfix-journey.e2e-spec.ts --logHeapUsage
+
       - name: Unit and integration tests
-        run: pnpm test
+        # Keep both workspace scheduling and test workers serial on this
+        # self-hosted runner. Concurrent compilation competes with wall-clock
+        # report/TLS assertions; their existing deadlines remain unchanged.
+        run: pnpm -r --workspace-concurrency=1 test --maxWorkers=1
 
       - name: API end-to-end tests
         env:
-          # The full serial E2E suite is intentionally broad and can retain
-          # close to 2 GiB before V8's default heap ceiling on this self-hosted
-          # runner. Give only this step additional headroom; unit tests and
-          # application processes keep their normal limits.
-          NODE_OPTIONS: --max-old-space-size=8192
-        run: pnpm --filter @palcert/api test:e2e
+          # Jest runs one E2E worker and recycles it between suites at its
+          # memory threshold. Bound a single suite's heap as well; an 8 GiB
+          # monolithic run can starve this WSL runner and leave orphan workers
+          # after setup timeouts. No test deadlines are relaxed.
+          NODE_OPTIONS: --max-old-space-size=3072
+        run: pnpm --filter @palcert/api test:e2e --logHeapUsage
 
       - name: Build applications
         run: pnpm -r --filter "./apps/**" build
+
+      # Taken while the services are still up, so a timeout comes with the
+      # pressure, swap and disk figures from the moment it happened.
+      - name: Record runner resources (failure)
+        if: failure() || cancelled()
+        run: scripts/diagnostics/runner-resources.sh node-failure
 
       - name: Stop MinIO
         if: always()
@@ -272,14 +315,24 @@ jobs:
       - name: Typecheck
         run: mypy app
 
-      - name: Tests
-        run: pytest --cov=app --cov-report=term-missing
+      # Trace instrumentation changes wall-clock costs. Keep the unchanged
+      # performance budgets as a separate required step without coverage;
+      # all other tests still collect coverage, and no tests are dropped.
+      - name: Tests with coverage
+        run: pytest --cov=app --cov-report=term-missing --ignore=tests/engine/test_performance.py
+
+      - name: Engine performance budgets (without instrumentation)
+        run: pytest --no-cov tests/engine/test_performance.py
 
   docker:
     name: Production images build and run
     runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Record runner resources (start)
+        run: scripts/diagnostics/runner-resources.sh images-start
+
       - uses: docker/setup-buildx-action@v3
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -409,6 +462,11 @@ jobs:
 
       # The images start, in the topology a release would deploy, from an
       # empty database and an empty object store.
+      # The stack's waits are where a starved host shows up first; record its
+      # state right before them rather than an hour earlier at job start.
+      - name: Record runner resources (before the stack starts)
+        run: scripts/diagnostics/runner-resources.sh images-before-stack
+
       - name: Start the production-like stack
         run: |
           docker compose --env-file release.env \
@@ -570,9 +628,16 @@ jobs:
           node qa/seed-fixture.mjs
           node qa/run.mjs --smoke
 
+      - name: Record runner resources (failure)
+        if: failure() || cancelled()
+        run: scripts/diagnostics/runner-resources.sh images-failure
+
       - name: Show logs on failure
         if: failure()
-        run: docker compose --env-file release.env -f docker/docker-compose.release.yml logs --tail 80
+        run: |
+          # Which service the wait was stuck on, and its health, before the logs.
+          docker compose --env-file release.env -f docker/docker-compose.release.yml ps -a
+          docker compose --env-file release.env -f docker/docker-compose.release.yml logs --tail 80
 
       - name: Tear down
         if: always()
@@ -584,6 +649,10 @@ jobs:
   security:
     name: Dependency and secret scanning
     runs-on: [self-hosted, Linux, X64]
+    # Gitleaks reads the PR commit range through the GitHub API.
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -630,4 +699,5 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: 'false'
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'

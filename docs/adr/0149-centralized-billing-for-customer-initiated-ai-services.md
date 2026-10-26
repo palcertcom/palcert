@@ -138,3 +138,15 @@ an append-only ledger. Funding draws PROMOTIONAL credit before CASH.
 - Out of scope: per-token or usage-based pricing, organization-paid billing,
   free allowances, and charging for benchmarks or health probes. Each would
   need its own ADR.
+
+
+## Bundled SmartFix formatting planning (2026-10-23)
+
+`SMARTFIX_FORMATTING` is billable through the existing `SMARTFIX` product. It is
+not added to the standalone AI-products price list: the quoted correction price
+covers planning and execution together. Reserve before token counting/generation,
+reuse the purchase when the user approves the immutable plan, and capture only
+when full-standard verification permits delivery. Failed/incomplete planning,
+cancellation and abandoned/expired plans release credit. No separate AI fee and
+no free customer-provider-call exception are introduced. The durable reservation,
+row locks and owner-scoped constraints are specified in `architecture/smartfix.md`.

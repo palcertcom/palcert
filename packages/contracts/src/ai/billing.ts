@@ -35,6 +35,8 @@ export interface BillableAIOperation {
   readonly resourceType: ServiceResourceType;
   /** Prefix of the purchase's idempotency key: `<prefix>:<resource id>`. */
   readonly idempotencyPrefix: string;
+  /** AI is included in this product; settlement follows its verified delivery. */
+  readonly bundled?: true;
 }
 
 export interface InternalAIOperation {
@@ -46,6 +48,7 @@ export interface InternalAIOperation {
 export const AIOperation = {
   AI_REVIEW: 'AI_REVIEW',
   AI_RULE_EXTRACTION: 'AI_RULE_EXTRACTION',
+  SMARTFIX_FORMATTING: 'SMARTFIX_FORMATTING',
   AI_REVIEW_BENCHMARK: 'AI_REVIEW_BENCHMARK',
   EXTRACTION_BENCHMARK: 'EXTRACTION_BENCHMARK',
   PROVIDER_HEALTH_PROBE: 'PROVIDER_HEALTH_PROBE',
@@ -67,6 +70,13 @@ export const AI_OPERATION_REGISTRY: Readonly<
     productCode: ServiceProductCode.AI_RULE_EXTRACTION,
     resourceType: ServiceResourceType.AI_RULE_EXTRACTION,
     idempotencyPrefix: 'ai-rule-extraction',
+  },
+  SMARTFIX_FORMATTING: {
+    classification: AIOperationClassification.BILLABLE_AI_SERVICE,
+    productCode: ServiceProductCode.SMARTFIX,
+    resourceType: ServiceResourceType.SMARTFIX,
+    idempotencyPrefix: 'smartfix-formatting',
+    bundled: true,
   },
   AI_REVIEW_BENCHMARK: {
     classification: AIOperationClassification.INTERNAL_AI_OPERATION,
