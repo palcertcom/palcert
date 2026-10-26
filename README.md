@@ -13,9 +13,9 @@ version, optionally repairs safe formatting violations (SmartFix), routes
 compliant documents for institutional approval, and issues a verifiable
 certificate.
 
-> **Status: Phase 0 — Product and engineering foundation.**
-> No business functionality is implemented yet. See
-> [`docs/requirements/phases.md`](docs/requirements/phases.md) for the roadmap.
+> **Status: v1 — phases 0 to 20 are complete.** See
+> [`docs/requirements/phases.md`](docs/requirements/phases.md) for what each
+> phase delivered.
 
 ## Repository layout
 

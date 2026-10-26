@@ -22,10 +22,14 @@ env:
 permissions:
   contents: read
 
+# Every job runs on a standard GitHub-hosted runner (ubuntu-24.04: 4 vCPU,
+# 16 GB RAM, 14 GB SSD for a public repository). The repository is public, so a
+# pull request from a fork may run here: an ephemeral VM that GitHub discards
+# after the job, never a machine of ours. No paid or larger runner is used.
 jobs:
   node:
     name: Node — lint, typecheck, test
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-24.04
 
     services:
       postgres:
@@ -92,8 +96,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Evidence for a slow or stalled run: what else this shared runner was
-      # doing when the job began. Read-only; see the script.
+      # MinIO from source, node_modules, the pnpm store, the database and the
+      # application builds share the runner's 14 GB guarantee; this job needs
+      # about 8 GB. The script refuses to run anywhere but this hosted VM.
+      - name: Free runner disk space
+        run: scripts/ci/free-hosted-runner-disk.sh --require-free-gb 16
+
+      # Evidence for a slow or stalled run: the runner's CPU, memory, I/O and
+      # disk when the job began. Read-only; see the script.
       - name: Record runner resources (start)
         run: scripts/diagnostics/runner-resources.sh node-start
 
@@ -129,6 +139,10 @@ jobs:
       - name: Generate Prisma client
         run: pnpm db:generate
 
+      # The runner image ships PostgreSQL 16 tools; the database is 17.
+      - name: Install PostgreSQL 17 client tools
+        run: scripts/ci/install-postgresql-client.sh 17
+
       - name: Select PostgreSQL 17 client tools
         run: |
           set -euo pipefail
@@ -152,8 +166,8 @@ jobs:
           test "$client_major" = "$server_major"
 
       # This job's database is discarded when the job ends, so it needs no
-      # crash durability. On this runner an fsync averages ~4 ms and has taken
-      # over a second: one checkpoint in run 235 spent 129 s syncing 33,022
+      # crash durability. On the former self-hosted runner an fsync averaged
+      # ~4 ms and took over a second: one checkpoint in run 235 spent 129 s syncing 33,022
       # files, because every test's TRUNCATE ... RESTART IDENTITY creates new
       # relation files. Durability off removes that I/O from every commit and
       # checkpoint. No test asserts crash durability, nothing else changes, and
@@ -266,8 +280,8 @@ jobs:
         run: pnpm --filter @palcert/api test:e2e --runTestsByPath test/smartfix-journey.e2e-spec.ts --logHeapUsage
 
       - name: Unit and integration tests
-        # Keep both workspace scheduling and test workers serial on this
-        # self-hosted runner. Concurrent compilation competes with wall-clock
+        # Keep both workspace scheduling and test workers serial on the
+        # runner's four vCPUs. Concurrent compilation competes with wall-clock
         # report/TLS assertions; their existing deadlines remain unchanged.
         run: pnpm -r --workspace-concurrency=1 test --maxWorkers=1
 
@@ -275,13 +289,18 @@ jobs:
         env:
           # Jest runs one E2E worker and recycles it between suites at its
           # memory threshold. Bound a single suite's heap as well; an 8 GiB
-          # monolithic run can starve this WSL runner and leave orphan workers
-          # after setup timeouts. No test deadlines are relaxed.
+          # monolithic run would claim half of a 16 GB runner already holding
+          # PostgreSQL, Redis and MinIO, and once left orphan workers after
+          # setup timeouts. No test deadlines are relaxed.
           NODE_OPTIONS: --max-old-space-size=3072
         run: pnpm --filter @palcert/api test:e2e --logHeapUsage
 
       - name: Build applications
         run: pnpm -r --filter "./apps/**" build
+
+      - name: Disk at the end of the job
+        if: always()
+        run: scripts/ci/disk-checkpoint.sh node-end
 
       # Taken while the services are still up, so a timeout comes with the
       # pressure, swap and disk figures from the moment it happened.
@@ -295,7 +314,7 @@ jobs:
 
   python:
     name: Python — lint, typecheck, test
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: services/document-engine
@@ -331,9 +350,15 @@ jobs:
 
   docker:
     name: Production images build and run
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+
+      # Five production images, the CI object store, their build cache and
+      # the running release stack: the heaviest job, about 17 GB. The script
+      # refuses to run anywhere but this hosted VM.
+      - name: Free runner disk space
+        run: scripts/ci/free-hosted-runner-disk.sh --require-free-gb 25
 
       - name: Record runner resources (start)
         run: scripts/diagnostics/runner-resources.sh images-start
@@ -373,6 +398,10 @@ jobs:
             APP_COMMIT=${{ github.sha }}
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
+
+      # The API build is the largest single addition to the build cache.
+      - name: Disk after the API image
+        run: scripts/ci/disk-checkpoint.sh images-api-built
 
       - name: Build worker image
         uses: docker/build-push-action@v6
@@ -429,6 +458,11 @@ jobs:
       # Prisma CLI — inside the public web surface. The packaging is fixed;
       # this is what stops it drifting back, because an over-packed image
       # starts fine and passes every functional test.
+      # Every image is built and loaded. What remains needs room for the
+      # stack's own images, its volumes, the browser and the logs.
+      - name: Disk after the image builds
+        run: scripts/ci/disk-checkpoint.sh images-built --min-free-gb 10
+
       - name: Check images ship no development-only packages
         run: |
           node scripts/check-image-dependencies.mjs \
@@ -614,7 +648,8 @@ jobs:
       - name: Install QA tooling
         run: |
           pnpm install --frozen-lockfile --ignore-scripts
-          pnpm exec playwright install chromium
+          # A fresh VM: the browser's system libraries come with it.
+          pnpm exec playwright install --with-deps chromium
 
       - name: Accessibility and browser smoke
         env:
@@ -644,6 +679,10 @@ jobs:
           docker compose --env-file release.env -f docker/docker-compose.release.yml ps -a
           docker compose --env-file release.env -f docker/docker-compose.release.yml logs --tail 80
 
+      - name: Disk with the stack still up
+        if: always()
+        run: scripts/ci/disk-checkpoint.sh images-end
+
       - name: Tear down
         if: always()
         run: |
@@ -653,7 +692,7 @@ jobs:
 
   security:
     name: Dependency and secret scanning
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-24.04
     # Gitleaks reads the PR commit range through the GitHub API.
     permissions:
       contents: read

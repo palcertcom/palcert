@@ -20,6 +20,9 @@ next-env.d.ts
 
 # Test / coverage
 coverage/
+# coverage.py's data file, rewritten by every pytest run.
+.coverage
+.coverage.*
 .pytest_cache/
 .ruff_cache/
 junit*.xml
