@@ -259,15 +259,18 @@ export class WithdrawalFundsService {
     const earned = await tx.$queryRaw<
       Array<{ currency: string; cleared: bigint | null; clearing: bigint | null }>
     >`
-      SELECT e."currency"::text AS "currency",
-             sum(CASE WHEN s."settled_at" <= ${cutoff} THEN e."amount_minor" ELSE 0 END)::bigint AS "cleared",
-             sum(CASE WHEN s."settled_at" > ${cutoff} THEN e."amount_minor" ELSE 0 END)::bigint AS "clearing"
-        FROM "attestation_revenue_entries" e
-        JOIN "attestation_settlements" s ON s."id" = e."settlement_id"
-       WHERE e."organization_id" = ${organizationId}::uuid
-         AND s."organization_id" = ${organizationId}::uuid
-         AND e."account" = 'INSTITUTION'
-       GROUP BY e."currency"`;
+      SELECT currency::text AS currency,
+             sum(CASE WHEN settled_at <= ${cutoff} OR amount_minor < 0 THEN amount_minor ELSE 0 END)::bigint AS cleared,
+             sum(CASE WHEN settled_at > ${cutoff} AND amount_minor >= 0 THEN amount_minor ELSE 0 END)::bigint AS clearing
+      FROM (
+        SELECT e.currency, e.amount_minor, s.settled_at
+          FROM attestation_revenue_entries e JOIN attestation_settlements s ON s.id = e.settlement_id
+         WHERE e.organization_id = ${organizationId}::uuid AND s.organization_id = ${organizationId}::uuid
+           AND e.account = 'INSTITUTION'
+        UNION ALL
+        SELECT currency, institution_minor AS amount_minor, created_at AS settled_at
+          FROM service_revenue_entries WHERE organization_id = ${organizationId}::uuid
+      ) earned GROUP BY currency`;
     const paid = await tx.withdrawalSettlement.groupBy({
       by: ['currency'],
       where: { scope: WithdrawalScope.ORGANIZATION, organizationId },
@@ -355,10 +358,11 @@ export class WithdrawalFundsService {
    */
   async platform(tx: TenantClient): Promise<readonly PlatformFunds[]> {
     const services = await tx.$queryRaw<Array<{ currency: string; amount: bigint | null }>>`
-      SELECT a."currency"::text AS "currency", sum(a."amount_minor")::bigint AS "amount"
+      SELECT a."currency"::text AS "currency", sum(a."amount_minor" - coalesce(revenue."institution_minor", 0))::bigint AS "amount"
         FROM "service_purchase_allocations" a
         JOIN "credit_holds" h ON h."id" = a."hold_id"
         JOIN "service_purchases" p ON p."id" = a."purchase_id"
+        LEFT JOIN "service_revenue_entries" revenue ON revenue."ledger_entry_id" = h."captured_entry_id"
        WHERE a."credit_class" = 'CASH'
          AND h."status" = 'CAPTURED'
          AND p."status" IN ('DELIVERED', 'REFUNDED')
@@ -370,10 +374,11 @@ export class WithdrawalFundsService {
        WHERE e."account" = 'PLATFORM_COMMISSION'
        GROUP BY e."currency"`;
     const refunds = await tx.$queryRaw<Array<{ currency: string; amount: bigint | null }>>`
-      SELECT "currency"::text AS "currency", sum("amount_minor_signed")::bigint AS "amount"
-        FROM "credit_ledger_entries"
-       WHERE "entry_type" = 'SERVICE_REFUND' AND "credit_class" = 'CASH'
-       GROUP BY "currency"`;
+      SELECT e."currency"::text AS "currency", sum(e."amount_minor_signed" + coalesce(r."institution_minor", 0))::bigint AS "amount"
+        FROM "credit_ledger_entries" e
+        LEFT JOIN "service_revenue_entries" r ON r."ledger_entry_id" = e."id"
+       WHERE e."entry_type" = 'SERVICE_REFUND' AND e."credit_class" = 'CASH'
+       GROUP BY e."currency"`;
     const deficits = await tx.$queryRaw<Array<{ currency: string; amount: bigint | null }>>`
       SELECT b."currency"::text AS "currency", sum(-b."balance")::bigint AS "amount"
         FROM (

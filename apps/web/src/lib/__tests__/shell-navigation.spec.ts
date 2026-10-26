@@ -48,6 +48,7 @@ describe('buildNavigation', () => {
       '/en/submissions',
       '/en/balance',
       '/en/notifications',
+      '/en/reports',
       '/en/organizations',
       '/en/profile',
       '/en/sessions',

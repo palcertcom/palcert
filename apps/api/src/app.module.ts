@@ -1,3 +1,4 @@
+import { ReportsModule } from './modules/reports/reports.module';
 import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ApiClientsModule } from './modules/api-clients/api-clients.module';
@@ -22,6 +23,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { SubmissionsModule } from './modules/submissions/submissions.module';
 import { AIModule } from './modules/ai/ai.module';
 import { ExtractionModule } from './modules/extraction/extraction.module';
+import { RevenueSharingModule } from './modules/revenue-sharing/revenue-sharing.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DocumentsModule } from './modules/documents/documents.module';
@@ -87,6 +89,8 @@ import { EmailWebhooksModule } from './modules/email/email-webhooks.module';
     AIModule,
     ExtractionModule,
     FinanceModule,
+    RevenueSharingModule,
+    ReportsModule,
     AdminModule,
     ApiClientsModule,
     AttestationsModule,

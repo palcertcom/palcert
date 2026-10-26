@@ -253,6 +253,11 @@ jobs:
       - name: Provision object storage (buckets, versioning, CORS, lifecycle)
         run: pnpm storage:provision
 
+      - name: Institution revenue and account reports regression tests
+        env:
+          NODE_OPTIONS: --max-old-space-size=3072
+        run: pnpm --filter @palcert/api test:e2e --runTestsByPath test/revenue-sharing.e2e-spec.ts test/account-reports.e2e-spec.ts --logHeapUsage
+
       - name: SmartFix journey regression tests
         # Fail early on the changed real-database flow before running the
         # complete suites below. This does not replace the full E2E gate.

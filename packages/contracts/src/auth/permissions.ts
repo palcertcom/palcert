@@ -269,6 +269,8 @@ export const Permission = {
   /** Read any organization's attestation requests and records, for support. */
   ADMIN_ATTESTATION_READ: 'admin:attestation:read',
   /** Set the platform commission an institution's attestation fees carry. */
+  ADMIN_REVENUE_SHARE_MANAGE: 'admin:revenue-share:manage',
+  ADMIN_REVENUE_SHARE_READ: 'admin:revenue-share:read',
   ADMIN_ATTESTATION_COMMISSION_MANAGE: 'admin:attestation-commission:manage',
   /** Read platform-wide attestation revenue and the split behind it. */
   ADMIN_ATTESTATION_FINANCE_READ: 'admin:attestation-finance:read',

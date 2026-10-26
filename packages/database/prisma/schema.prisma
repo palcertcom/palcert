@@ -5710,3 +5710,51 @@ model WithdrawalReviewer {
 
   @@map("withdrawal_reviewers")
 }
+
+/// Platform-controlled, append-only institution share for one billable product.
+model OrganizationServiceShare {
+  id              String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String             @map("organization_id") @db.Uuid
+  productCode     ServiceProductCode @map("product_code")
+  institutionBps  Int                @map("institution_bps")
+  effectiveFrom   DateTime           @map("effective_from") @db.Timestamptz(6)
+  changedByUserId String             @map("changed_by_user_id") @db.Uuid
+  changeReason    String             @map("change_reason")
+  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([organizationId, productCode, effectiveFrom(sort: Desc), createdAt(sort: Desc), id(sort: Desc)], map: "organization_service_shares_current_idx")
+  @@map("organization_service_shares")
+}
+
+/// Trigger-created from the immutable service resource. Never editable by the app.
+model ServiceRevenueSnapshot {
+  purchaseId     String             @id @map("purchase_id") @db.Uuid
+  ownerUserId    String             @map("owner_user_id") @db.Uuid
+  organizationId String             @map("organization_id") @db.Uuid
+  productCode    ServiceProductCode @map("product_code")
+  policyId       String?            @map("policy_id") @db.Uuid
+  institutionBps Int                @map("institution_bps")
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("service_revenue_snapshots")
+}
+
+/// Two balanced revenue shares for one cash capture or its exact reversal.
+model ServiceRevenueEntry {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  purchaseId       String             @map("purchase_id") @db.Uuid
+  ledgerEntryId    String             @unique @map("ledger_entry_id") @db.Uuid
+  reversalOfId     String?            @unique @map("reversal_of_id") @db.Uuid
+  ownerUserId      String             @map("owner_user_id") @db.Uuid
+  organizationId   String             @map("organization_id") @db.Uuid
+  productCode      ServiceProductCode @map("product_code")
+  currency         String             @db.VarChar(3)
+  grossMinor       BigInt             @map("gross_minor")
+  institutionMinor BigInt             @map("institution_minor")
+  platformMinor    BigInt             @map("platform_minor")
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([organizationId, createdAt, id], map: "service_revenue_entries_org_idx")
+  @@index([purchaseId], map: "service_revenue_entries_purchase_idx")
+  @@map("service_revenue_entries")
+}

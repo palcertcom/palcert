@@ -50,6 +50,6 @@ import { AttestationVerificationService } from './services/attestation-verificat
     AttestationVerificationService,
     AttestationFinanceService,
   ],
-  exports: [AttestationsCoreModule],
+  exports: [AttestationsCoreModule, AttestationFinanceService],
 })
 export class AttestationsModule {}
