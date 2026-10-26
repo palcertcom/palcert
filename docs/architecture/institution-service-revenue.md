@@ -20,4 +20,21 @@ Institution members with `organization:withdrawal:read` see service totals and e
 
 `20261024000000_institution_service_revenue` is additive and follows the SmartFix reservation migration. Historical purchases have no new snapshot and retain their previous economics. The default share for a newly attributed non-attestation service is 0% until configured. Existing attestation defaults and policies are preserved. The 50% Islamic University example is a test fixture, not a production financial policy change.
 
-Production previously had 81 migrations; the combined pending SmartFix and revenue release requires 83. Preserve all existing environment/AI/TLS/compose configuration. This change is not deployment-ready until the full exact-head CI, including the new `revenue-sharing.e2e-spec.ts` and the withdrawal/isolation suites, passes. Source and image gates remain mandatory.
+Production previously had 81 migrations; the combined pending SmartFix and revenue release requires 84: the 81 unchanged, plus `20261023000000_smartfix_ai_reservations`, `20261024000000_institution_service_revenue` and `20261025000000_financial_service_reports`, in that order. Preserve all existing environment/AI/TLS/compose configuration. This change is not deployment-ready until the full exact-head CI, including the new `revenue-sharing.e2e-spec.ts` and the withdrawal/isolation suites, passes. Source and image gates remain mandatory.
+
+## Rolling the application back
+
+The three migrations are additive, so `check-rollback-safety.mjs` can be told that an earlier release tolerates the schema. That answers the schema question only. The money question is separate, and it is answered by the records, not by today's rates:
+
+- A release before `20261024000000` does not read `service_revenue_entries`. Platform withdrawal funds would again include every institution share, and institution payout funds would again leave them out.
+- An application rollback leaves the database as it is. The snapshot, capture and refund triggers keep running under the earlier release: every rate in force keeps creating shares, and a purchase reserved under a non-zero rate settles with its share later, whatever the rate is by then.
+
+Setting every rate back to 0% is therefore not evidence that a rollback is safe; a rate that was 30% last week has left entries, and may have left purchases still to settle. Freezing withdrawals is a sensible precaution while deciding, but it is not evidence either: it pauses payouts, it does not make the earlier release count the revenue it does not know about.
+
+Before any rollback to a release without institution revenue, after new purchases and rate changes have stopped, run the read-only gate:
+
+```bash
+DATABASE_ADMIN_URL=... scripts/release/check-service-revenue-rollback.sh
+```
+
+It refuses (exit 3) when any revenue entry, capture or reversal, ever gave an institution a non-zero amount, including histories that a refund has netted to zero; when an unsettled purchase carries a non-zero rate snapshot; or when a non-zero rate is in force or scheduled. It prints the amounts per currency and lists open withdrawal requests for the record. It exits 0 only when no institution share exists, is pending or is configured, and the schema gate still applies after it. When it refuses, forward-fix, or take a recorded finance decision backed by a reconciliation of the amounts it printed; do not override it by setting rates to 0%. `apps/api/test/revenue-rollback-check.e2e-spec.ts` proves each of these outcomes against a real database.
