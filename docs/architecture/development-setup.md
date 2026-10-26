@@ -12,7 +12,7 @@
 ## 1. Clone and configure
 
 ```bash
-git clone https://github.com/raedrasheed/PalCert-2027.git palcert
+git clone https://github.com/palcertcom/palcert.git palcert
 cd palcert
 cp .env.example .env
 ```
