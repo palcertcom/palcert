@@ -14,6 +14,12 @@
 # take a copy of the production backup, run the candidate's migration image
 # against it, and prove what the migrations did and did not do.
 #
+# What it proves is only as real as the backup. Run on a copy of the latest
+# production backup it is the pre-deployment rehearsal; run on a backup of
+# test data it is a test-data rehearsal and nothing more. summary.md records
+# the backup's id, label, creation time and source database so the two are
+# never confused.
+#
 #   1. a throwaway PostgreSQL 17 (the topology's image and role script) on an
 #      internal Docker network: no published port, no route out, its own
 #      random password. Nothing here reads DATABASE_URL or DATABASE_ADMIN_URL,
@@ -21,23 +27,33 @@
 #   2. the backup's database restored into it by the ordinary restore.mjs,
 #      which validates the archive and its checksums first (objects skipped:
 #      migrations do not touch the object store);
-#   3. the starting point recorded: the migration history (EXPECT_SOURCE,
-#      default 81, none failed), every table's row count and content digest,
-#      and the withdrawal-funds inputs computed the way the release being
-#      replaced computes them;
+#   3. the starting point recorded:
+#      - the migration history (EXPECT_SOURCE, default 81, none failed);
+#      - every table's row count and content digest;
+#      - the schema catalog: tables, columns and types, indexes, functions,
+#        triggers, policies, enum labels and table grants;
+#      - the money: every customer balance (account, currency, credit class),
+#        holds, purchases, withdrawal requests, reservations and settlements,
+#        attestation revenue, and every input of the platform and institution
+#        withdrawal-funds computations, the way the release being replaced
+#        computes them;
 #   4. the candidate's migration image run once, exactly as the topology runs
 #      it, then `prisma migrate status` from the same image;
-#   5. the result verified: the history is the release's (EXPECT_RELEASE,
-#      default: the migrations in this checkout), verify-restore.mjs passes
-#      (RLS, policies, grants, ledger, certificates), every table that existed
-#      before has the same rows unless a pending migration inserts into it at
-#      top level, the withdrawal-funds inputs computed the new way equal the
-#      old figures, and the service-revenue rollback gate still says
-#      COMPATIBLE (the migrations alone create no institution share).
+#   5. the result verified:
+#      - the history is the release's (EXPECT_RELEASE, default: the migrations
+#        in this checkout) and verify-restore.mjs passes (RLS, policies,
+#        grants, ledger, certificates);
+#      - every pre-existing table holds the same rows, except tables a pending
+#        migration inserts into at top level, which may only gain rows;
+#      - nothing in the catalog was removed or altered; what was added is
+#        listed as the intended change;
+#      - every balance and commitment is unchanged, and the withdrawal-funds
+#        inputs computed the new way equal the old ones, figure for figure;
+#      - the service-revenue rollback gate still says COMPATIBLE.
 #
-# The copy is removed at the end unless KEEP=1. Logs and the before/after
-# fingerprints stay in REHEARSAL_WORK. Exit 0 when every check holds, 65 when
-# one does not, 64 for missing inputs.
+# The copy is removed at the end unless KEEP=1. Logs, before/after evidence
+# and summary.md stay in REHEARSAL_WORK. Exit 0 when every check holds, 65
+# when one does not, 64 for missing inputs.
 set -euo pipefail
 
 SOURCE_BACKUP="${SOURCE_BACKUP:?a backup directory written by apps/api/scripts/backup.mjs is required}"
@@ -56,6 +72,7 @@ PG_IMAGE="${POSTGRES_IMAGE:-postgres:17-alpine}"
 [ -f "$SOURCE_BACKUP/backup.json" ] || { echo "rehearsal: $SOURCE_BACKUP is not a backup directory" >&2; exit 64; }
 mkdir -p "$WORK"
 chmod 700 "$WORK"
+SUMMARY="$WORK/summary.md"
 
 # Built on demand, and rebuilt when an older local copy predates bash.
 if ! docker run --rm "$TOOLS_IMAGE" bash -c true > /dev/null 2>&1; then
@@ -74,6 +91,7 @@ trap 'echo "rehearsal: FAIL stopped unexpectedly at line $LINENO" >&2' ERR
 failed=0
 say() {
   printf 'rehearsal: %-4s %s\n' "$1" "$2"
+  printf -- '- %s %s\n' "$1" "$2" >> "$SUMMARY"
   if [ "$1" = FAIL ]; then failed=1; fi
 }
 
@@ -101,8 +119,28 @@ history() {
               coalesce(max(migration_name) FILTER (WHERE finished_at IS NOT NULL), '')
          FROM _prisma_migrations"
 }
+backup_fact() {
+  python3 -c 'import json, sys
+m = json.load(open(sys.argv[1]))
+print(m.get(sys.argv[2]) or (m.get("source") or {}).get(sys.argv[2]) or "-")' \
+    "$SOURCE_BACKUP/backup.json" "$1"
+}
 
-echo "rehearsal: $(basename "$SOURCE_BACKUP") with $MIGRATE_IMAGE (expect $EXPECT_SOURCE -> $EXPECT_RELEASE)"
+{
+  echo "# Database upgrade rehearsal"
+  echo
+  echo "| | |"
+  echo "|---|---|"
+  echo "| backup id | $(backup_fact backupId) |"
+  echo "| backup label | $(backup_fact label) |"
+  echo "| backup created | $(backup_fact createdAt) |"
+  echo "| source database | $(backup_fact databaseName) |"
+  echo "| migration image | $MIGRATE_IMAGE |"
+  echo "| expected | $EXPECT_SOURCE -> $EXPECT_RELEASE migrations |"
+  echo
+  echo "## Checks"
+} > "$SUMMARY"
+echo "rehearsal: $(basename "$SOURCE_BACKUP") (label $(backup_fact label)) with $MIGRATE_IMAGE (expect $EXPECT_SOURCE -> $EXPECT_RELEASE)"
 
 # ---------------------------------------------------------------------------
 # 1. The throwaway database.
@@ -171,42 +209,98 @@ fingerprint() {
   tools psql "$URL" --no-psqlrc --quiet --tuples-only --no-align --field-separator=$'\t' \
     -v ON_ERROR_STOP=1 -f /work/fingerprint.sql | sort
 }
-fingerprint > "$WORK/before.tsv"
-say ok "fingerprinted $(wc -l < "$WORK/before.tsv" | tr -d ' ') tables ($(awk -F'\t' '{s+=$2} END {print s+0}' "$WORK/before.tsv") rows)"
+rows_of() { # every row of one table, as text, sorted
+  sql "SELECT t::text FROM public.\"$1\" t" | LC_ALL=C sort
+}
+catalog_sql="
+SELECT 'table ' || c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+ WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p')
+UNION ALL SELECT 'column ' || table_name || '.' || column_name || ' ' || data_type || ' ' || is_nullable
+  FROM information_schema.columns WHERE table_schema = 'public'
+UNION ALL SELECT 'index ' || indexname || ': ' || indexdef FROM pg_indexes WHERE schemaname = 'public'
+UNION ALL SELECT 'function ' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')'
+  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public'
+UNION ALL SELECT 'trigger ' || t.tgname || ' ON ' || c.relname
+  FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+ WHERE n.nspname = 'public' AND NOT t.tgisinternal
+UNION ALL SELECT 'policy ' || policyname || ' ON ' || tablename || ' ' || cmd FROM pg_policies WHERE schemaname = 'public'
+UNION ALL SELECT 'enum ' || t.typname || '.' || e.enumlabel
+  FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid JOIN pg_namespace n ON n.oid = t.typnamespace
+ WHERE n.nspname = 'public'
+UNION ALL SELECT 'grant ' || grantee || ' ' || privilege_type || ' ON ' || table_name
+  FROM information_schema.role_table_grants WHERE table_schema = 'public'"
+catalog() { sql "$catalog_sql" | LC_ALL=C sort -u; }
 
-# Withdrawal-funds inputs at one fixed instant, so the comparison cannot drift.
+# The money, from tables the pending migrations do not change. The same
+# statement runs before and after, so any difference is the upgrade's doing.
+financial_sql="
+SELECT 'customer-balance', account_id::text, currency || '/' || credit_class::text, count(*)::text, sum(amount_minor_signed)::text
+  FROM credit_ledger_entries GROUP BY account_id, currency, credit_class
+UNION ALL SELECT 'hold', status::text, currency || '/' || credit_class::text, count(*)::text, sum(amount_minor)::text
+  FROM credit_holds GROUP BY status, currency, credit_class
+UNION ALL SELECT 'purchase', status::text || '/' || product_code::text, currency, count(*)::text, sum(amount_minor)::text
+  FROM service_purchases GROUP BY status, product_code, currency
+UNION ALL SELECT 'withdrawal-request', scope::text || '/' || status::text, currency || '/' || coalesce(organization_id::text, '-'), count(*)::text, sum(amount_minor)::text
+  FROM withdrawal_requests GROUP BY scope, status, currency, organization_id
+UNION ALL SELECT 'withdrawal-reservation', scope::text || '/' || status::text, currency || '/' || coalesce(organization_id::text, '-'), count(*)::text, sum(amount_minor)::text
+  FROM withdrawal_reservations GROUP BY scope, status, currency, organization_id
+UNION ALL SELECT 'withdrawal-settlement', scope::text, currency || '/' || coalesce(organization_id::text, '-'), count(*)::text, sum(amount_minor)::text
+  FROM withdrawal_settlements GROUP BY scope, currency, organization_id
+UNION ALL SELECT 'attestation-revenue', account, currency || '/' || organization_id::text, count(*)::text, sum(amount_minor)::text
+  FROM attestation_revenue_entries GROUP BY account, currency, organization_id"
+
+# Every input of WithdrawalFundsService.platform() and .organization(), at one
+# fixed instant. The three the revenue release changes are computed the
+# earlier release's way before and the new way after; the rest are shared.
 cutoff="$(sql "SELECT now()::text")"
+shared_funds_sql="
+SELECT 'platform-commission', e.currency::text, '-', sum(e.amount_minor)::text
+  FROM attestation_revenue_entries e JOIN attestation_settlements s ON s.id = e.settlement_id
+ WHERE e.account = 'PLATFORM_COMMISSION' GROUP BY e.currency
+UNION ALL
+SELECT 'platform-chargeback-deficit', b.currency::text, '-', sum(-b.balance)::text
+  FROM (SELECT account_id, currency, sum(amount_minor_signed) AS balance
+          FROM credit_ledger_entries WHERE credit_class = 'CASH' GROUP BY account_id, currency) b
+ WHERE b.balance < 0 GROUP BY b.currency
+UNION ALL
+SELECT 'paid-out', currency::text, scope::text || '/' || coalesce(organization_id::text, '-'), sum(amount_minor)::text
+  FROM withdrawal_settlements WHERE scope IN ('PLATFORM', 'ORGANIZATION') GROUP BY scope, currency, organization_id
+UNION ALL
+SELECT 'reserved', currency::text, scope::text || '/' || coalesce(organization_id::text, '-'), sum(amount_minor)::text
+  FROM withdrawal_reservations WHERE status = 'ACTIVE' AND scope IN ('PLATFORM', 'ORGANIZATION')
+ GROUP BY scope, currency, organization_id"
 old_funds_sql="
-SELECT 'platform-services', a.currency::text, '', sum(a.amount_minor)::text
+SELECT 'platform-services', a.currency::text, '-', sum(a.amount_minor)::text
   FROM service_purchase_allocations a JOIN credit_holds h ON h.id = a.hold_id
   JOIN service_purchases p ON p.id = a.purchase_id
  WHERE a.credit_class = 'CASH' AND h.status = 'CAPTURED' AND p.status IN ('DELIVERED', 'REFUNDED')
  GROUP BY a.currency
 UNION ALL
-SELECT 'platform-refunds', currency::text, '', sum(amount_minor_signed)::text
+SELECT 'platform-refunds', currency::text, '-', sum(amount_minor_signed)::text
   FROM credit_ledger_entries WHERE entry_type = 'SERVICE_REFUND' AND credit_class = 'CASH'
  GROUP BY currency
 UNION ALL
-SELECT 'institution-earned', e.currency::text, e.organization_id::text,
+SELECT 'institution-earned cleared/clearing', e.currency::text, e.organization_id::text,
        sum(CASE WHEN s.settled_at <= '$cutoff'::timestamptz THEN e.amount_minor ELSE 0 END)::text || '/' ||
        sum(CASE WHEN s.settled_at > '$cutoff'::timestamptz THEN e.amount_minor ELSE 0 END)::text
   FROM attestation_revenue_entries e JOIN attestation_settlements s ON s.id = e.settlement_id
  WHERE e.account = 'INSTITUTION' AND s.organization_id = e.organization_id
- GROUP BY e.currency, e.organization_id"
+ GROUP BY e.currency, e.organization_id
+UNION ALL $shared_funds_sql"
 new_funds_sql="
-SELECT 'platform-services', a.currency::text, '', sum(a.amount_minor - coalesce(r.institution_minor, 0))::text
+SELECT 'platform-services', a.currency::text, '-', sum(a.amount_minor - coalesce(r.institution_minor, 0))::text
   FROM service_purchase_allocations a JOIN credit_holds h ON h.id = a.hold_id
   JOIN service_purchases p ON p.id = a.purchase_id
   LEFT JOIN service_revenue_entries r ON r.ledger_entry_id = h.captured_entry_id
  WHERE a.credit_class = 'CASH' AND h.status = 'CAPTURED' AND p.status IN ('DELIVERED', 'REFUNDED')
  GROUP BY a.currency
 UNION ALL
-SELECT 'platform-refunds', e.currency::text, '', sum(e.amount_minor_signed + coalesce(r.institution_minor, 0))::text
+SELECT 'platform-refunds', e.currency::text, '-', sum(e.amount_minor_signed + coalesce(r.institution_minor, 0))::text
   FROM credit_ledger_entries e LEFT JOIN service_revenue_entries r ON r.ledger_entry_id = e.id
  WHERE e.entry_type = 'SERVICE_REFUND' AND e.credit_class = 'CASH'
  GROUP BY e.currency
 UNION ALL
-SELECT 'institution-earned', currency::text, organization_id::text,
+SELECT 'institution-earned cleared/clearing', currency::text, organization_id::text,
        sum(CASE WHEN settled_at <= '$cutoff'::timestamptz OR amount_minor < 0 THEN amount_minor ELSE 0 END)::text || '/' ||
        sum(CASE WHEN settled_at > '$cutoff'::timestamptz AND amount_minor >= 0 THEN amount_minor ELSE 0 END)::text
   FROM (SELECT e.currency, e.organization_id, e.amount_minor, s.settled_at
@@ -214,9 +308,15 @@ SELECT 'institution-earned', currency::text, organization_id::text,
          WHERE e.account = 'INSTITUTION' AND s.organization_id = e.organization_id
         UNION ALL
         SELECT currency, organization_id, institution_minor, created_at FROM service_revenue_entries) earned
- GROUP BY currency, organization_id"
-sql "$old_funds_sql" | sort > "$WORK/funds-before.tsv"
-say ok "withdrawal-funds inputs recorded the earlier release's way ($(wc -l < "$WORK/funds-before.tsv" | tr -d ' ') figures)"
+ GROUP BY currency, organization_id
+UNION ALL $shared_funds_sql"
+
+fingerprint > "$WORK/before.tsv"
+catalog > "$WORK/catalog-before.txt"
+sql "$financial_sql" | LC_ALL=C sort > "$WORK/financial-before.tsv"
+sql "$old_funds_sql" | LC_ALL=C sort > "$WORK/funds-before.tsv"
+for table in $expected_writes; do rows_of "$table" > "$WORK/rows-before-$table.txt"; done
+say ok "recorded $(wc -l < "$WORK/before.tsv" | tr -d ' ') tables ($(awk -F'\t' '{s+=$2} END {print s+0}' "$WORK/before.tsv") rows), $(wc -l < "$WORK/catalog-before.txt" | tr -d ' ') catalog entries, $(wc -l < "$WORK/financial-before.tsv" | tr -d ' ') balance and commitment totals, $(wc -l < "$WORK/funds-before.tsv" | tr -d ' ') withdrawal-funds inputs"
 
 # ---------------------------------------------------------------------------
 # 4. The candidate's migration image, as the topology runs it.
@@ -249,6 +349,8 @@ if [ "$after_count" = "$EXPECT_RELEASE" ] && [ "$after_broken" = "0" ] && [ "$af
 else
   say FAIL "history is $after_count ($after_broken failed), head $after_head; expected $EXPECT_RELEASE, $release_head"
 fi
+sql "SELECT migration_name, finished_at FROM _prisma_migrations
+      WHERE migration_name > '$source_head' ORDER BY migration_name" > "$WORK/migrations-added.tsv"
 
 if tools node apps/api/scripts/verify-restore.mjs --database "$URL" \
      --migrations packages/database/prisma/migrations > "$WORK/verify.log" 2>&1; then
@@ -265,19 +367,40 @@ while IFS=$'\t' read -r table rows digest; do
     say FAIL "table $table no longer exists"; changed=1
   elif [ "$after" != "$rows"$'\t'"$digest" ]; then
     if grep -qxF "$table" <<<"$expected_writes"; then
-      say ok "table $table: $rows -> ${after%%$'\t'*} rows (a pending migration inserts here)"
+      rows_of "$table" > "$WORK/rows-after-$table.txt"
+      removed="$(LC_ALL=C comm -23 "$WORK/rows-before-$table.txt" "$WORK/rows-after-$table.txt" | wc -l | tr -d ' ')"
+      added="$(LC_ALL=C comm -13 "$WORK/rows-before-$table.txt" "$WORK/rows-after-$table.txt" | wc -l | tr -d ' ')"
+      if [ "$removed" = "0" ]; then
+        say ok "table $table: $rows -> ${after%%$'\t'*} rows, $added added by a pending migration, none changed or removed"
+      else
+        say FAIL "table $table: $removed existing row(s) changed or removed"; changed=1
+      fi
     else
       say FAIL "table $table changed: $rows -> ${after%%$'\t'*} rows, no pending migration writes to it"; changed=1
     fi
   fi
 done < "$WORK/before.tsv"
 [ "$changed" -eq 0 ] && say ok "every other pre-existing table holds exactly the rows it held before"
-new_tables="$(awk -F'\t' 'NR == FNR {seen[$1] = 1; next} !($1 in seen) {print $1 "=" $2}' "$WORK/before.tsv" "$WORK/after.tsv" | tr '\n' ' ')"
-say ok "new tables: ${new_tables:-none}"
 
-sql "$new_funds_sql" | sort > "$WORK/funds-after.tsv"
+catalog > "$WORK/catalog-after.txt"
+LC_ALL=C comm -23 "$WORK/catalog-before.txt" "$WORK/catalog-after.txt" > "$WORK/catalog-removed.txt"
+LC_ALL=C comm -13 "$WORK/catalog-before.txt" "$WORK/catalog-after.txt" > "$WORK/catalog-added.txt"
+if [ -s "$WORK/catalog-removed.txt" ]; then
+  say FAIL "the migrations removed or altered $(wc -l < "$WORK/catalog-removed.txt" | tr -d ' ') catalog entr(y/ies); see catalog-removed.txt"
+else
+  say ok "catalog: nothing removed or altered; added $(awk '{print $1}' "$WORK/catalog-added.txt" | sort | uniq -c | awk '{printf "%s %s, ", $1, $2}' | sed 's/, $//')"
+fi
+
+sql "$financial_sql" | LC_ALL=C sort > "$WORK/financial-after.tsv"
+if diff -u "$WORK/financial-before.tsv" "$WORK/financial-after.tsv" > "$WORK/financial.diff"; then
+  say ok "balances and commitments unchanged: $(awk -F'\t' '{print $1}' "$WORK/financial-before.tsv" | sort | uniq -c | awk '{printf "%s %s, ", $1, $2}' | sed 's/, $//') totals"
+else
+  say FAIL "balances or commitments changed across the upgrade; see financial.diff"
+fi
+
+sql "$new_funds_sql" | LC_ALL=C sort > "$WORK/funds-after.tsv"
 if diff -u "$WORK/funds-before.tsv" "$WORK/funds-after.tsv" > "$WORK/funds.diff"; then
-  say ok "withdrawal-funds inputs: the new release's computation equals the earlier one, figure for figure"
+  say ok "withdrawal funds: all $(wc -l < "$WORK/funds-after.tsv" | tr -d ' ') inputs computed the new way equal the earlier release's"
 else
   say FAIL "withdrawal-funds inputs changed across the upgrade"; head -20 "$WORK/funds.diff" >&2
 fi
@@ -288,8 +411,30 @@ else
   say FAIL "service-revenue rollback gate refused right after the upgrade"; tail -12 "$WORK/rollback-gate.log" >&2
 fi
 
+{
+  echo
+  echo "## Intended changes"
+  echo
+  echo "Migrations recorded:"
+  echo
+  sed 's/^/- /' "$WORK/migrations-added.tsv"
+  echo
+  echo "Rows added to existing tables (pending migrations insert at top level; no existing row changed):"
+  echo
+  for table in $expected_writes; do
+    if [ -f "$WORK/rows-after-$table.txt" ]; then
+      echo "- $table: $(LC_ALL=C comm -13 "$WORK/rows-before-$table.txt" "$WORK/rows-after-$table.txt" | wc -l | tr -d ' ') row(s)"
+    fi
+  done
+  echo
+  echo "Catalog entries added:"
+  echo
+  # shellcheck disable=SC2016
+  sed 's/^/- `/; s/$/`/' "$WORK/catalog-added.txt"
+} >> "$SUMMARY"
+
 if [ "$failed" -ne 0 ]; then
   echo "rehearsal: the upgrade did not hold; evidence in $WORK" >&2
   exit 65
 fi
-echo "rehearsal: $source_head -> $after_head held; evidence in $WORK"
+echo "rehearsal: $source_head -> $after_head held; evidence and summary.md in $WORK"
