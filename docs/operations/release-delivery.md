@@ -219,6 +219,27 @@ itself running `apps/api/test/recovery-fixture.e2e-spec.ts` with
 step, because PalCert ships no down-migrations: going back across a migration
 is a restore (§9).
 
+Before a release is frozen, and with a copy of a real installation's backup
+rather than an acceptance fixture, rehearse the database half on its own:
+
+```
+SOURCE_BACKUP=/backups/palcert-<timestamp> \
+MIGRATE_IMAGE=ghcr.io/<owner>/palcert-migrate@sha256:<digest> \
+  bash scripts/release/rehearse-database-upgrade.sh
+```
+
+It restores the backup's database into a throwaway PostgreSQL 17 on an
+internal Docker network (no published port; it never reads `DATABASE_URL` or
+`DATABASE_ADMIN_URL`), records the migration history (`EXPECT_SOURCE`, default
+81), a row count and content digest for every table, and the withdrawal-funds
+inputs as the earlier release computes them; runs the candidate's migration
+image once, as the topology does; then requires the release's history,
+`verify-restore.mjs`, every pre-existing table unchanged unless a pending
+migration inserts into it at top level, the same withdrawal-funds figures
+computed the new way, and a `COMPATIBLE` service-revenue rollback gate. A
+creation from an empty database is not a substitute: it never meets the rows
+an upgrade has to keep.
+
 ---
 
 ## 5. Promoting to production
@@ -454,4 +475,5 @@ at all, and one that passed against a URL the API does not serve.
 | recovery without rebuilding | `recovery-from-registry.sh` | the data plane is destroyed for real; the same data is then re-proven through the application (`acceptance.mjs --verify`) |
 | the product works as deployed | `acceptance.mjs` | Checkpoint 20.9: failed on the release stack, which could not store a document |
 | upgrade from the previous schema | `upgrade-rehearsal.sh` | refuses a source already at the release's schema level (it would not be an upgrade) |
+| a real database survives the candidate's migrations | `rehearse-database-upgrade.sh` | a migration that rewrites existing rows is refused by the per-table content digest |
 | browser uploads and downloads | `qa/release-checks.mjs` §6 | Checkpoint 20.9: every upload failed with a CSP violation before the storage route |
