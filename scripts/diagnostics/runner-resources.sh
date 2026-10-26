@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # What was this runner doing while the job was slow?
 #
-# A read-only snapshot of the self-hosted runner's CPU, memory, I/O pressure,
+# A read-only snapshot of the CI runner's CPU, memory, I/O pressure,
 # disk, containers and heaviest processes, printed into the job log. The same
 # commit has run with typecheck in 2.5 minutes and in 16.5, and with a fresh
 # PostgreSQL initialised in seconds and in 2.5 minutes; without a snapshot from
