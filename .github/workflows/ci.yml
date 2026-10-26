@@ -97,9 +97,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # MinIO from source, node_modules, the pnpm store, the database and the
-      # application builds share the runner's 14 GB guarantee. See the script.
+      # application builds share the runner's 14 GB guarantee; this job needs
+      # about 8 GB. The script refuses to run anywhere but this hosted VM.
       - name: Free runner disk space
-        run: scripts/ci/free-hosted-runner-disk.sh
+        run: scripts/ci/free-hosted-runner-disk.sh --require-free-gb 16
 
       # Evidence for a slow or stalled run: the runner's CPU, memory, I/O and
       # disk when the job began. Read-only; see the script.
@@ -292,6 +293,10 @@ jobs:
       - name: Build applications
         run: pnpm -r --filter "./apps/**" build
 
+      - name: Disk at the end of the job
+        if: always()
+        run: scripts/ci/disk-checkpoint.sh node-end
+
       # Taken while the services are still up, so a timeout comes with the
       # pressure, swap and disk figures from the moment it happened.
       - name: Record runner resources (failure)
@@ -345,9 +350,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # Five production images, the CI object store, their build cache and
-      # the running release stack: the heaviest job. See the script.
+      # the running release stack: the heaviest job, about 17 GB. The script
+      # refuses to run anywhere but this hosted VM.
       - name: Free runner disk space
-        run: scripts/ci/free-hosted-runner-disk.sh
+        run: scripts/ci/free-hosted-runner-disk.sh --require-free-gb 25
 
       - name: Record runner resources (start)
         run: scripts/diagnostics/runner-resources.sh images-start
@@ -387,6 +393,10 @@ jobs:
             APP_COMMIT=${{ github.sha }}
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
+
+      # The API build is the largest single addition to the build cache.
+      - name: Disk after the API image
+        run: scripts/ci/disk-checkpoint.sh images-api-built
 
       - name: Build worker image
         uses: docker/build-push-action@v6
@@ -443,6 +453,11 @@ jobs:
       # Prisma CLI — inside the public web surface. The packaging is fixed;
       # this is what stops it drifting back, because an over-packed image
       # starts fine and passes every functional test.
+      # Every image is built and loaded. What remains needs room for the
+      # stack's own images, its volumes, the browser and the logs.
+      - name: Disk after the image builds
+        run: scripts/ci/disk-checkpoint.sh images-built --min-free-gb 10
+
       - name: Check images ship no development-only packages
         run: |
           node scripts/check-image-dependencies.mjs \
@@ -658,6 +673,10 @@ jobs:
           # Which service the wait was stuck on, and its health, before the logs.
           docker compose --env-file release.env -f docker/docker-compose.release.yml ps -a
           docker compose --env-file release.env -f docker/docker-compose.release.yml logs --tail 80
+
+      - name: Disk with the stack still up
+        if: always()
+        run: scripts/ci/disk-checkpoint.sh images-end
 
       - name: Tear down
         if: always()
