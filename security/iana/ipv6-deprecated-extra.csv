@@ -1,0 +1,2 @@
+Address Block,Name,RFC,Note
+::/96,IPv4-compatible Address (deprecated),[RFC4291],"Deprecated by RFC4291 but still parseable; refused so an embedded IPv4 cannot be smuggled through."

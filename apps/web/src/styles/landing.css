@@ -1,0 +1,2027 @@
+/* The public homepage (components/landing).
+ *
+ * Full-width bands in the product's palette — white, cream, the gold rule
+ * and charcoal — with the content held to one measure. Logical properties
+ * throughout, so the Arabic page mirrors without rules of its own; Arabic
+ * gets only what Arabic needs: more leading and no tracking (base.css).
+ */
+
+/* --- Frame: header, footer, anchors ---------------------------------------- */
+
+/* On the homepage the header stays in view, so its section links do too. */
+.pc-app-topbar[data-landing] {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  gap: 1.5rem;
+}
+
+.pc-lp-nav ul {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-nav a,
+.pc-lp-header-verify {
+  color: var(--pc-text);
+  font-size: var(--pc-text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pc-lp-nav a:hover {
+  color: var(--pc-gold-text);
+}
+
+.pc-lp-header-verify {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-inline-end: 0.5rem;
+  color: var(--pc-gold-text);
+  font-weight: 600;
+}
+
+.pc-lp-header-verify:hover {
+  text-decoration: underline;
+}
+
+/* The menu button and its panel exist for narrower screens only. */
+.pc-lp-menu-toggle,
+.pc-lp-menu {
+  display: none;
+}
+
+.pc-lp-menu {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  max-block-size: calc(100dvh - var(--pc-topbar-height));
+  overflow-y: auto;
+  padding: 0.5rem 1.5rem 1.5rem;
+  border-block-end: 1px solid var(--pc-gold-line);
+  background: var(--pc-white);
+  box-shadow: var(--pc-shadow-menu);
+}
+
+.pc-lp-menu-sections {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-menu-sections a {
+  display: block;
+  padding-block: 0.875rem;
+  border-block-end: 1px solid var(--pc-border);
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.pc-lp-menu-sections a:hover {
+  color: var(--pc-gold-text);
+}
+
+.pc-lp-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-block-start: 1.25rem;
+}
+
+.pc-lp-menu-actions .pc-btn {
+  min-block-size: 2.875rem;
+}
+
+.pc-lp-menu-verify {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+  color: var(--pc-gold-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pc-lp-menu .pc-locale-switch {
+  align-self: flex-start;
+}
+
+.pc-lp-menu .pc-locale-label {
+  display: inline;
+}
+
+/* The footer is a direct child of <body> like the rest of the frame; it
+   closes the page below the wave. */
+body:has(> .pc-app-topbar) > .pc-lp-footer {
+  grid-row: 5;
+}
+
+html:has(.pc-landing) {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(.pc-landing) {
+    scroll-behavior: auto;
+  }
+}
+
+/* --- Layout primitives ----------------------------------------------------- */
+
+.pc-landing {
+  display: block;
+  min-inline-size: 0;
+}
+
+.pc-lp-inner {
+  inline-size: 100%;
+  max-inline-size: 76rem;
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+
+.pc-lp-section {
+  padding-block: 5.5rem;
+  scroll-margin-block-start: var(--pc-topbar-height);
+}
+
+.pc-lp-section[data-tone='cream'] {
+  background: var(--pc-surface-muted);
+  border-block: 1px solid var(--pc-gold-line);
+}
+
+.pc-lp-heading {
+  max-inline-size: 48rem;
+  margin-block-end: 3rem;
+}
+
+.pc-lp-heading[data-align='center'] {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.pc-lp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  color: var(--pc-gold-text);
+  font-size: var(--pc-text-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pc-lp-eyebrow::before {
+  content: '';
+  inline-size: 2rem;
+  block-size: 1px;
+  background: var(--pc-gold);
+}
+
+.pc-lp-heading h2 {
+  margin: 0;
+  color: var(--pc-text-strong);
+  font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.pc-lp-lead {
+  margin: 1rem 0 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-md);
+}
+
+.pc-lp-heading[data-align='center'] .pc-lp-lead {
+  margin-inline: auto;
+  max-inline-size: 42rem;
+}
+
+.pc-lp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.pc-lp-btn {
+  min-block-size: 3rem;
+  padding-inline: 1.5rem;
+  font-size: var(--pc-text-base);
+}
+
+.pc-lp-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--pc-gold-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pc-lp-text-link:hover {
+  text-decoration: underline;
+}
+
+.pc-lp-icon-tile {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  flex: none;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: var(--pc-radius);
+  background: var(--pc-gold-tint);
+  color: var(--pc-gold-text);
+}
+
+.pc-lp-caption {
+  margin: 0.75rem 0 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-xs);
+}
+
+.pc-lp-caption-center {
+  margin-block-start: 2rem;
+  text-align: center;
+}
+
+/* --- Hero ------------------------------------------------------------------ */
+
+.pc-lp-hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: 5rem 6rem;
+  background: linear-gradient(
+    180deg,
+    var(--pc-white) 0%,
+    var(--pc-white) 55%,
+    var(--pc-cream) 100%
+  );
+  border-block-end: 1px solid var(--pc-gold-line);
+}
+
+/* The brand's nested diamonds, drawn large and faint behind the preview. */
+.pc-lp-hero::before,
+.pc-lp-hero::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: -8rem;
+  inset-block-start: 50%;
+  inline-size: 44rem;
+  block-size: 44rem;
+  border: 1px solid var(--pc-gold-line);
+  transform: translateY(-50%) rotate(45deg);
+  pointer-events: none;
+}
+
+.pc-lp-hero::after {
+  inset-inline-end: -2rem;
+  inline-size: 32rem;
+  block-size: 32rem;
+  opacity: 0.8;
+}
+
+.pc-lp-hero-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 3.5rem;
+}
+
+.pc-lp-hero h1 {
+  margin: 0;
+  color: var(--pc-text-strong);
+  font-size: clamp(2.25rem, 1.4rem + 2.2vw, 3.125rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.pc-lp-hero-lead {
+  margin: 1.5rem 0 0;
+  color: var(--pc-text);
+  font-size: 1.25rem;
+  line-height: 1.55;
+}
+
+.pc-lp-points .pc-icon {
+  flex: none;
+  color: var(--pc-gold-text);
+}
+
+/* The three services, named in the first screen; attestation carries the
+   seal and the gold. Each row is a link to where that service is explained
+   or used. */
+.pc-lp-hero-services {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-hero-services a {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.65rem 0.875rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+  color: var(--pc-text);
+  text-decoration: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.pc-lp-hero-services a:hover {
+  border-color: var(--pc-gold-line);
+  box-shadow: var(--pc-shadow-card);
+}
+
+.pc-lp-hero-services li[data-featured] a {
+  border-color: var(--pc-gold);
+  border-inline-start-width: 4px;
+  background: var(--pc-gold-tint);
+}
+
+.pc-lp-hero-service-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: 50%;
+  background: var(--pc-surface);
+  color: var(--pc-gold-text);
+}
+
+.pc-lp-hero-service-text {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.pc-lp-hero-service-text strong {
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-lp-hero-service-text span {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-lp-hero-services li[data-featured] .pc-lp-hero-service-text span {
+  color: var(--pc-text);
+}
+
+.pc-lp-hero-services a > .pc-icon {
+  flex: none;
+  color: var(--pc-gold-text);
+}
+
+.pc-lp-hero-copy .pc-lp-actions {
+  margin-block-start: 1.75rem;
+}
+
+.pc-lp-hero-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 1rem 0 0;
+}
+
+.pc-lp-hero-figure {
+  margin: 0;
+}
+
+.pc-lp-hero-visual {
+  position: relative;
+  padding-block: 2.5rem;
+  padding-inline-start: 2rem;
+}
+
+/* --- Illustrations --------------------------------------------------------- */
+
+.pc-lp-frame {
+  overflow: hidden;
+  border: 1px solid var(--pc-border-strong);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+  box-shadow: var(--pc-shadow-card);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  user-select: none;
+}
+
+.pc-lp-frame-hero {
+  box-shadow:
+    0 2px 4px rgb(76 76 76 / 6%),
+    0 24px 60px rgb(76 76 76 / 14%);
+}
+
+.pc-lp-frame-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.875rem;
+  border-block-end: 1px solid var(--pc-border);
+  background: var(--pc-surface-muted);
+}
+
+.pc-lp-frame-dots {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.pc-lp-frame-dots span {
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: 50%;
+  background: var(--pc-border-strong);
+}
+
+.pc-lp-mock-app {
+  display: grid;
+  grid-template-columns: 9.5rem minmax(0, 1fr);
+  min-block-size: 100%;
+}
+
+.pc-lp-mini-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 0.5rem;
+  border-inline-end: 1px solid var(--pc-border);
+  background: var(--pc-surface-muted);
+}
+
+.pc-lp-mini-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-text);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.pc-lp-mini-nav span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-lp-mini-nav[data-active] {
+  border-color: var(--pc-gold);
+  background: var(--pc-surface);
+  color: var(--pc-text-strong);
+  font-weight: 600;
+}
+
+.pc-lp-mock-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.pc-lp-mock-crumbs,
+.pc-lp-mock-meta {
+  color: var(--pc-text-muted);
+  font-size: 0.75rem;
+}
+
+.pc-lp-mock-title {
+  overflow: hidden;
+  color: var(--pc-text-strong);
+  font-size: 1rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pc-lp-mock-result {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block: 0.25rem;
+  padding: 0.55rem 0.75rem;
+  border-inline-start: 3px solid var(--pc-success);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-success-bg);
+  color: var(--pc-success);
+  font-weight: 600;
+}
+
+.pc-lp-mock-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.pc-lp-mock-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--pc-border);
+  border-block-start: 2px solid var(--pc-gold-line);
+  border-radius: var(--pc-radius-sm);
+}
+
+.pc-lp-mock-stat[data-tone='success'] {
+  border-block-start-color: var(--pc-success);
+}
+
+.pc-lp-mock-stat[data-tone='danger'] {
+  border-block-start-color: var(--pc-danger);
+}
+
+.pc-lp-mock-stat span {
+  min-block-size: 2.4em;
+  color: var(--pc-text-muted);
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+
+.pc-lp-mock-stat strong {
+  color: var(--pc-text-strong);
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-lp-mock-rows,
+.pc-lp-mock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-block-start: 0.25rem;
+}
+
+.pc-lp-mock-row,
+.pc-lp-mock-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface);
+  font-size: 0.75rem;
+}
+
+.pc-lp-mock-row {
+  justify-content: space-between;
+}
+
+.pc-lp-mock-item > span:not(.pc-status) {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  color: var(--pc-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pc-lp-mock-item .pc-icon {
+  flex: none;
+  color: var(--pc-gold-text);
+}
+
+.pc-lp-mock-line {
+  block-size: 0.5rem;
+  border-radius: 999px;
+  background: var(--pc-surface-sunken);
+  inline-size: 62%;
+}
+
+.pc-lp-mock-line[data-width='2'] {
+  inline-size: 48%;
+}
+
+.pc-lp-mock-line[data-width='3'] {
+  inline-size: 56%;
+}
+
+.pc-lp-mock-badge {
+  flex: none;
+}
+
+.pc-lp-mock-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+  margin-block-start: 0.25rem;
+}
+
+.pc-lp-mock-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-inline-size: 0;
+  padding: 0.625rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-muted);
+}
+
+.pc-lp-mock-panel-title {
+  color: var(--pc-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.pc-lp-mock-panel .pc-lp-mock-item .pc-status {
+  display: none;
+}
+
+.pc-lp-mock-amount {
+  flex: none;
+  color: var(--pc-text-strong);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-lp-mock-dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.45rem 1rem;
+  margin-block-start: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.pc-lp-mock-dl > span {
+  color: var(--pc-text-muted);
+}
+
+.pc-lp-mock-dl > :is(strong, code) {
+  color: var(--pc-text-strong);
+  overflow-wrap: anywhere;
+}
+
+.pc-lp-mock-dl > code {
+  direction: ltr;
+  text-align: start;
+  font-size: 0.6875rem;
+}
+
+.pc-lp-mock-solo {
+  padding: 1.25rem;
+}
+
+/* The two cards floating over the hero preview: a decision and a certificate. */
+.pc-lp-float {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+  min-inline-size: 13rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+  box-shadow: var(--pc-shadow-menu);
+  font-size: 0.8125rem;
+  user-select: none;
+}
+
+.pc-lp-float-submission {
+  inset-block-end: 5.5rem;
+  inset-inline-start: -1rem;
+}
+
+.pc-lp-float-certificate {
+  inset-block-end: 0;
+  inset-inline-end: -1.5rem;
+  border-block-start: 3px solid var(--pc-gold);
+}
+
+.pc-lp-float-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--pc-text-muted);
+  font-size: 0.75rem;
+}
+
+.pc-lp-float-label .pc-icon {
+  color: var(--pc-gold-text);
+}
+
+.pc-lp-float-value {
+  color: var(--pc-text-strong);
+  font-weight: 600;
+}
+
+.pc-lp-float-code {
+  direction: ltr;
+  color: var(--pc-text);
+  font-size: 0.6875rem;
+}
+
+/* --- Workflow -------------------------------------------------------------- */
+
+.pc-lp-steps {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-step {
+  position: relative;
+}
+
+/* The line joining one stage to the next. */
+.pc-lp-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 1.375rem;
+  inset-inline-start: 3.25rem;
+  inset-inline-end: -0.5rem;
+  block-size: 1px;
+  background: var(--pc-gold);
+  opacity: 0.55;
+}
+
+.pc-lp-step-marker {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 1px solid var(--pc-gold);
+  border-radius: 50%;
+  background: var(--pc-surface);
+  color: var(--pc-gold-text);
+  font-size: var(--pc-text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-lp-step h3 {
+  margin: 1rem 0 0.375rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-lg);
+}
+
+.pc-lp-step-actor {
+  display: inline-block;
+  margin: 0 0 0.75rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--pc-border-strong);
+  border-radius: 999px;
+  background: var(--pc-surface);
+  color: var(--pc-text);
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+}
+
+.pc-lp-step-actor[data-actor='author'] {
+  border-color: var(--pc-gold-line);
+  background: var(--pc-gold-tint);
+  color: var(--pc-gold-text-strong);
+}
+
+.pc-lp-step-actor[data-actor='palcert'] {
+  border-color: var(--pc-charcoal);
+  background: var(--pc-charcoal);
+  color: var(--pc-white);
+}
+
+.pc-lp-step p:last-child {
+  margin: 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+/* --- Modules --------------------------------------------------------------- */
+
+.pc-lp-modules {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-module {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.pc-lp-module:hover {
+  border-color: var(--pc-gold-line);
+  box-shadow: var(--pc-shadow-card);
+}
+
+.pc-lp-module h3 {
+  margin: 0.5rem 0 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-lp-module p {
+  margin: 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-lp-module .pc-lp-tag {
+  margin-block-start: auto;
+  padding-block-start: 0.875rem;
+  border-block-start: 1px solid var(--pc-border);
+  color: var(--pc-gold-text);
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+}
+
+/* --- Audiences ------------------------------------------------------------- */
+
+.pc-lp-audiences {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-audience article {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  block-size: 100%;
+  padding: 2rem;
+  border: 1px solid var(--pc-border);
+  border-block-start: 3px solid var(--pc-gold);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+}
+
+.pc-lp-audience h3 {
+  margin: 0.5rem 0 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-lg);
+}
+
+.pc-lp-audience-lead {
+  margin: 0;
+  color: var(--pc-text);
+  font-weight: 600;
+}
+
+.pc-lp-points {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0.25rem 0 0.75rem;
+  padding: 0;
+  list-style: none;
+  color: var(--pc-text);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-lp-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+.pc-lp-points .pc-icon {
+  margin-block-start: 0.2em;
+}
+
+.pc-lp-audience .pc-lp-text-link {
+  margin-block-start: auto;
+}
+
+/* --- Value pillars --------------------------------------------------------- */
+
+.pc-lp-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2.75rem 2.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-pillar {
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid var(--pc-gold);
+}
+
+.pc-lp-pillar-number {
+  color: var(--pc-gold-text);
+  font-size: var(--pc-text-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-lp-pillar h3 {
+  margin: 0.625rem 0 0.5rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-lp-pillar p {
+  margin: 0;
+  color: var(--pc-text-muted);
+}
+
+/* --- Trust ----------------------------------------------------------------- */
+
+.pc-lp-trust-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 2.5rem;
+}
+
+.pc-lp-assurance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-assurance {
+  padding: 1.25rem 1.375rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+}
+
+.pc-lp-assurance .pc-icon {
+  color: var(--pc-gold-text);
+}
+
+.pc-lp-assurance h3 {
+  margin: 0.625rem 0 0.25rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-base);
+}
+
+.pc-lp-assurance p {
+  margin: 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-lp-trust-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pc-lp-principle {
+  margin: 0;
+  padding: 1.75rem;
+  border-inline-start: 3px solid var(--pc-gold);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-charcoal);
+  color: var(--pc-white);
+}
+
+.pc-lp-principle blockquote {
+  margin: 0;
+}
+
+.pc-lp-principle p {
+  margin: 0;
+  font-size: var(--pc-text-md);
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.pc-lp-principle figcaption {
+  margin-block-start: 1rem;
+  color: var(--pc-gold-line);
+  font-size: var(--pc-text-sm);
+  font-weight: 600;
+}
+
+.pc-lp-verifier {
+  padding: 1.5rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+}
+
+.pc-lp-verifier h3 {
+  margin: 0 0 0.375rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-lp-verifier > p {
+  margin: 0 0 1rem;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-lp-verifier figure {
+  margin: 0 0 1rem;
+}
+
+/* --- Product previews ------------------------------------------------------ */
+
+.pc-lp-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem 2rem;
+}
+
+.pc-lp-shot {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.pc-lp-shot .pc-lp-frame {
+  flex: 1;
+}
+
+.pc-lp-shot figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-block-start: 1rem;
+}
+
+.pc-lp-shot figcaption strong {
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-lp-shot figcaption span {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+/* --- FAQ ------------------------------------------------------------------- */
+
+.pc-lp-faq {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 3rem;
+}
+
+.pc-lp-faq-list {
+  border-block-start: 1px solid var(--pc-gold-line);
+}
+
+.pc-lp-faq-item {
+  border-block-end: 1px solid var(--pc-gold-line);
+}
+
+.pc-lp-faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.125rem;
+  color: var(--pc-text-strong);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.pc-lp-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.pc-lp-faq-item summary .pc-icon {
+  flex: none;
+  color: var(--pc-gold-text);
+  transition: transform 150ms ease;
+}
+
+.pc-lp-faq-item[open] summary .pc-icon {
+  transform: rotate(180deg);
+}
+
+.pc-lp-faq-item p {
+  max-inline-size: 44rem;
+  margin: 0 0 1.25rem;
+  color: var(--pc-text-muted);
+}
+
+/* --- Closing call to action ------------------------------------------------ */
+
+.pc-lp-cta {
+  padding-block: 5.5rem 2rem;
+}
+
+.pc-lp-cta-panel {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem 3rem;
+  padding: 3rem;
+  border: 1px solid var(--pc-gold-line);
+  border-block-start: 3px solid var(--pc-gold);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-gold-tint);
+}
+
+.pc-lp-cta-panel::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: -6rem;
+  inset-block-start: -6rem;
+  inline-size: 16rem;
+  block-size: 16rem;
+  border: 1px solid var(--pc-gold);
+  opacity: 0.35;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.pc-lp-cta h2 {
+  margin: 0;
+  color: var(--pc-text-strong);
+  font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
+  line-height: 1.25;
+}
+
+.pc-lp-cta-panel p {
+  margin: 0.75rem 0 0;
+  color: var(--pc-text);
+}
+
+.pc-lp-cta-actions {
+  position: relative;
+  z-index: 1;
+}
+
+.pc-lp-cta .pc-lp-signin {
+  margin-block-start: 1rem;
+  font-size: var(--pc-text-sm);
+}
+
+/* On the gold tint, links take the deeper gold to keep AA contrast. */
+.pc-lp-cta-panel a:not(.pc-btn) {
+  color: var(--pc-gold-text-strong);
+  font-weight: 600;
+}
+
+/* --- Footer ---------------------------------------------------------------- */
+
+.pc-lp-footer {
+  padding-block: 3.5rem 2rem;
+  background: var(--pc-charcoal);
+  color: var(--pc-white);
+}
+
+.pc-lp-footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.pc-lp-footer-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.pc-lp-footer-brand p {
+  max-inline-size: 22rem;
+  margin: 1rem 0 0;
+  color: rgb(255 255 255 / 82%);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-lp-footer h2 {
+  margin: 0 0 0.875rem;
+  color: var(--pc-gold-line);
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pc-lp-footer ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-footer a {
+  color: rgb(255 255 255 / 88%);
+  font-size: var(--pc-text-sm);
+  text-decoration: none;
+}
+
+.pc-lp-footer a:hover,
+.pc-lp-footer a[aria-current='page'] {
+  color: var(--pc-white);
+  text-decoration: underline;
+}
+
+.pc-lp-footer :focus-visible {
+  outline-color: var(--pc-gold-line);
+}
+
+.pc-lp-footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  margin-block-start: 2.5rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid rgb(255 255 255 / 18%);
+}
+
+.pc-lp-footer-base p {
+  max-inline-size: 48rem;
+  margin: 0;
+  color: rgb(255 255 255 / 78%);
+  font-size: var(--pc-text-xs);
+}
+
+/* --- Arabic ---------------------------------------------------------------- */
+/* Arabic sets larger on the eye than its point size suggests at display
+   sizes, and smaller at text sizes: headings get room, small text a step up. */
+
+html[lang='ar'] .pc-lp-hero h1 {
+  font-size: clamp(2.125rem, 1.4rem + 2vw, 3rem);
+  line-height: 1.4;
+}
+
+html[lang='ar'] .pc-lp-heading h2,
+html[lang='ar'] .pc-lp-cta h2 {
+  line-height: 1.45;
+}
+
+html[lang='ar'] .pc-lp-hero-lead {
+  line-height: 1.8;
+}
+
+html[lang='ar']
+  .pc-landing
+  :is(.pc-lp-step p, .pc-lp-module p, .pc-lp-assurance p, .pc-lp-points, .pc-lp-lead) {
+  font-size: 0.9375rem;
+  line-height: 1.85;
+}
+
+html[lang='ar'] .pc-landing .pc-lp-lead {
+  font-size: 1.1875rem;
+}
+
+html[lang='ar'] .pc-lp-eyebrow {
+  font-size: 0.9375rem;
+}
+
+html[lang='ar'] .pc-lp-principle p {
+  line-height: 1.85;
+}
+
+/* --- Services and certificate attestation ----------------------------------- */
+
+/* Three services side by side; attestation, in the middle, carries the gold. */
+.pc-lp-services {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-lp-service article {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  block-size: 100%;
+  padding: 1.75rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+}
+
+.pc-lp-service h3 {
+  margin: 0.25rem 0 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-lg);
+}
+
+.pc-lp-service p {
+  margin: 0;
+  color: var(--pc-text);
+}
+
+.pc-lp-service > article > .pc-lp-text-link,
+.pc-lp-service-actions {
+  margin-block-start: auto;
+  padding-block-start: 0.5rem;
+}
+
+.pc-lp-service[data-featured] article {
+  border-color: var(--pc-gold-line);
+  border-block-start: 3px solid var(--pc-gold);
+  background: var(--pc-gold-tint);
+  box-shadow: var(--pc-shadow-card);
+}
+
+/* On the gold tint, links take the deeper gold to keep AA contrast. */
+.pc-lp-service[data-featured] .pc-lp-text-link {
+  color: var(--pc-gold-text-strong);
+}
+
+.pc-lp-service-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pc-lp-seal-tile {
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  border-radius: 50%;
+  background: var(--pc-surface);
+}
+
+.pc-lp-service .pc-lp-service-badge {
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  background: var(--pc-charcoal);
+  color: var(--pc-white);
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+}
+
+.pc-lp-service-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+}
+
+.pc-lp-att-path {
+  margin-block-start: 2.5rem;
+  padding: 1.75rem;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface-muted);
+}
+
+.pc-lp-att-path h3 {
+  margin: 0 0 1.5rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+  text-align: center;
+}
+
+/* The attestation path: four stages joined by a gold line with an arrowhead
+   that points along the reading direction. */
+.pc-att-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-att-flow-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.pc-att-flow-mark {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: 50%;
+  background: var(--pc-surface);
+  color: var(--pc-gold-text);
+}
+
+.pc-att-flow-stage[data-stage='attested'] .pc-att-flow-mark {
+  border-color: var(--pc-gold);
+  box-shadow: 0 0 0 4px var(--pc-gold-tint);
+}
+
+.pc-att-flow-number {
+  color: var(--pc-gold-text);
+  font-size: var(--pc-text-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-att-flow-label {
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-sm);
+  font-weight: 600;
+}
+
+.pc-att-flow-stage:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 1.75rem;
+  inset-inline-start: calc(50% + 2.25rem);
+  inset-inline-end: calc(-50% + 2.25rem);
+  block-size: 1px;
+  background: var(--pc-gold);
+}
+
+.pc-att-flow-stage:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(1.75rem - 4px);
+  inset-inline-end: calc(-50% + 2.25rem);
+  border-block: 4.5px solid transparent;
+  border-inline-start: 7px solid var(--pc-gold);
+}
+
+/* --- The certificate attestation page -------------------------------------- */
+
+.pc-att-hero-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 3.5rem;
+}
+
+.pc-att-hero .pc-lp-signin {
+  margin: 1rem 0 0;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-att-hero .pc-lp-signin a {
+  color: var(--pc-gold-text-strong);
+  font-weight: 600;
+}
+
+.pc-att-hero-visual {
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--pc-gold-line);
+  border-block-start: 3px solid var(--pc-gold);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+  box-shadow: var(--pc-shadow-card);
+  text-align: center;
+}
+
+.pc-att-hero-seal {
+  display: inline-grid;
+  place-items: center;
+  margin-block-end: 0.75rem;
+}
+
+.pc-att-hero-visual-title {
+  margin: 0 0 1.75rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-att-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-att-step {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  column-gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+}
+
+.pc-att-step[data-actor='institution'] {
+  border-color: var(--pc-gold-line);
+  border-block-start: 3px solid var(--pc-gold);
+}
+
+.pc-att-step[data-actor='palcert'] {
+  border-block-start: 3px solid var(--pc-charcoal);
+}
+
+.pc-att-step h3 {
+  margin: 0.35rem 0 0.5rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-att-step p {
+  margin: 0;
+}
+
+.pc-att-step .pc-lp-step-actor {
+  margin-block-end: 0.5rem;
+}
+
+.pc-att-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-att-roles,
+.pc-att-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.pc-att-role,
+.pc-att-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.75rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+}
+
+.pc-att-role[data-role='institution'] {
+  border-color: var(--pc-gold-line);
+  border-block-start: 3px solid var(--pc-gold);
+}
+
+.pc-att-role h3,
+.pc-att-fact h2 {
+  margin: 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-lg);
+}
+
+.pc-att-boundary {
+  margin: 1.5rem 0 0;
+  padding: 1rem 1.25rem;
+  border-inline-start: 3px solid var(--pc-gold);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface);
+  color: var(--pc-text-strong);
+  font-weight: 500;
+}
+
+.pc-att-verify-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 3rem;
+}
+
+.pc-att-verify-grid .pc-lp-heading {
+  margin-block-end: 1.5rem;
+}
+
+.pc-att-verify-action {
+  display: inline-flex;
+  margin-block: 1.75rem 0.75rem;
+}
+
+.pc-att-statuses {
+  padding: 1.75rem;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface-muted);
+}
+
+.pc-att-statuses h3 {
+  margin: 0 0 1rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-att-statuses ul {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-att-status {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--pc-border);
+  border-inline-start: 4px solid var(--pc-success);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+}
+
+.pc-att-status[data-status='EXPIRED'] {
+  border-inline-start-color: var(--pc-warning);
+}
+
+.pc-att-status[data-status='REVOKED'] {
+  border-inline-start-color: var(--pc-danger);
+}
+
+.pc-att-status-name {
+  color: var(--pc-text-strong);
+  font-weight: 700;
+}
+
+.pc-att-fact-lead {
+  margin: 0;
+  color: var(--pc-text-strong);
+  font-weight: 500;
+}
+
+.pc-att-formats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-att-formats li {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: 999px;
+  background: var(--pc-gold-tint);
+  color: var(--pc-gold-text-strong);
+  font-size: var(--pc-text-sm);
+  font-weight: 600;
+}
+
+/* --- Narrower screens ------------------------------------------------------ */
+
+/* The header's verification link goes first (the hero repeats it), then the
+   section links, so the header never crowds. */
+@media (max-width: 82rem) {
+  .pc-lp-header-verify {
+    display: none;
+  }
+}
+
+/* Below this the bar keeps the brand and the menu button; every other link
+   moves into the menu, so each is reachable once. */
+@media (max-width: 68rem) {
+  .pc-lp-nav,
+  .pc-lp-header-actions {
+    display: none;
+  }
+
+  .pc-lp-menu-toggle {
+    display: inline-grid;
+    margin-inline-start: auto;
+  }
+
+  .pc-lp-menu:not([hidden]) {
+    display: block;
+  }
+}
+
+@media (max-width: 40rem) {
+  .pc-lp-menu {
+    padding-inline: 1rem;
+  }
+}
+
+@media (max-width: 72rem) {
+  .pc-lp-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 2.5rem;
+  }
+
+  .pc-lp-step:nth-child(3n)::after {
+    display: none;
+  }
+
+  .pc-lp-modules {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pc-lp-footer-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .pc-lp-footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 64rem) {
+  .pc-lp-hero-grid,
+  .pc-lp-trust-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pc-lp-hero-grid {
+    gap: 2.5rem;
+  }
+
+  .pc-lp-hero-visual {
+    max-inline-size: 42rem;
+  }
+}
+
+@media (max-width: 56rem) {
+  .pc-lp-modules,
+  .pc-lp-pillars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pc-lp-audiences,
+  .pc-lp-gallery,
+  .pc-lp-faq,
+  .pc-lp-cta-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pc-lp-faq {
+    gap: 0;
+  }
+
+  .pc-lp-footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 40rem) {
+  .pc-lp-inner {
+    padding-inline: 1rem;
+  }
+
+  .pc-lp-section {
+    padding-block: 3.5rem;
+  }
+
+  .pc-lp-hero {
+    padding-block: 2.5rem 3.5rem;
+  }
+
+  .pc-lp-hero-lead {
+    font-size: var(--pc-text-md);
+  }
+
+  .pc-lp-actions .pc-lp-btn {
+    flex: 1 1 100%;
+  }
+
+  .pc-lp-heading {
+    margin-block-end: 2rem;
+  }
+
+  /* The floating cards step out of the picture and sit beneath it. */
+  .pc-lp-hero-visual {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding: 0;
+  }
+
+  .pc-lp-hero-visual > .pc-lp-frame {
+    grid-column: 1 / -1;
+  }
+
+  .pc-lp-float {
+    position: static;
+    min-inline-size: 0;
+  }
+
+  .pc-lp-mock-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pc-lp-mini-sidebar {
+    display: none;
+  }
+
+  .pc-lp-mock-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pc-lp-steps {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+
+  /* Stages stack, joined by a line running down the markers. */
+  .pc-lp-step {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    column-gap: 1rem;
+    padding-block-end: 2rem;
+  }
+
+  .pc-lp-step > :not(.pc-lp-step-marker) {
+    grid-column: 2;
+  }
+
+  .pc-lp-step-marker {
+    grid-row: 1 / span 3;
+  }
+
+  .pc-lp-step h3 {
+    margin-block-start: 0.5rem;
+  }
+
+  .pc-lp-step-actor {
+    justify-self: start;
+  }
+
+  .pc-lp-step:not(:last-child)::after,
+  .pc-lp-step:nth-child(3n):not(:last-child)::after {
+    display: block;
+    inset-block-start: 3rem;
+    inset-block-end: 0.25rem;
+    inset-inline-start: 1.375rem;
+    inset-inline-end: auto;
+    inline-size: 1px;
+    block-size: auto;
+  }
+
+  .pc-lp-modules,
+  .pc-lp-pillars,
+  .pc-lp-assurance-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pc-lp-audience article,
+  .pc-lp-cta-panel {
+    padding: 1.5rem;
+  }
+
+  .pc-lp-cta {
+    padding-block-start: 3.5rem;
+  }
+}
+
+/* --- Services and attestation page, narrower screens ------------------------ */
+
+@media (max-width: 72rem) {
+  .pc-att-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 64rem) {
+  .pc-lp-services,
+  .pc-att-hero-grid,
+  .pc-att-verify-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pc-att-hero-grid {
+    gap: 2.5rem;
+  }
+}
+
+@media (max-width: 56rem) {
+  .pc-att-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pc-att-roles,
+  .pc-att-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .pc-att-steps,
+  .pc-att-benefits {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pc-lp-service article,
+  .pc-lp-att-path,
+  .pc-att-hero-visual,
+  .pc-att-role,
+  .pc-att-fact,
+  .pc-att-statuses {
+    padding: 1.25rem;
+  }
+
+  /* The path runs down the page: marker, number and name on one row, the
+     joining line beneath each marker. */
+  .pc-att-flow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .pc-att-flow-stage {
+    flex-direction: row;
+    gap: 0.75rem;
+    text-align: start;
+  }
+
+  .pc-att-flow-stage:not(:last-child)::after {
+    inset-block-start: 3.5rem;
+    inset-block-end: -1.25rem;
+    inset-inline-start: 1.75rem;
+    inset-inline-end: auto;
+    inline-size: 1px;
+    block-size: auto;
+  }
+
+  .pc-att-flow-stage:not(:last-child)::before {
+    display: none;
+  }
+
+  .pc-lp-att-path h3,
+  .pc-att-hero-visual {
+    text-align: start;
+  }
+}
+
+/* On a phone the first screen must hold the title, the lead, both actions and
+   the attestation service: the hero tightens rather than pushing them down. */
+@media (max-width: 40rem) {
+  .pc-lp-hero .pc-lp-eyebrow {
+    font-size: var(--pc-text-xs);
+    letter-spacing: 0.06em;
+  }
+
+  .pc-lp-hero h1 {
+    font-size: 2rem;
+  }
+
+  .pc-lp-hero-lead {
+    margin-block-start: 1rem;
+  }
+
+  .pc-lp-hero-copy .pc-lp-actions {
+    margin-block-start: 1.25rem;
+    gap: 0.625rem;
+  }
+
+  .pc-lp-hero-services {
+    margin-block-start: 1.25rem;
+  }
+
+  .pc-lp-hero-services a {
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .pc-lp-hero-service-mark {
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+  }
+}

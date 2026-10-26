@@ -1,0 +1,61 @@
+{
+  "description": "NOT_EXISTS with complete coverage and no matching facts is a genuine PASS: the extractor looked and found none.",
+  "rule": {
+    "ruleCode": "DOC.NO.TRACKED.CHANGES",
+    "scope": {
+      "kind": "DOCUMENT",
+      "property": "trackedChangeCount"
+    },
+    "operator": "NOT_EXISTS",
+    "expected": {
+      "type": "NONE"
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": true,
+    "ruleSchemaVersion": 2
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "DOCUMENT",
+        "property": "trackedChangeCount",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": []
+  },
+  "expectedResult": {
+    "ruleCode": "DOC.NO.TRACKED.CHANGES",
+    "outcome": "PASS",
+    "reasonCode": "SATISFIED",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": true,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "NOT_EXISTS",
+    "counts": {
+      "matchedFacts": 0,
+      "evaluatedFacts": 0,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

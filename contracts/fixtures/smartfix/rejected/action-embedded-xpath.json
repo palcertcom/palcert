@@ -1,0 +1,24 @@
+{
+  "contract": "FixAction",
+  "why": "There is no executable DSL in a plan. A selector field is not an unsupported extra; it is the thing this contract exists to forbid.",
+  "value": {
+    "actionId": "a-0001",
+    "ruleCode": "BODY_FONT_SIZE",
+    "actionType": "SET_RUN_FONT_SIZE",
+    "targetScope": "RUN_PROPERTIES",
+    "nodeId": "main/body/p:17/r:2",
+    "structuralPath": ["main", "body", "p:17", "r:2"],
+    "scriptChannel": "LATIN",
+    "before": {
+      "kind": "NUMBER",
+      "number": "11",
+      "unit": "POINT"
+    },
+    "after": {
+      "kind": "NUMBER",
+      "number": "12",
+      "unit": "POINT"
+    },
+    "xpath": "//w:p[17]/w:r[2]"
+  }
+}

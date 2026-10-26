@@ -1,0 +1,400 @@
+# PalCert alert rules (Phase 20 Checkpoint 3).
+#
+# Vendor-neutral: this is a Prometheus rule file, which Prometheus,
+# VictoriaMetrics, Thanos Ruler, Grafana Alerting and the OpenTelemetry
+# Collector all evaluate. PalCert requires none of them and depends on none of
+# them. A deployment loads this file into whatever it already runs.
+#
+# ── Thresholds ──────────────────────────────────────────────────────────────
+#
+# Every number below that depends on how much traffic PalCert actually takes
+# is a deliberate, documented starting point, not a measurement — PalCert has
+# no production workload yet, and inventing one would produce alerts that look
+# authoritative and fire at the wrong time. `docs/operations/alerting.md`
+# records for each rule what it assumes and what to re-derive once real
+# traffic exists.
+#
+# The rules that need no workload knowledge — a dead job, a failed migration,
+# a collector that cannot read the database, a certificate stuck unissued —
+# carry no invented number at all. Those are the ones to trust on day one.
+#
+# ── Severity ────────────────────────────────────────────────────────────────
+#
+#   page  — a person is woken. Customer-visible now, or losing data.
+#   ticket — looked at during working hours. Real, not urgent.
+
+groups:
+  - name: palcert.availability
+    rules:
+      - alert: PalCertServiceDown
+        expr: up{job=~"palcert-.*"} == 0
+        for: 2m
+        labels: { severity: page }
+        annotations:
+          summary: '{{ $labels.job }} instance {{ $labels.instance }} is not scrapable'
+          description: >-
+            The scraper cannot reach this process. Either it is down or its
+            network path is broken; both mean the instance is not serving.
+            Check readiness on the instance and the orchestrator's view of it.
+
+      - alert: PalCertHighErrorRate
+        # 5xx share of all responses, per service. 2% sustained over ten
+        # minutes: high enough that a single bad request does not page, low
+        # enough that a broken endpoint does. ASSUMPTION — re-derive from the
+        # measured baseline once there is one.
+        expr: |
+          sum by (job) (rate(palcert_http_requests_total{status_class="5xx"}[5m]))
+            /
+          sum by (job) (rate(palcert_http_requests_total[5m]))
+            > 0.02
+        for: 10m
+        labels: { severity: page }
+        annotations:
+          summary: '{{ $labels.job }} is returning 5xx for more than 2% of requests'
+          description: >-
+            PalCert is failing requests it accepted. Find the failing route on
+            the request dashboard, then the correlated error lines by request
+            id.
+
+      - alert: PalCertLatencyDegraded
+        # 95th percentile over two seconds for ten minutes. ASSUMPTION: a
+        # starting point for interactive routes, with no measured baseline
+        # behind it. Uploads and report reads are legitimately slower and will
+        # need their own threshold once the route mix is known.
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (job, le) (rate(palcert_http_request_duration_seconds_bucket[5m]))
+          ) > 2
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: '{{ $labels.job }} p95 latency is above 2s'
+
+  - name: palcert.jobs
+    rules:
+      - alert: PalCertJobDead
+        # No threshold to invent. A DEAD job is a terminal state the system
+        # reached after exhausting every attempt: work a customer asked for
+        # that will not happen unless a person intervenes. One is enough.
+        #
+        # The value is read from the job ledger, so it survives a worker
+        # restart — which matters precisely here, because restarting the
+        # worker is the first thing somebody tries.
+        expr: palcert_jobs_dead > 0
+        for: 1m
+        labels: { severity: page }
+        annotations:
+          summary: '{{ $value }} {{ $labels.job_type }} job(s) are DEAD'
+          description: >-
+            Terminal failures. Identify them with
+            `SELECT id, resource_type, resource_id, attempt_count,
+            last_failure_code FROM processing_jobs WHERE status = 'DEAD'`.
+            The alert carries the job type and nothing else: the payload,
+            the owner and the document stay in the database.
+
+      - alert: PalCertQueueBacklogGrowing
+        # 200 jobs waiting for fifteen minutes. ASSUMPTION — chosen so a
+        # normal burst of uploads clears without paging, with no measured
+        # arrival rate behind it.
+        expr: palcert_jobs_queue_depth > 200
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: '{{ $labels.job_type }} queue depth is {{ $value }}'
+
+      - alert: PalCertOldestQueuedJobStale
+        # Age, not depth: a small queue that never drains is worse than a
+        # large one that does. Thirty minutes. ASSUMPTION — a starting point
+        # for "a customer has noticed".
+        expr: palcert_jobs_oldest_queued_age_seconds > 1800
+        for: 5m
+        labels: { severity: page }
+        annotations:
+          summary: 'Oldest waiting {{ $labels.job_type }} job is {{ $value | humanizeDuration }} old'
+          description: >-
+            Work is queued and nothing is claiming it. Check that at least one
+            worker reports ready — a worker whose document-engine or storage
+            dependency is down deliberately refuses to claim.
+
+      - alert: PalCertJobLeasesExpiring
+        # Leases lapse when a worker dies mid-job. The sweep reclaims them, so
+        # a few are normal; a sustained pile means workers are being killed.
+        # ASSUMPTION: five concurrent lapses, chosen against the lease period
+        # rather than against a measured restart rate.
+        expr: palcert_jobs_expired_leases > 5
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: '{{ $value }} job leases have lapsed and await reclaim'
+
+      - alert: PalCertJobFailureRateHigh
+        # Attempts ending in a retry or death, as a share of all attempts.
+        # 10% over fifteen minutes. ASSUMPTION.
+        expr: |
+          sum by (job_type) (rate(palcert_job_executions_total{outcome=~"retried|dead"}[10m]))
+            /
+          sum by (job_type) (rate(palcert_job_executions_total[10m]))
+            > 0.1
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'More than 10% of {{ $labels.job_type }} attempts are failing'
+
+  - name: palcert.delivery
+    rules:
+      - alert: PalCertNotificationsNotSending
+        # An hour of unsent notifications. ASSUMPTION — chosen against the
+        # retry schedule, not against a measured volume.
+        expr: palcert_notification_oldest_pending_age_seconds > 3600
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'Oldest unsent {{ $labels.channel }} notification is {{ $value | humanizeDuration }} old'
+
+      - alert: PalCertNotificationsFailingPermanently
+        # ASSUMPTION: ten permanent failures an hour. A volume threshold with
+        # no measured send volume behind it; re-derive once there is one.
+        expr: increase(palcert_notification_deliveries{status="FAILED_PERMANENT"}[1h]) > 10
+        for: 5m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'Notifications on {{ $labels.channel }} are failing permanently'
+          description: >-
+            No address appears here or in the metric. The delivery rows carry
+            them, behind the database's access controls.
+
+      - alert: PalCertWebhooksNotDelivering
+        # ASSUMPTION: an hour undelivered, matching the notification rule and
+        # chosen against the retry schedule rather than a measured volume.
+        expr: palcert_webhook_oldest_pending_age_seconds > 3600
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'Oldest undelivered webhook is {{ $value | humanizeDuration }} old'
+          description: >-
+            Endpoint URLs, secrets and organization identifiers are
+            deliberately absent from this signal. Join to
+            `webhook_deliveries` to find which endpoints are affected.
+
+      - alert: PalCertWebhooksFailingPermanently
+        # ASSUMPTION: twenty permanent failures an hour. One customer's broken
+        # endpoint should not page; a platform-wide delivery fault should.
+        expr: increase(palcert_webhook_deliveries{status="FAILED_PERMANENT"}[1h]) > 20
+        for: 5m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'Webhook deliveries are failing permanently'
+
+  - name: palcert.analysis
+    rules:
+      - alert: PalCertAnalyzerFailing
+        # `failed` is the analyzer itself going wrong, kept apart from
+        # `rejected` on purpose: a pile of malformed uploads is a Tuesday, a
+        # pile of analyzer errors is an incident.
+        #
+        # ASSUMPTION: 5% of documents. Low, because an analyzer error is
+        # PalCert's own bug rather than a bad upload — but still a guess
+        # without a production document mix behind it.
+        expr: |
+          sum by (analyzer) (rate(palcert_analyses_total{outcome="failed"}[10m]))
+            /
+          sum by (analyzer) (rate(palcert_analyses_total[10m]))
+            > 0.05
+        for: 10m
+        labels: { severity: page }
+        annotations:
+          summary: 'The {{ $labels.analyzer }} analyzer is failing on more than 5% of documents'
+
+      - alert: PalCertAnalyzerTimingOut
+        # ASSUMPTION: five timeouts in fifteen minutes. Depends entirely on
+        # the document mix, which PalCert has not seen in production.
+        expr: increase(palcert_analyses_total{outcome="timed_out"}[15m]) > 5
+        for: 5m
+        labels: { severity: ticket }
+        annotations:
+          summary: '{{ $labels.analyzer }} analyses are hitting the processing timeout'
+
+  - name: palcert.certificates
+    rules:
+      - alert: PalCertCertificatesStuckUnissued
+        # No invented rate or volume. A certificate that a customer has paid for
+        # and that has not been issued is a promise PalCert is not keeping;
+        # the only question is for how long, and an hour is generous.
+        expr: palcert_certificates{issuance_status=~"PENDING|ISSUING"} > 0
+        for: 1h
+        labels: { severity: page }
+        annotations:
+          summary: '{{ $value }} certificate(s) have been {{ $labels.issuance_status }} for an hour'
+
+  - name: palcert.payments
+    rules:
+      - alert: PalCertTopUpsFailing
+        # Operational outcome only. No amount, no currency, no provider
+        # payload, no customer — an alert must never become a financial
+        # reporting surface nobody authorized.
+        #
+        # ASSUMPTION: a quarter of top-ups failing. Card declines are normal
+        # and their rate is a property of the customer base, which PalCert
+        # does not have yet; this catches "the provider integration broke",
+        # not "several people had insufficient funds".
+        expr: |
+          sum(rate(palcert_balance_topups{status="FAILED"}[30m]))
+            /
+          clamp_min(sum(rate(palcert_balance_topups[30m])), 0.001)
+            > 0.25
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'More than a quarter of balance top-ups are failing'
+          description: >-
+            Payments are an outcome signal here. Reconciliation remains the
+            authority on what actually happened to money.
+
+  - name: palcert.storage
+    rules:
+      - alert: PalCertStorageUnavailable
+        # `unavailable` is the transport or a 5xx — the store could not serve.
+        # Kept apart from `not_found` and `refused`, which are ordinary
+        # answers: counting all three together would hide the only one that
+        # is an outage.
+        #
+        # No invented rate. An upload that cannot be stored surfaces to a
+        # customer as a generic error, so any sustained rate is worth a page.
+        expr: sum(rate(palcert_storage_operations_total{outcome="unavailable"}[5m])) > 0
+        for: 5m
+        labels: { severity: page }
+        annotations:
+          summary: 'Object storage is failing {{ $labels.operation }} calls'
+          description: >-
+            Bucket names and object keys are deliberately absent: an object key
+            identifies a document. Check the store's own health and the API's
+            readiness probe, which reports object storage as a dependency.
+
+      - alert: PalCertStorageRefusing
+        # ASSUMPTION: one refusal a second for ten minutes. A 4xx from the
+        # store means PalCert asked wrongly — a credential, a policy or a
+        # bucket configuration — and a steady trickle is a misconfiguration
+        # rather than a customer's bad input.
+        expr: sum(rate(palcert_storage_operations_total{outcome="refused"}[10m])) > 1
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'Object storage is refusing {{ $labels.operation }} calls'
+
+  - name: palcert.accounts
+    rules:
+      - alert: PalCertLoginFailureSpike
+        # ASSUMPTION: 40% of login attempts failing over fifteen minutes.
+        # People mistype passwords; a credential-stuffing run fails almost
+        # everything. No measured baseline behind the ratio.
+        #
+        # The label is the event type and nothing else. Whose login failed is
+        # a question the security-event table answers, behind the database's
+        # access controls.
+        expr: |
+          sum(rate(palcert_security_events_total{type="LOGIN_FAILED"}[15m]))
+            /
+          clamp_min(
+            sum(rate(palcert_security_events_total{type=~"LOGIN_FAILED|LOGIN_SUCCEEDED"}[15m])),
+            0.001
+          )
+            > 0.4
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'More than 40% of login attempts are failing'
+
+      - alert: PalCertLoginThrottlingSustained
+        # ASSUMPTION: sustained throttling for fifteen minutes. Throttling is
+        # the defence working; sustained throttling means something is still
+        # pushing against it.
+        expr: sum(rate(palcert_security_events_total{type="LOGIN_THROTTLED"}[10m])) > 0.5
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'Login throttling has been firing continuously'
+
+  - name: palcert.credentials
+    rules:
+      - alert: PalCertApiClientAuthFailureSpike
+        # Refusals as a share of attempts. 50% over fifteen minutes: normal
+        # integrations do not fail half their calls, and a credential-stuffing
+        # run does. ASSUMPTION — no measured baseline behind the ratio.
+        #
+        # The metric is outcome-only by design: splitting it by reason would
+        # rebuild on the metrics endpoint the enumeration oracle Phase 19's
+        # uniform refusal exists to deny.
+        expr: |
+          sum(rate(palcert_api_client_auth_total{outcome="refused"}[15m]))
+            /
+          clamp_min(sum(rate(palcert_api_client_auth_total[15m])), 0.001)
+            > 0.5
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'More than half of API client authentications are being refused'
+
+      - alert: PalCertApiClientsThrottledHeavily
+        # ASSUMPTION: a sustained refusal every second. This is a "somebody's
+        # integration is misconfigured" signal, not a security one, and its
+        # threshold depends on how many clients exist.
+        expr: sum(rate(palcert_api_client_throttled_total[10m])) > 1
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'API clients are being rate limited continuously'
+
+  - name: palcert.telemetry
+    rules:
+      - alert: PalCertMetricsCollectorDown
+        # Without this, a database outage makes every job gauge vanish and
+        # "no data" reads exactly like "no backlog" — on a dashboard and,
+        # worse, in every rule above.
+        expr: palcert_metrics_collector_up == 0
+        for: 5m
+        labels: { severity: page }
+        annotations:
+          summary: '{{ $labels.instance }} cannot read operational state from the database'
+          description: >-
+            Every job, delivery, certificate and payment alert is blind while
+            this is firing. Treat it as an outage of the alerting itself.
+
+      - alert: PalCertReleaseSplitBrain
+        # More than one commit serving at once, for longer than a rollout
+        # takes. Either the deploy stalled half way or a replica did not
+        # restart; both mean two different versions are answering customers.
+        expr: count(count by (commit) (palcert_build_info)) > 1
+        for: 30m
+        labels: { severity: ticket }
+        annotations:
+          summary: 'More than one PalCert build is serving traffic'
+
+      - alert: PalCertMemoryGrowing
+        # Telemetry itself must not become a memory leak, and neither must
+        # anything else. Written as a growth rule rather than against a
+        # container limit, because PalCert does not set one and a rule that
+        # compares against a limit nobody configured never fires.
+        #
+        # 25% growth sustained over six hours. ASSUMPTION — a shape, not a
+        # measurement: a process that grows a quarter in a quiet afternoon is
+        # not reclaiming. Re-derive from a real traffic profile.
+        expr: |
+          (
+            palcert_process_resident_memory_bytes
+              -
+            palcert_process_resident_memory_bytes offset 6h
+          )
+            /
+          clamp_min(palcert_process_resident_memory_bytes offset 6h, 1)
+            > 0.25
+        for: 30m
+        labels: { severity: ticket }
+        annotations:
+          summary: '{{ $labels.instance }} resident memory grew more than 25% in six hours'
+          description: >-
+            Check metric cardinality first. A label that took an identifier
+            grows the registry one timeseries per document, user or
+            organization, and the scrape gets slower as the memory grows —
+            palcert_metrics_collector_duration_seconds is the corroborating
+            signal.

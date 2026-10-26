@@ -1,0 +1,7 @@
+{
+  "contract": "Location",
+  "description": "Every location states the version of the location schema it follows.",
+  "payload": {
+    "nodeId": "p-1"
+  }
+}

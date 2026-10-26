@@ -1,0 +1,8 @@
+{
+  "contract": "FactScope",
+  "description": "An ELEMENT scope must name its element type, or nothing can select it.",
+  "payload": {
+    "kind": "ELEMENT",
+    "property": "fontSize"
+  }
+}

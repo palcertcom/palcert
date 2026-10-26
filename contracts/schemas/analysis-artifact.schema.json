@@ -1,0 +1,958 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://palcert.dev/schemas/analysis-artifact.schema.json",
+  "title": "PalCert analysis artifact",
+  "description": "The envelope a DOCX analysis produces (Phase 6) and a check consumes (Phase 7).\n\nPhase 6 left this shape defined only in Python, which meant Node had to parse whatever dictionaries it happened to receive. That is exactly the drift the single-schema strategy exists to prevent, so the envelope is now a shared contract validated by both runtimes against the same fixtures.\n\nThe structural model is deliberately loose here: it is rich, analyzer-specific and for SmartFix and debugging, and pinning every field of it in a cross-language contract would make every analyzer improvement a contract change. What *is* pinned is everything a consumer depends on — the versions, the source identity, the fact set and the warnings.",
+  "$defs": {
+    "Sha256Hex": {
+      "title": "Sha256Hex",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "AnalyzerInfo": {
+      "title": "AnalyzerInfo",
+      "description": "Which analyzer produced this. The version is semantic and deliberately not a git commit: a stored artifact is interpreted through it for ever.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        }
+      }
+    },
+    "AnalysisSource": {
+      "title": "AnalysisSource",
+      "description": "What was analyzed. `sha256` is the digest the analyzer verified the bytes against before believing anything.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["documentId", "sha256"],
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sha256": {
+          "$ref": "#/$defs/Sha256Hex"
+        }
+      }
+    },
+    "AnalysisWarningCode": {
+      "title": "AnalysisWarningCode",
+      "description": "Closed set. Downstream code must never parse warning prose, because there is none to parse.\n\nPhase 13 adds the PDF_* codes. Extending the enum is additive and deliberately not a schema version bump: every artifact written before Phase 13 contains only codes this set still holds, so historical DOCX artifacts stay valid and their hashes stay correct.",
+      "enum": [
+        "STYLE_PARENT_MISSING",
+        "STYLE_CYCLE",
+        "STYLE_CHAIN_TOO_DEEP",
+        "THEME_MISSING",
+        "THEME_REFERENCE_UNRESOLVED",
+        "NUMBERING_REFERENCE_MISSING",
+        "NUMBERING_PART_MISSING",
+        "RELATIONSHIP_TARGET_MISSING",
+        "UNSUPPORTED_MARKUP",
+        "ALTERNATE_CONTENT_FALLBACK_USED",
+        "ALTERNATE_CONTENT_BRANCH_SELECTED",
+        "TABLE_STYLE_PARTIAL",
+        "TABLE_STYLE_CONDITIONAL_IGNORED",
+        "LAYOUT_NOT_RENDERED",
+        "APPLICATION_DEFAULT_UNRESOLVED",
+        "MIRRORED_MARGINS_PAGE_SIDE_UNKNOWN",
+        "PART_UNREADABLE",
+        "NODE_ID_TRUNCATED",
+        "FIELD_INSTRUCTION_UNPARSED",
+        "CAPTION_DETECTION_PARTIAL",
+        "REVISION_MARKUP_PARTIAL",
+        "METADATA_PART_MISSING",
+        "LEGACY_EQUATION_SEMANTICS_UNAVAILABLE",
+        "PDF_TEXT_MAPPING_INCOMPLETE",
+        "PDF_UNTAGGED",
+        "PDF_PAGE_BOX_INVALID",
+        "PDF_FONT_IDENTITY_UNRESOLVED",
+        "PDF_FONT_SUBSTITUTION_POSSIBLE",
+        "PDF_READING_ORDER_DERIVED",
+        "PDF_LAYOUT_PARTIAL",
+        "PDF_IMAGE_ONLY_PAGE",
+        "PDF_HYBRID_TEXT_LAYER",
+        "PDF_ACTIVE_CONTENT_PRESENT",
+        "PDF_ATTACHMENT_PRESENT",
+        "PDF_XFA_PRESENT",
+        "PDF_SIGNATURE_PRESENT",
+        "PDF_UNSUPPORTED_OBJECT",
+        "PDF_RENDER_LIMIT_REACHED",
+        "PDF_ENCRYPTED_DOCUMENT",
+        "PDF_METADATA_CONFLICT",
+        "PDF_FORM_DEPTH_LIMIT_REACHED",
+        "PDF_OBJECT_LIMIT_REACHED"
+      ]
+    },
+    "AnalysisWarning": {
+      "title": "AnalysisWarning",
+      "description": "A coded condition that reduced what the analyzer could see. `detail` carries identifiers — style ids, part names, counts — and never document text.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "detail"],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/AnalysisWarningCode"
+        },
+        "detail": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "maxProperties": 20
+        }
+      }
+    },
+    "CitationEvidenceLocation": {
+      "title": "CitationEvidenceLocation",
+      "description": "Where one piece of citation evidence was observed.\n\nThe same shape as the Phase 4 fact location, narrowed to what citation evidence can honestly carry. `nodeId` is the only required locator, as there. `page` is present only when the extractor genuinely knew it — structural DOCX analysis never does, and inventing one would make a PDF-shaped promise about a DOCX. `story` says which WordprocessingML story the evidence came from, because a citation in a footnote is not a citation in the body and a rule that conflated them would be answering a different question.\n\nNo XPath, no caller-supplied selector: `path` is the analyzer's own bounded node path, exactly as in `evaluation.schema.json`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locationSchemaVersion", "nodeId"],
+      "properties": {
+        "locationSchemaVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "nodeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "path": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "story": {
+          "title": "CitationEvidenceStory",
+          "description": "The WordprocessingML story the evidence came from. Absent for PDF evidence, which has pages rather than stories.",
+          "enum": ["MAIN_DOCUMENT", "HEADER", "FOOTER", "FOOTNOTE", "ENDNOTE", "TEXTBOX"]
+        }
+      }
+    },
+    "CitationSourceKind": {
+      "title": "CitationSourceKind",
+      "description": "How the observation was obtained. OOXML is read from markup; PDF_TEXT and PDF_LAYOUT are the Phase 13 extraction and grouping layers; HEURISTIC is PalCert classifying rather than reading, and is the value that keeps such evidence out of the deterministic projector.",
+      "enum": ["OOXML", "PDF_TEXT", "PDF_LAYOUT", "HEURISTIC"]
+    },
+    "CitationParseStatus": {
+      "title": "CitationParseStatus",
+      "enum": ["PARSED", "PARTIAL", "UNPARSED"]
+    },
+    "CitationConfidence": {
+      "title": "CitationConfidence",
+      "description": "A graded answer from a heuristic, as a decimal string between 0 and 1.\n\nOptional everywhere and forbidden for exact extraction: inventing 1.0 for an OOXML field read would make a meaningless number look like a measured one, which is the same rule `FactProvenance.confidence` states in evaluation.schema.json.\n\nEnforced, not merely stated: the semantic integrity pass rejects a confidence on any observation whose `sourceKind` is not HEURISTIC. It lives there rather than in a schema conditional so that a malformed artifact is reported by code alongside the other graph defects, in one place, in both runtimes.",
+      "type": "string",
+      "pattern": "^(0(\\.[0-9]{1,6})?|1(\\.0{1,6})?)$"
+    },
+    "CitationIdentifierScheme": {
+      "title": "CitationIdentifierScheme",
+      "enum": ["DOI", "ISBN", "ISSN", "URL"]
+    },
+    "CitationIdentifier": {
+      "title": "CitationIdentifier",
+      "description": "One identifier observed in a reference entry or a Word source.\n\n`raw` is what was written, kept verbatim so a normalization decision is always auditable. `normalized` is the identity value — for a DOI written as a resolver URL, `raw` is `https://doi.org/10.1234/abc` and `normalized` is the DOI core `10.1234/abc`, because the Phase 4 DOI matcher expects the core and would reject the URL.\n\n`intentEvidence` is what made PalCert treat the span as this identifier class at all: a `doi:` label, a `doi.org` host, an `ISBN` prefix, a URL scheme. Without it a permissive pattern match is a guess, and a guess is not an identifier.\n\n`boundaryStatus` records whether the end of the value was determinable. A DOI suffix may legitimately contain and end with `.`, `,`, `;`, `)` or `]`, so a candidate ending in one of those is AMBIGUOUS: PalCert cannot tell content from sentence punctuation and does not guess. `syntaxStatus` is an offline syntax check only — no resolver, no network, and never a statement that the identifier exists.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scheme", "raw", "intentEvidence", "boundaryStatus", "syntaxStatus"],
+      "properties": {
+        "scheme": {
+          "$ref": "#/$defs/CitationIdentifierScheme"
+        },
+        "raw": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "normalized": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "intentEvidence": {
+          "title": "CitationIdentifierIntent",
+          "description": "What marked the span as this identifier class. NONE is never projected and exists so a bare candidate can still be recorded as evidence.",
+          "enum": ["LABEL_PREFIX", "RESOLVER_HOST", "URL_SCHEME", "NONE"]
+        },
+        "boundaryStatus": {
+          "title": "CitationIdentifierBoundaryStatus",
+          "enum": ["UNAMBIGUOUS", "AMBIGUOUS"]
+        },
+        "syntaxStatus": {
+          "title": "CitationIdentifierSyntaxStatus",
+          "enum": ["VALID", "INVALID", "AMBIGUOUS", "NOT_CHECKED"]
+        }
+      }
+    },
+    "CitationAuthorToken": {
+      "title": "CitationAuthorToken",
+      "description": "One author as observed. `raw` is what the document says; `normalizedFamily` is the identity token used for exact author-year linking, with particles kept attached — splitting `van Dijk` into `Dijk` is how a match is lost. `corporate` marks an organisational author, which has no family/given split to make.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw", "corporate"],
+      "properties": {
+        "raw": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "normalizedFamily": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "corporate": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CitationOccurrence": {
+      "title": "CitationOccurrence",
+      "description": "One citation as it appears in the document.\n\nArtifact evidence. Being here does not make it deterministic rule evidence: only the projector allow-list decides that, and in Phase 18 v1 no field of this object is projected.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ordinal",
+        "sourceKind",
+        "citationKind",
+        "parseMethod",
+        "parseStatus",
+        "location",
+        "rawText",
+        "targetCount",
+        "resolutionStatus",
+        "truncated"
+      ],
+      "properties": {
+        "id": {
+          "description": "Artifact-local identity, namespaced so a link can never point at the wrong collection.",
+          "type": "string",
+          "pattern": "^c[1-9][0-9]{0,5}$"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000
+        },
+        "sourceKind": {
+          "$ref": "#/$defs/CitationSourceKind"
+        },
+        "citationKind": {
+          "title": "CitationKind",
+          "enum": ["WORD_NATIVE_FIELD", "NUMERIC_LABEL", "AUTHOR_DATE", "NOTE_MARKER", "UNKNOWN"]
+        },
+        "parseMethod": {
+          "title": "CitationParseMethod",
+          "enum": ["FIELD_INSTRUCTION", "LABEL_PATTERN", "AUTHOR_DATE_PATTERN", "NONE"]
+        },
+        "parseStatus": {
+          "$ref": "#/$defs/CitationParseStatus"
+        },
+        "location": {
+          "$ref": "#/$defs/CitationEvidenceLocation"
+        },
+        "rawText": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "normalizedText": {
+          "type": "string",
+          "maxLength": 240
+        },
+        "nativeTag": {
+          "description": "The Word citation tag, kept only here: it is user content and never reaches a fact, a report or a log.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "identifiers": {
+          "description": "Identifiers the citation's **own text** states, most often a DOI in a footnote-style reference.\n\nThe same `CitationIdentifier` a reference entry carries, deliberately: a DOI is a DOI wherever it is written, and a second representation for the citation side would give the same value two shapes and two normalizations. `DOI_IDENTITY` compares the `normalized` field of one of these against the `normalized` field of a reference entry's, which is only possible because they are the same object.\n\nRead from the occurrence's own `rawText` and nowhere else. A DOI in the surrounding paragraph belongs to the paragraph; assigning it to the nearest citation would be proximity standing in for evidence, which is the guess this whole section exists to refuse.\n\nOptional and absent by default, so every artifact written before it existed stays valid.",
+          "type": "array",
+          "maxItems": 6,
+          "items": { "$ref": "#/$defs/CitationIdentifier" }
+        },
+        "numericLabels": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          }
+        },
+        "numericLabelsRaw": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "authorTokens": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "yearToken": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8
+        },
+        "locatorPresent": {
+          "type": "boolean"
+        },
+        "targetCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "resolutionStatus": {
+          "title": "CitationResolutionStatus",
+          "enum": ["LINKED", "AMBIGUOUS", "UNRESOLVED", "NOT_ATTEMPTED"]
+        },
+        "confidence": {
+          "description": "Present only when `sourceKind` is HEURISTIC.",
+          "$ref": "#/$defs/CitationConfidence"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ReferenceEntry": {
+      "title": "ReferenceEntry",
+      "description": "One *rendered* reference entry, as observed in the document.\n\nDeliberately not a `BibliographySource`: a Word source is a record in a data store, and this is text somebody can read on a page. A source may be uncited, unrendered, or rendered differently, and a rendered entry may have no source at all. Conflating the two would make both meaningless.\n\nArtifact evidence, never deterministic rule evidence in Phase 18 v1: the element identity of a rendered entry is established by classification, and coverage cannot repair a wrong element identity.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ordinal",
+        "sourceKind",
+        "location",
+        "rawText",
+        "parseMethod",
+        "parseStatus",
+        "identifiers",
+        "authors",
+        "duplicateStatus",
+        "citedByCount",
+        "truncated"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^r[1-9][0-9]{0,5}$"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "sourceKind": {
+          "$ref": "#/$defs/CitationSourceKind"
+        },
+        "location": {
+          "$ref": "#/$defs/CitationEvidenceLocation"
+        },
+        "rawText": {
+          "type": "string",
+          "maxLength": 1200
+        },
+        "normalizedText": {
+          "type": "string",
+          "maxLength": 1200
+        },
+        "label": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "labelRaw": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "parseMethod": {
+          "title": "ReferenceParseMethod",
+          "enum": [
+            "WORD_BIBLIOGRAPHY_FIELD",
+            "WORD_BIBLIOGRAPHY_STYLE",
+            "REGION_MEMBERSHIP",
+            "LAYOUT_BLOCK",
+            "NONE"
+          ]
+        },
+        "parseStatus": {
+          "$ref": "#/$defs/CitationParseStatus"
+        },
+        "confidence": {
+          "description": "Present only when `sourceKind` is HEURISTIC.",
+          "$ref": "#/$defs/CitationConfidence"
+        },
+        "identifiers": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "$ref": "#/$defs/CitationIdentifier"
+          }
+        },
+        "authors": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/CitationAuthorToken"
+          }
+        },
+        "year": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "containerTitle": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "volume": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "issue": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "pages": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "articleNumber": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "publisher": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "duplicateOf": {
+          "type": "string",
+          "pattern": "^r[1-9][0-9]{0,5}$"
+        },
+        "duplicateStatus": {
+          "title": "ReferenceDuplicateStatus",
+          "description": "DUPLICATE_CONFIRMED requires exact identity — an equal normalized DOI or ISBN, identical conservatively-normalized rendered text, or one exact Word source — and must name the `duplicateOf` it was confirmed against. POSSIBLE_DUPLICATE is advisory, never becomes a fact, and deliberately need not name one: it may stand for several plausible candidates, and choosing between them is exactly what PalCert declines to do.",
+          "enum": ["NONE", "POSSIBLE_DUPLICATE", "DUPLICATE_CONFIRMED"]
+        },
+        "citedByCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "regionOrdinal": {
+          "description": "The `ReferenceRegion` this entry was segmented from, when one was. Absent on an entry the author declared, which belongs to a structure tree rather than to a discovered region. A reader uses it to see which population a numeric link chose from, which is the whole difference between a document with one bibliography and a document with several.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ReferenceRegion": {
+      "title": "ReferenceRegion",
+      "description": "One stretch of the document that was read as a reference list.\n\nA document may have several — per-chapter bibliographies, an appendix with its own sources, a collection of articles — and they are never merged: label `[1]` in chapter two names a different work than label `[1]` in chapter one, and a document-wide index would report both as confidently resolved to whichever entry came first.\n\nEvidence, never authority. A region discovered here never emits `referenceRegionPresent`; that property stays exact-only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ordinal",
+        "sourceKind",
+        "family",
+        "headingLocation",
+        "firstPage",
+        "lastPage",
+        "entryCount",
+        "signals"
+      ],
+      "properties": {
+        "ordinal": {
+          "description": "Position in reading order, from 1. Stable across reruns of the same bytes.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "sourceKind": {
+          "$ref": "#/$defs/CitationSourceKind"
+        },
+        "family": {
+          "title": "ReferenceRegionFamily",
+          "description": "What the entries look like. NUMBERED is `[1] Smith, J.`; VANCOUVER is `1. Smith J, Jones A.`; AUTHOR_YEAR is `Smith, J. (2020).` The family is recorded rather than scored: a confidence says how much evidence there was, not what kind.",
+          "enum": ["NUMBERED", "VANCOUVER", "AUTHOR_YEAR"]
+        },
+        "headingLocation": {
+          "description": "The heading line that introduced the region. A heading is only ever one signal — a heading followed by prose is not a region — but it is the part of the evidence a reader can go and look at.",
+          "$ref": "#/$defs/CitationEvidenceLocation"
+        },
+        "firstPage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000
+        },
+        "lastPage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "signals": {
+          "description": "The named evidence that was present, sorted. The confidence is a function of exactly these, so a reader can recompute it.",
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "confidence": {
+          "description": "Present only when `sourceKind` is HEURISTIC.",
+          "$ref": "#/$defs/CitationConfidence"
+        }
+      }
+    },
+    "BibliographySource": {
+      "title": "BibliographySource",
+      "description": "One Word-managed bibliography source record.\n\nMetadata from the document's own data store, never a rendered entry. No part name, no relationship id and no raw custom XML is carried: the provenance that matters is that it came from the bibliography source store, and the rest is package implementation detail that would only widen what an artifact discloses.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "tag", "authors", "identifiers", "citedByCount"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^s[1-9][0-9]{0,5}$"
+        },
+        "tag": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "sourceType": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "authors": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/CitationAuthorToken"
+          }
+        },
+        "year": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "containerTitle": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "publisher": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "identifiers": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "$ref": "#/$defs/CitationIdentifier"
+          }
+        },
+        "citedByCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        }
+      }
+    },
+    "CitationReferenceLink": {
+      "title": "CitationReferenceLink",
+      "description": "One citation's relationship to one target, established by exact identity or not at all.\n\nThere is deliberately no fuzzy, semantic or AI link method. When more than one target is plausible the link is AMBIGUOUS and names every candidate; when none is supported it is UNRESOLVED. PalCert never selects the best-looking reference.\n\nThe shape of each status is fixed and checked by the semantic integrity pass: LINKED names a target and no candidates, AMBIGUOUS names at least two distinct existing candidates and no target, UNRESOLVED names neither.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["citationId", "linkStatus", "linkMethod", "candidateCount"],
+      "properties": {
+        "citationId": {
+          "type": "string",
+          "pattern": "^c[1-9][0-9]{0,5}$"
+        },
+        "linkStatus": {
+          "title": "CitationLinkStatus",
+          "enum": ["LINKED", "AMBIGUOUS", "UNRESOLVED"]
+        },
+        "linkMethod": {
+          "title": "CitationLinkMethod",
+          "enum": [
+            "NATIVE_TAG",
+            "DOI_IDENTITY",
+            "NUMERIC_LABEL",
+            "AUTHOR_YEAR_UNIQUE",
+            "STRUCTURED_TUPLE",
+            "INTERNAL_DESTINATION"
+          ],
+          "description": "The exact identity that established, or was attempted for, this link. Every value names a real attempt: there is no NONE, because a link row exists only when linking was attempted. A citation nobody tried to link has no link row at all and carries `resolutionStatus: NOT_ATTEMPTED`; an attempt that found nothing keeps the method it tried and reports `UNRESOLVED`, which is what makes 'we looked and found nothing' distinguishable from 'we never looked'.\n\nINTERNAL_DESTINATION means an explicit document-native link whose internal destination resolves to a *declared* reference entry — a PDF `/Link` annotation bound to its citation through the structure tree, whose `/GoTo` destination resolves to one entry the author tagged. It does not mean that a document contains a destination somewhere near some text: a destination that lands on no declared entry is UNRESOLVED, and one that lands on several is AMBIGUOUS. The other five values are unchanged and mean exactly what they meant before."
+        },
+        "targetId": {
+          "description": "The rendered entry or Word source this citation resolves to. Present only when linkStatus is LINKED.",
+          "type": "string",
+          "pattern": "^[rs][1-9][0-9]{0,5}$"
+        },
+        "candidateIds": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "pattern": "^[rs][1-9][0-9]{0,5}$"
+          }
+        },
+        "candidateCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    },
+    "CitationCoverageEntry": {
+      "title": "CitationCoverageEntry",
+      "description": "What PalCert could see of one citation evidence domain.\n\nThis explains the *artifact*, for an evidence panel to render honestly. It is **not** a substitute for `DocumentFactSet` coverage, which remains the only authority the rule engine consults: an advisory coverage value must never decide a verdict.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "status"],
+      "properties": {
+        "domain": {
+          "title": "CitationCoverageDomain",
+          "enum": [
+            "NATIVE_CITATIONS",
+            "NATIVE_BIBLIOGRAPHY_SOURCES",
+            "NATIVE_SOURCE_RESOLUTION",
+            "SEMANTIC_CITATIONS",
+            "SEMANTIC_REFERENCE_ENTRIES",
+            "REFERENCE_REGION"
+          ]
+        },
+        "status": {
+          "enum": ["COMPLETE", "PARTIAL", "UNAVAILABLE"]
+        },
+        "reasonCode": {
+          "title": "CitationCoverageReasonCode",
+          "description": "Why a domain is not complete. Closed set: an evidence panel translates these, so there is no prose to translate.",
+          "enum": [
+            "SEMANTIC_CLASSIFICATION_NOT_EXHAUSTIVE",
+            "FORMAT_HAS_NO_NATIVE_CITATIONS",
+            "SOURCE_STORE_UNREADABLE",
+            "SOURCE_STORE_ABSENT",
+            "STORY_PART_UNREADABLE",
+            "MARKUP_ALTERNATIVE_SELECTED",
+            "LIMIT_TRUNCATED",
+            "DUPLICATE_SOURCE_TAGS",
+            "NO_TEXT_LAYER",
+            "NOT_IMPLEMENTED"
+          ]
+        }
+      }
+    },
+    "CitationSummary": {
+      "title": "CitationSummary",
+      "description": "Counters and statuses only — no text of any kind.\n\nThe `observed*` names are deliberate: those are lower bounds from incomplete discovery, not exact counts, and a name that read as exact would invite a rule to be written against it. Only `nativeCitationCount` and `bibliographySourceCount` are exhaustive, and only for DOCX.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observedCitationCount",
+        "nativeCitationCount",
+        "observedReferenceCount",
+        "bibliographySourceCount",
+        "linkedCitationCount",
+        "ambiguousCitationCount",
+        "unresolvedCitationCount",
+        "observedUncitedReferenceCount",
+        "observedDuplicateReferenceCount",
+        "referenceRegionObserved",
+        "truncationFlags"
+      ],
+      "properties": {
+        "observedCitationCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "nativeCitationCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "observedReferenceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "bibliographySourceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "linkedCitationCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "ambiguousCitationCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "unresolvedCitationCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "observedUncitedReferenceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "observedDuplicateReferenceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "referenceRegionObserved": {
+          "type": "boolean"
+        },
+        "truncationFlags": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "title": "CitationTruncationFlag",
+            "enum": ["CITATIONS", "REFERENCES", "BIBLIOGRAPHY_SOURCES", "LINKS", "REFERENCE_REGION"]
+          }
+        }
+      }
+    },
+    "CitationAnalysis": {
+      "title": "CitationAnalysis",
+      "description": "The citation and reference evidence of one analysis (Phase 18).\n\nRich, bounded and **advisory**. Nothing here is a compliance verdict and nothing here is read by the rule engine: evidence becomes authority only by being projected into a `DocumentFactSet` fact through the Phase 18 projector allow-list, which in v1 holds four properties and none of this object's fields.\n\nVersioned independently of the artifact envelope so the evidence model can move without a new envelope version, and the other way round.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "citationAnalysisSchemaVersion",
+        "coverage",
+        "citations",
+        "references",
+        "bibliographySources",
+        "links",
+        "summary"
+      ],
+      "properties": {
+        "citationAnalysisSchemaVersion": {
+          "const": 1
+        },
+        "coverage": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "$ref": "#/$defs/CitationCoverageEntry"
+          }
+        },
+        "citations": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/CitationOccurrence"
+          }
+        },
+        "references": {
+          "type": "array",
+          "maxItems": 5000,
+          "items": {
+            "$ref": "#/$defs/ReferenceEntry"
+          }
+        },
+        "referenceRegions": {
+          "description": "The reference lists this document was read as having, in reading order. Optional, so an artifact produced before regions were recorded stays valid, and empty when nothing was discovered.",
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/ReferenceRegion"
+          }
+        },
+        "bibliographySources": {
+          "type": "array",
+          "maxItems": 5000,
+          "items": {
+            "$ref": "#/$defs/BibliographySource"
+          }
+        },
+        "links": {
+          "type": "array",
+          "maxItems": 40000,
+          "items": {
+            "$ref": "#/$defs/CitationReferenceLink"
+          }
+        },
+        "summary": {
+          "$ref": "#/$defs/CitationSummary"
+        }
+      }
+    },
+    "AnalysisArtifact": {
+      "title": "AnalysisArtifact",
+      "description": "One analysis, serialized. Consumers read `factSet`; `structuralModel` exists for SmartFix and support and is not interpreted by the rule engine.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysisSchemaVersion",
+        "analyzer",
+        "source",
+        "factSchemaVersion",
+        "structuralModel",
+        "factSet",
+        "warnings"
+      ],
+      "properties": {
+        "analysisSchemaVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "analyzer": {
+          "$ref": "#/$defs/AnalyzerInfo"
+        },
+        "source": {
+          "$ref": "#/$defs/AnalysisSource"
+        },
+        "format": {
+          "title": "AnalysisFormat",
+          "description": "Which analyzer family produced this artifact. Optional, and absent on every artifact written before Phase 13 — those are DOCX by construction, and adding a required field would have invalidated them. A consumer reads `format ?? 'DOCX'`.",
+          "enum": ["DOCX", "PDF"]
+        },
+        "factSchemaVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "structuralModel": {
+          "description": "Analyzer-specific structural detail. Its own version is `analysisSchemaVersion`; only that field is pinned here, so improving the model is not a cross-language contract change. Phase 13 adds a `kind` discriminator (DOCX or PDF) inside it so a reader can tell the two models apart without reaching for the envelope's optional `format`.",
+          "type": "object",
+          "required": ["analysisSchemaVersion"],
+          "properties": {
+            "analysisSchemaVersion": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          }
+        },
+        "factSet": {
+          "description": "The Phase 4 DocumentFactSet. Its members are pinned here only enough to be recognizable; the full shape is validated against evaluation.schema.json, which is its home.",
+          "type": "object",
+          "required": ["factSchemaVersion", "documentId", "extractor", "coverage", "facts"],
+          "properties": {
+            "factSchemaVersion": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "documentId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "extractor": {
+              "type": "object"
+            },
+            "coverage": {
+              "type": "array"
+            },
+            "facts": {
+              "type": "array"
+            }
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "#/$defs/AnalysisWarning"
+          }
+        },
+        "citationAnalysis": {
+          "$ref": "#/$defs/CitationAnalysis"
+        }
+      },
+      "allOf": [
+        {
+          "$comment": "The envelope version and the citation evidence move together, in both directions. A v2 artifact that simply forgot `citationAnalysis` would advertise Phase 18 capability and carry none, which is the precise lie this phase is built to avoid; a v1 artifact carrying it would be a historical record that grew a section after it was written. Stated as a conditional rather than a convention so neither can be committed by accident.\n\nFail-closed by construction: a version this rule does not name forbids the section rather than permitting it, so a future v3 has to say what it means before it can carry citation evidence.",
+          "if": {
+            "type": "object",
+            "properties": {
+              "analysisSchemaVersion": {
+                "const": 2
+              }
+            },
+            "required": ["analysisSchemaVersion"]
+          },
+          "then": {
+            "$comment": "Restated here only because a `required` that names a property the same subschema does not declare is an easy way to require a typo; `true` accepts whatever the envelope's own `properties` already says about it, so this adds no second definition to keep in step.",
+            "properties": {
+              "citationAnalysis": true
+            },
+            "required": ["citationAnalysis"]
+          },
+          "else": {
+            "not": {
+              "properties": {
+                "citationAnalysis": true
+              },
+              "required": ["citationAnalysis"]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

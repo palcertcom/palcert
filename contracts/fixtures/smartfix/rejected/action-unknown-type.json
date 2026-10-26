@@ -1,0 +1,23 @@
+{
+  "contract": "FixAction",
+  "why": "An action type PalCert does not understand must be rejected, never ignored: ignoring it would mean applying a plan the user approved while silently dropping part of it.",
+  "value": {
+    "actionId": "a-0001",
+    "ruleCode": "BODY_FONT_SIZE",
+    "actionType": "REWRITE_PARAGRAPH_TEXT",
+    "targetScope": "RUN_PROPERTIES",
+    "nodeId": "main/body/p:17/r:2",
+    "structuralPath": ["main", "body", "p:17", "r:2"],
+    "scriptChannel": "LATIN",
+    "before": {
+      "kind": "NUMBER",
+      "number": "11",
+      "unit": "POINT"
+    },
+    "after": {
+      "kind": "NUMBER",
+      "number": "12",
+      "unit": "POINT"
+    }
+  }
+}

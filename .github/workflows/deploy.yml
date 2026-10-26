@@ -1,0 +1,129 @@
+name: Deploy
+
+# Promote an already-built release to an environment.
+#
+# This workflow builds nothing. It resolves five digests from a release
+# manifest and deploys exactly those, which is what makes "the bytes tested in
+# staging are the bytes serving production" a fact rather than an intention.
+#
+# Staging and production are the same steps with different approval. The
+# difference is GitHub's environment protection, not a different code path:
+# two paths would eventually differ in a way nobody noticed until production.
+on:
+  workflow_dispatch:
+    inputs:
+      release-version:
+        description: 'Release to deploy, e.g. 0.1.0+abc1234 (or a rollback target)'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options: [staging, production]
+      reason:
+        description: 'Why (recorded in the deployment log; required for production)'
+        required: false
+        type: string
+
+# One deployment per environment at a time, and never cancelled: a cancelled
+# deployment can leave the migration job finished and the application not
+# rolled out, which is the single worst state to be in. A second request
+# queues behind the first.
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.release-version }} to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    # Production carries a required reviewer in its environment settings, so
+    # this job waits for a human before any step runs. Accidental production
+    # deployment from an arbitrary branch is prevented by that protection plus
+    # the branch check below — belt and braces, because it is production.
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The promotion boundary lives in a script rather than in `if:`
+      # conditions, so it can be exercised. Ten cases in
+      # scripts/release/test-promotion-boundary.sh cover the refusals: an
+      # unofficial ref, no approver, no reason, and four ways the staging
+      # evidence can fail to establish that these exact bytes passed staging.
+      #
+      # It runs after the manifest and freeze record are fetched, below,
+      # because it checks them.
+
+      # The manifest is fetched from the release it belongs to, not rebuilt.
+      # Recovery after a disaster uses exactly this step: the registry and the
+      # release record are enough, and no old commit has to be buildable.
+      - name: Fetch the release manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/release/fetch-manifest.sh '${{ inputs.release-version }}' release-manifest.json
+
+      - name: Verify the manifest and that every digest is pullable
+        run: |
+          echo '${{ secrets.GITHUB_TOKEN }}' \
+            | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+          node scripts/release/verify-manifest.mjs \
+            --manifest release-manifest.json --registry-check
+
+      # `github.actor` is the person who dispatched the run; for production the
+      # environment's required reviewer has already approved before any step
+      # ran, so this records who rather than asserting it on its own.
+      - name: Check this promotion is allowed
+        run: |
+          node scripts/release/check-promotion-allowed.mjs \
+            --environment '${{ inputs.environment }}' \
+            --ref '${{ github.ref }}' \
+            --reason '${{ inputs.reason }}' \
+            --approved-by '${{ github.actor }}' \
+            --freeze release-freeze.json \
+            ${STAGING_RECORD:+--staging-record "$STAGING_RECORD"}
+        env:
+          STAGING_RECORD: ${{ inputs.environment == 'production' && 'staging-deployment.json' || '' }}
+
+      - name: Render the deployment environment from the manifest
+        run: |
+          node scripts/release/render-deploy-env.mjs \
+            --manifest release-manifest.json --out images.env
+          # Proof, in the log, that this deployment is digest-addressed. A
+          # mutable tag here would mean the artifact could change under us.
+          cat images.env
+
+      # -----------------------------------------------------------------------
+      # The choreography Checkpoints 20.2 and 20.4 established, unchanged:
+      # migrate, verify the schema, roll out, readiness, and only then ingress.
+      # -----------------------------------------------------------------------
+      - name: Deploy
+        env:
+          DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+        run: bash scripts/release/deploy.sh release-manifest.json images.env
+
+      - name: Record the deployment
+        if: always()
+        run: |
+          node scripts/release/record-deployment.mjs \
+            --manifest release-manifest.json \
+            --environment '${{ inputs.environment }}' \
+            --actor '${{ github.actor }}' \
+            --workflow-run '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            --reason '${{ inputs.reason }}' \
+            --outcome '${{ job.status }}' \
+            --out deployment-record.json
+          cat deployment-record.json
+
+      - name: Attach the deployment record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-${{ inputs.environment }}-${{ github.run_id }}
+          path: deployment-record.json
+          retention-days: 365

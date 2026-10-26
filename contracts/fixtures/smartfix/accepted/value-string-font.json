@@ -1,0 +1,8 @@
+{
+  "contract": "FixValue",
+  "why": "A font family is a string value.",
+  "value": {
+    "kind": "STRING",
+    "text": "Times New Roman"
+  }
+}

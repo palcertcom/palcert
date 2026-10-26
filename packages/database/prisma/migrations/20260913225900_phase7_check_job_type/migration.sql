@@ -1,0 +1,13 @@
+-- =============================================================================
+-- Phase 7 — the check evaluation job type
+--
+-- In its own migration for the same reason as Phase 6's DOCX_ANALYSIS:
+-- PostgreSQL adds an enum value inside a transaction but will not let the
+-- *same* transaction use it, and Prisma runs each migration file in one
+-- transaction. Splitting the value out means it is committed before the
+-- Phase 7 migration references it.
+--
+-- Phase 5's ledger is reused rather than duplicated (§89): one queue, one
+-- outbox, one retry policy. Evaluating a check is another kind of work.
+-- =============================================================================
+ALTER TYPE "ProcessingJobType" ADD VALUE IF NOT EXISTS 'CHECK_EVALUATION';

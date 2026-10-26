@@ -1,0 +1,9 @@
+{
+  "contract": "Location",
+  "description": "Unknown fields are rejected rather than dropped, so an extractor cannot believe it sent evidence nobody read.",
+  "payload": {
+    "locationSchemaVersion": 1,
+    "nodeId": "p-1",
+    "surprise": true
+  }
+}

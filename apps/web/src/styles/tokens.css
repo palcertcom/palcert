@@ -1,0 +1,115 @@
+/* PalCert design tokens.
+ *
+ * The palette is the original PalCert design's own (the "Frame 36" swatches):
+ * white 60 %, charcoal 30 %, gold 10 %, with a warm cream neutral. Those four
+ * values are the source; everything else is derived from them.
+ *
+ * PalCert is light-only for now. The product used to restyle itself whenever
+ * the operating system asked for dark, into a charcoal and turquoise interface
+ * that was not PalCert; there is deliberately no dark block here.
+ *
+ * Contrast (WCAG 2.2 AA), measured rather than assumed:
+ *   charcoal on white 8.59 : 1, on cream 7.77 : 1
+ *   brand gold #C39547 on white is 2.72 : 1, so it is never used for text or as
+ *     the only way to see a control; it is the brand line, the active marker,
+ *     the icon tint and the button fill
+ *   --pc-gold-text #886832 on white 5.16 : 1, on cream 4.67 : 1 (gold words)
+ *   --pc-gold-text-strong #7a5c2b on the gold tint 5.10 : 1 (gold badges; the
+ *     plain gold text is only 4.25 : 1 there)
+ *   --pc-on-gold #262626 on the brand gold 5.56 : 1 (button labels)
+ */
+
+:root {
+  color-scheme: light;
+
+  /* --- The original palette ------------------------------------------------ */
+  --pc-white: #ffffff;
+  --pc-charcoal: #4c4c4c;
+  --pc-gold: #c39547;
+  --pc-cream: #f7f3ee;
+
+  /* --- Derived gold -------------------------------------------------------- */
+  --pc-gold-hover: #b08640; /* pressed / hover fill; 3.32 : 1 as a UI boundary */
+  --pc-gold-text: #886832; /* gold used as text or a link */
+  --pc-gold-text-strong: #7a5c2b; /* gold words on the gold tint */
+  --pc-gold-tint: #f2e8d7; /* selected navigation, soft highlight */
+  --pc-gold-line: #e4cfac; /* the thin gold rule under headers */
+  --pc-on-gold: #262626; /* text on a gold fill */
+
+  /* --- Semantic surfaces and text ----------------------------------------- */
+  --pc-background: var(--pc-white);
+  --pc-surface: var(--pc-white);
+  --pc-surface-muted: var(--pc-cream);
+  --pc-surface-sunken: #efe9e0;
+  --pc-text: var(--pc-charcoal);
+  --pc-text-strong: #2e2e2e;
+  --pc-text-muted: #6b6b6b; /* 5.33 : 1 on white, 4.82 : 1 on cream */
+  --pc-border: #e8e1d6;
+  --pc-border-strong: #d6cab6;
+  --pc-focus: var(--pc-gold-text);
+
+  /* --- Status (always paired with a label, never colour alone) ------------ */
+  --pc-success: #1e6b45;
+  --pc-success-bg: #e6f4ec;
+  --pc-warning: #8a5a00;
+  --pc-warning-bg: #fcf1da;
+  --pc-danger: #b42318;
+  --pc-danger-bg: #fdecea;
+  --pc-info: var(--pc-charcoal);
+  --pc-info-bg: #efeae3;
+
+  /* --- Type ---------------------------------------------------------------- */
+  /* Latin uses the system stack: it renders at once and needs nothing served.
+     Arabic does not: a system Arabic face differs from machine to machine and
+     is often a decorative or dated one, so PalCert ships its own — IBM Plex
+     Sans Arabic (SIL Open Font License 1.1, bundled from @fontsource and served
+     from PalCert's own origin, as the content security policy requires).
+     The original design has no Arabic screens to take a face from; Plex Arabic
+     is a plain institutional sans with a matching Latin, which keeps English
+     words, numbers and names inside Arabic text in one family. */
+  --pc-font-latin:
+    'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --pc-font-arabic:
+    'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Cairo', 'Tajawal', system-ui, sans-serif;
+  --pc-font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --pc-text-xs: 0.75rem; /* technical metadata */
+  --pc-text-sm: 0.875rem; /* secondary metadata, table headers, help */
+  --pc-text-base: 1rem; /* body */
+  --pc-text-md: 1.125rem; /* card titles */
+  --pc-text-lg: 1.375rem; /* section titles */
+  --pc-text-xl: 1.75rem; /* page titles */
+  --pc-text-2xl: 2.25rem; /* welcome / auth headings */
+  --pc-leading: 1.6;
+  --pc-leading-tight: 1.25;
+  /* Arabic needs room for its dots, marks and descenders. */
+  --pc-leading-arabic: 1.7;
+  --pc-leading-arabic-tight: 1.5;
+
+  /* Arabic weights, chosen rather than inherited from the Latin rules: Plex
+     Arabic at 700 is heavy, so bold is kept for page titles only. */
+  --pc-ar-weight-body: 400;
+  --pc-ar-weight-label: 500;
+  --pc-ar-weight-heading: 600;
+  --pc-ar-weight-title: 700;
+
+  /* --- Shape, space, depth ------------------------------------------------- */
+  --pc-radius-sm: 4px;
+  --pc-radius: 6px;
+  --pc-radius-lg: 10px;
+  --pc-space: 1rem;
+  --pc-shadow-card: 0 1px 2px rgb(76 76 76 / 6%), 0 4px 16px rgb(76 76 76 / 5%);
+  --pc-shadow-menu: 0 8px 28px rgb(46 46 46 / 14%);
+
+  /* --- Shell geometry ------------------------------------------------------ */
+  --pc-sidebar-width: 16.5rem;
+  --pc-topbar-height: 4.25rem;
+  --pc-content-max: 88rem;
+
+  /* --- Compatibility ------------------------------------------------------- */
+  /* Names the feature styles were written against. They now resolve to the
+     PalCert palette, so every existing screen adopts it without a rewrite. */
+  --pc-bg: var(--pc-background);
+  --pc-muted: var(--pc-text-muted);
+  --pc-accent: var(--pc-gold-text);
+}

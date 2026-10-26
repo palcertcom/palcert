@@ -1,0 +1,633 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  # Called by the release workflow, so a release candidate passes exactly the
+  # gates every commit passes -- one definition, not a copy that can drift.
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PYTHON_VERSION: '3.11'
+  # Built from pinned upstream source in each job that needs object storage.
+  MINIO_IMAGE: palcert/minio-ci:${{ github.run_id }}-${{ github.run_attempt }}
+  MINIO_MC_IMAGE: palcert/minio-ci:${{ github.run_id }}-${{ github.run_attempt }}
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Node — lint, typecheck, test
+    runs-on: [self-hosted, Linux, X64]
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: palcert
+          POSTGRES_PASSWORD: palcert_ci
+          POSTGRES_DB: palcert_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U palcert -d palcert_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+
+    env:
+      # Two identities (ADR-0018): the request path must not be able to bypass
+      # row-level security, or every isolation assertion would be vacuous.
+      DATABASE_URL: postgresql://palcert_app:palcert_app_ci@localhost:5432/palcert_test?schema=public
+      DATABASE_ADMIN_URL: postgresql://palcert:palcert_ci@localhost:5432/palcert_test?schema=public
+      APP_DB_PASSWORD: palcert_app_ci
+      REDIS_URL: redis://localhost:6379
+      STORAGE_ENDPOINT: http://localhost:9000
+      STORAGE_REGION: us-east-1
+      STORAGE_BUCKET: palcert-documents
+      STORAGE_QUARANTINE_BUCKET: palcert-quarantine
+      STORAGE_DERIVED_BUCKET: palcert-derived
+      STORAGE_ACCESS_KEY_ID: ci-access-key
+      STORAGE_SECRET_ACCESS_KEY: ci-secret-key
+      STORAGE_FORCE_PATH_STYLE: 'true'
+      MALWARE_SCANNER: fake
+      # The analyzer runs as its own service; the Node suites use a double for
+      # orchestration and the Python suites cover OOXML behaviour directly.
+      DOC_ENGINE_URL: http://localhost:8000
+      AUTH_SESSION_SECRET: ci-only-value-at-least-32-characters-long
+      # Throwaway 32-byte key, valid only against this ephemeral job.
+      AUTH_MFA_SECRET_KEY: Y2ktb25seS1tZmEta2V5LTMyLWJ5dGVzLXZhbHVlISE=
+      # CERTIFICATE_VERIFICATION_SECRET_KEY is derived in a step below rather
+      # than written here: a base64 literal beside the word SECRET is exactly
+      # what the secret scanner is for, and it is right to flag one even when
+      # the value is a throwaway. Deriving it from readable text keeps the
+      # scanner honest instead of teaching it to ignore this file.
+      API_CORS_ORIGINS: http://localhost:3000,https://app.palcert.test
+      APP_PUBLIC_WEB_URL: http://localhost:3000
+      # Argon2 is intentionally expensive; CI uses reduced parameters so the
+      # suite stays fast. Production floors are enforced by configuration
+      # validation and covered by their own test.
+      AUTH_ARGON2_MEMORY_KIB: '1024'
+      AUTH_ARGON2_TIME_COST: '1'
+      # Phase 8: the AI suites run against the in-process fake provider. Normal
+      # CI must never need a real provider credential, and never sends a
+      # repository or customer document to a third party.
+      AI_ENABLED: 'true'
+      AI_PRIMARY_PROVIDER: fake
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # A throwaway AES key for this job only, built from readable text so no
+      # high-entropy literal is ever committed. The API refuses to start
+      # without it, and nothing it protects outlives the job.
+      - name: Derive the throwaway certificate encryption key
+        run: |
+          printf 'CERTIFICATE_VERIFICATION_SECRET_KEY=%s\n' \
+            "$(printf 'ci-only-cert-key-32-bytes-value!' | base64 -w0)" >> "$GITHUB_ENV"
+
+      # Same reasoning as above: derived rather than written, so the secret
+      # scanner keeps flagging base64 beside the word KEY instead of learning
+      # to ignore this file. The ring is deliberately two keys, so CI exercises
+      # the decrypt-only path rather than only the single-key happy case.
+      - name: Derive the throwaway webhook keyring
+        run: |
+          printf 'WEBHOOK_ENCRYPTION_ACTIVE_KID=k2\n' >> "$GITHUB_ENV"
+          printf 'WEBHOOK_ENCRYPTION_KEYS=k1:%s,k2:%s\n' \
+            "$(printf 'ci-only-webhook-key-one-32-bytes' | base64 -w0)" \
+            "$(printf 'ci-only-webhook-key-two-32-bytes' | base64 -w0)" >> "$GITHUB_ENV"
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Select PostgreSQL 17 client tools
+        run: |
+          set -euo pipefail
+          pg_bin=/usr/lib/postgresql/17/bin
+          test -x "$pg_bin/psql"
+          test -x "$pg_bin/pg_dump"
+          test -x "$pg_bin/pg_restore"
+          echo "$pg_bin" >> "$GITHUB_PATH"
+
+          "$pg_bin/psql" --version
+          "$pg_bin/pg_dump" --version
+          "$pg_bin/pg_restore" --version
+
+          # pg_dump refuses to dump a server newer than its own major version.
+          # Assert the client/server majors explicitly so a runner package drift
+          # fails here in seconds instead of halfway through the DR drill.
+          db_url="${DATABASE_ADMIN_URL%%\?schema=*}"
+          server_num=$("$pg_bin/psql" "$db_url" --no-psqlrc --quiet --tuples-only --no-align -c 'SHOW server_version_num;')
+          server_major=$((server_num / 10000))
+          client_major=$("$pg_bin/pg_dump" --version | awk '{print $NF}' | cut -d. -f1)
+          test "$client_major" = "$server_major"
+
+      # Build the same upstream server/client releases from source. No registry
+      # mirror or storage-test skip: the existing S3 e2e gate still runs.
+      - name: Build CI object storage
+        run: docker build -f docker/minio-ci.Dockerfile -t "$MINIO_IMAGE" .
+
+      - name: Start MinIO (S3-compatible object storage)
+        run: |
+          set -euo pipefail
+          container="palcert-ci-minio-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          diagnose() {
+            docker logs "$container" 2>&1 || true
+          }
+          trap diagnose ERR
+
+          docker run -d --name "$container" -p 127.0.0.1:9000:9000 \
+            -e MINIO_ROOT_USER="$STORAGE_ACCESS_KEY_ID" \
+            -e MINIO_ROOT_PASSWORD="$STORAGE_SECRET_ACCESS_KEY" \
+            "$MINIO_IMAGE" server /data
+
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:9000/minio/health/live >/dev/null; then
+              echo "MinIO reported live after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "::error::MinIO did not become live within 60s"
+          diagnose
+          exit 1
+
+      - name: Build workspace packages
+        run: pnpm -r --filter "./packages/**" build
+
+      # A shared schema changed without regenerating the TypeScript beside it
+      # is exactly the cross-language drift the generation step exists to
+      # prevent, and it is invisible until something deserializes wrongly.
+      - name: Check generated contracts are current
+        run: pnpm --filter @palcert/contracts run generate:evaluation -- --check
+
+      # A changed report hash means every hash PalCert has ever issued stops
+      # verifying. That has to be a deliberate, versioned decision, not a
+      # side effect of a refactor.
+      - name: Verify the report golden
+        run: pnpm --filter @palcert/contracts run verify:report-golden
+
+      # The list of addresses PalCert refuses to open a socket to is generated
+      # from committed IANA snapshots, never hand-written. A drift here is a
+      # hole in the SSRF defence that no test elsewhere would notice.
+      - name: Check the IANA special-purpose registry is current
+        run: pnpm webhooks:check-iana
+
+      # The phase table and the phase sections are edited at opposite ends of a
+      # phase, which is how they came to disagree about ten of them at once.
+      - name: Check the phase documentation agrees with itself
+        run: pnpm docs:check-phases
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Apply database migrations
+        run: pnpm db:deploy
+
+      # `db:deploy` exiting 0 says the migration job ran, not that the database
+      # is at this build's level. Checkpoint 20.3 reported a green end-to-end
+      # run against a database missing that checkpoint's own migration, so the
+      # comparison is now a gate rather than an assumption.
+      - name: Verify the database is at this build's migration level
+        run: pnpm db:check-migrations
+
+      - name: Provision the least-privileged application database role
+        run: pnpm db:provision-app-role
+
+      - name: Provision object storage (buckets, versioning, CORS, lifecycle)
+        run: pnpm storage:provision
+
+      - name: Unit and integration tests
+        run: pnpm test
+
+      - name: API end-to-end tests
+        env:
+          # The full serial E2E suite is intentionally broad and can retain
+          # close to 2 GiB before V8's default heap ceiling on this self-hosted
+          # runner. Give only this step additional headroom; unit tests and
+          # application processes keep their normal limits.
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: pnpm --filter @palcert/api test:e2e
+
+      - name: Build applications
+        run: pnpm -r --filter "./apps/**" build
+
+      - name: Stop MinIO
+        if: always()
+        run: docker rm -f "palcert-ci-minio-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >/dev/null 2>&1 || true
+
+  python:
+    name: Python — lint, typecheck, test
+    runs-on: [self-hosted, Linux, X64]
+    defaults:
+      run:
+        working-directory: services/document-engine
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Format check
+        run: ruff format --check .
+
+      - name: Typecheck
+        run: mypy app
+
+      - name: Tests
+        run: pytest --cov=app --cov-report=term-missing
+
+  docker:
+    name: Production images build and run
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Build CI object storage
+        run: docker build -f docker/minio-ci.Dockerfile -t "$MINIO_IMAGE" .
+
+      # Every production image, not one of them.
+      #
+      # Until Phase 20 Checkpoint 2 this job built the document engine alone,
+      # and the three Node images had never been built by anything. All three
+      # were broken — stale incremental state made the API compile produce no
+      # output, `pnpm deploy` needed a flag pnpm 10 requires, the web image
+      # copied a `public/` directory that does not exist, and the generated
+      # Prisma client landed where nothing looks for it. A build that never
+      # runs is not a build.
+      #
+      # `load: true` so the images exist locally for the steps below. A
+      # `docker build` that succeeds proves the image assembles; it proves
+      # nothing about whether the thing inside it starts.
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          target: runtime
+          tags: palcert/api:ci
+          load: true
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Build worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          target: worker
+          tags: palcert/worker:ci
+          load: true
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Build migration image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          target: migrate
+          tags: palcert/migrate:ci
+          load: true
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/web.Dockerfile
+          tags: palcert/web:ci
+          load: true
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+      - name: Build document engine image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/document-engine.Dockerfile
+          tags: palcert/document-engine:ci
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+          load: true
+          cache-from: type=gha,scope=engine
+          cache-to: type=gha,mode=max,scope=engine
+
+      # What each image actually carries. Checkpoint 20.1 found the web image
+      # shipping the whole monorepo's devDependencies — vitest, eslint, the
+      # Prisma CLI — inside the public web surface. The packaging is fixed;
+      # this is what stops it drifting back, because an over-packed image
+      # starts fine and passes every functional test.
+      - name: Check images ship no development-only packages
+        run: |
+          node scripts/check-image-dependencies.mjs \
+            palcert/web:ci palcert/api:ci palcert/worker:ci palcert/migrate:ci \
+            palcert/document-engine:ci
+
+      # Throwaway values for a stack that is destroyed at the end of the job.
+      # Real deployments supply these from a secret store; the manifest holds
+      # none of them, which `release-topology.spec.ts` asserts separately.
+      - name: Write release-test environment
+        run: |
+          {
+            echo "POSTGRES_PASSWORD=ci-postgres-$RANDOM$RANDOM"
+            echo "POSTGRES_APP_PASSWORD=ci-app-$RANDOM$RANDOM"
+            echo "STORAGE_ACCESS_KEY_ID=ci-storage-user"
+            echo "STORAGE_SECRET_ACCESS_KEY=ci-storage-secret-$RANDOM$RANDOM"
+            echo "AUTH_MFA_SECRET_KEY=$(openssl rand -base64 32)"
+            echo "CERTIFICATE_VERIFICATION_SECRET_KEY=$(openssl rand -base64 32)"
+            echo "API_CLIENT_REVEAL_SECRET_KEY=$(openssl rand -base64 32)"
+            echo "STRIPE_SECRET_KEY=sk_test_ci_placeholder_never_called_00000000"
+            echo "STRIPE_WEBHOOK_SECRET=whsec_ci_placeholder_never_called_00000000"
+            # The Phase 17 keyring. Checkpoint 20.4's recovery drill found it missing
+            # from the release topology entirely and made it required there; this file
+            # is what the topology reads, so it has to supply it. Two keys, because a
+            # keyring with one key is a keyring that has never been rotated and so has
+            # never had its "every ciphertext names the key that sealed it" property
+            # exercised.
+            echo "WEBHOOK_ENCRYPTION_ACTIVE_KID=ci2"
+            echo "WEBHOOK_ENCRYPTION_KEYS=ci1:$(openssl rand -base64 32),ci2:$(openssl rand -base64 32)"
+            echo "API_IMAGE=palcert/api:ci"
+            echo "WORKER_IMAGE=palcert/worker:ci"
+            echo "MIGRATE_IMAGE=palcert/migrate:ci"
+            echo "WEB_IMAGE=palcert/web:ci"
+            echo "ENGINE_IMAGE=palcert/document-engine:ci"
+          } > release.env
+
+      # The images start, in the topology a release would deploy, from an
+      # empty database and an empty object store.
+      - name: Start the production-like stack
+        run: |
+          docker compose --env-file release.env \
+            -f docker/docker-compose.release.yml up -d --wait --wait-timeout 420
+
+      # Readiness, not liveness. Liveness only says a process exists; readiness
+      # says it can serve, which is what a deployment gate needs to know.
+      - name: Verify health and release identity
+        run: |
+          set -eu
+          ready=$(curl -sk https://localhost:8443/health/ready)
+          echo "$ready"
+          echo "$ready" | grep -q '"status":"ok"'
+
+          # The running build must be identifiable. A deployed system that
+          # cannot say which commit it is cannot be rolled back with confidence.
+          echo "$ready" | grep -q '"commit":"${{ github.sha }}"'
+
+          # The web surface answers through the same proxy.
+          test "$(curl -sk -o /dev/null -w '%{http_code}' https://localhost:8443/en)" = "200"
+
+          # The migration job ran once and exited cleanly.
+          test "$(docker inspect palcert-release-migrate-1 --format '{{.State.ExitCode}}')" = "0"
+
+      # Telemetry, proved in the topology rather than asserted in a unit test
+      # (Phase 20 Checkpoint 3). Two properties matter and they pull in
+      # opposite directions: a scraper on the deployment network must be able
+      # to read every service, and nothing outside may read any of them.
+      - name: Verify telemetry is scrapable inside and unreachable outside
+        run: |
+          set -eu
+
+          # Unreachable from outside, through the only published surface.
+          # 404, so the outside cannot even tell the endpoint exists.
+          test "$(curl -sk -o /dev/null -w '%{http_code}' https://localhost:8443/metrics)" = "404"
+          test "$(curl -sk -o /dev/null -w '%{http_code}' https://localhost:8443/metrics/)" = "404"
+
+          # Readable from inside, by every PalCert-owned process. `curl` runs
+          # in a throwaway container attached to the stack's own networks,
+          # which is exactly where a scraper would run.
+          scrape() {
+            docker run --rm --network "palcert-release_$2" curlimages/curl:8.11.1 \
+              -sf "http://$1/metrics"
+          }
+
+          api=$(scrape api:4000 edge)
+          grep -q '^palcert_build_info{' <<< "$api"
+          grep -q '"${{ github.sha }}"' <<< "$api"
+          # The HELP line, not a sample: an empty database legitimately has
+          # no queue-depth series, and asserting on a sample would make this
+          # gate pass only by accident of leftover data.
+          grep -q '^# HELP palcert_jobs_queue_depth' <<< "$api"
+          grep -q '^palcert_metrics_collector_up 1$' <<< "$api"
+
+          grep -q '^palcert_build_info{' <<< "$(scrape worker:4100 internal)"
+          grep -q '^palcert_build_info{' <<< "$(scrape document-engine:8000 internal)"
+          grep -q '^palcert_build_info{' <<< "$(scrape web:3000 edge)"
+
+          # Nothing an identifier could hide in. Every label in the exposition
+          # is drawn from a closed set; a UUID in one would mean a timeseries
+          # per document, user or organization.
+          #
+          # A here-string throughout this step, never `echo | grep -q`: under
+          # the runner's pipefail, grep stopping at its first match kills the
+          # writer with SIGPIPE once the exposition outgrows a pipe buffer --
+          # which fails the positive checks above and, negated, would *pass*
+          # this one exactly when an identifier is present (Checkpoint 20.9).
+          ! grep -Eq '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' <<< "$api"
+
+      # What the browser actually downloads (Phase 20 Checkpoint 7).
+      #
+      # `NEXT_PUBLIC_*` values are inlined into the client bundle at build
+      # time, so whatever they were when the image was built is what every
+      # visitor's browser uses forever. The published image carried
+      # `http://localhost:4000` as its API base for exactly that reason, and no
+      # release check noticed: they are all server-side `curl`, and "/en
+      # returns 200" is satisfied by server-rendered HTML that has not yet made
+      # an API call.
+      #
+      # The assets are copied out of the built image rather than from the
+      # workspace, because the image is the artifact that ships.
+      - name: Check the client bundle carries no deployment placeholder
+        run: |
+          set -eu
+          container=$(docker create palcert/web:ci)
+          rm -rf /tmp/web-bundle && mkdir -p /tmp/web-bundle
+          docker cp "$container:/app/apps/web/.next/static" /tmp/web-bundle/static
+          docker rm -f "$container" > /dev/null
+          node scripts/security/check-client-bundle.mjs /tmp/web-bundle
+
+      # The CI performance smoke (Phase 20 Checkpoint 6).
+      #
+      # Small on purpose. It exists to catch a gross regression — an endpoint
+      # that became an order of magnitude slower, or one that quietly stopped
+      # returning what it used to — on every build, and nothing more. The
+      # capacity sweeps, the saturation run and the soak stay out of CI: a
+      # thirty-minute benchmark on a shared runner measures the runner, and a
+      # job that takes thirty minutes is a job people learn to skip.
+      #
+      # k6 runs in a container on the stack's own edge network and addresses
+      # the API directly. Going through the proxy from the host would work
+      # too, but then a slow TLS handshake on a busy runner shows up as
+      # application latency, which is exactly the kind of noise that gets a
+      # smoke test deleted.
+      #
+      # No fixture, so no valid verification code: the scenario probes a miss,
+      # which exercises the same canonicalization and the same indexed lookup
+      # and differs only in the outcome. `PALCERT_VALID_CODE` is left unset and
+      # the hit half is skipped rather than faked.
+      - name: Performance smoke
+        run: |
+          docker run --rm --network palcert-release_edge \
+            -v "$PWD/perf:/perf:ro" -e K6_NO_PROGRESS=true \
+            grafana/k6:0.55.0 run \
+            -e PALCERT_BASE_URL=http://api:4000 \
+            /perf/k6/smoke.js
+
+      # The CI accessibility and browser smoke (Phase 20 Checkpoint 8).
+      #
+      # Deliberately a slice of the release matrix, not the matrix. The full
+      # gate is three engines x two locales x four widths x five journeys and
+      # takes the better part of an hour; run per-commit it would be the
+      # slowest thing in CI and the first thing anyone disables. This runs
+      # Chromium at one width over the three journeys marked `smoke`, in both
+      # English and Arabic, and keeps everything that makes the matrix worth
+      # having: the axe-core scan, the keyboard and focus checks, and the page
+      # guard's zero-tolerance rules for uncaught exceptions, hydration
+      # failures, CSP violations, mixed content and requests to development
+      # origins.
+      #
+      # Both locales stay in because a raw translation key or an RTL break is
+      # a per-commit regression, and the second locale is one more pass over
+      # pages the browser has already warmed.
+      #
+      # The fixture is created through PalCert's own HTTP API against this
+      # same stack, so the accounts the journeys use are accounts the product
+      # made. It is written outside the workspace: the bundle scanner and the
+      # secret scan both read the tree, and a file holding a test password has
+      # no business in either.
+      - name: Install QA tooling
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm exec playwright install chromium
+
+      - name: Accessibility and browser smoke
+        env:
+          BASE: https://localhost:8443
+          PROJECT: palcert-release
+          BROWSERS: chromium
+          LOCALES: en,ar
+          FIXTURE: ${{ runner.temp }}/qa-fixture.json
+          OUT: ${{ runner.temp }}/qa-fixture.json
+        run: |
+          set -eu
+          # The page guard's one narrowing — what it does *not* count as an
+          # uncaught error — has its own test, and a test run nowhere stops
+          # being true.
+          node --test qa/lib/page-guard.test.mjs
+          node qa/seed-fixture.mjs
+          node qa/run.mjs --smoke
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose --env-file release.env -f docker/docker-compose.release.yml logs --tail 80
+
+      - name: Tear down
+        if: always()
+        run: |
+          docker compose --env-file release.env \
+            -f docker/docker-compose.release.yml down -v --remove-orphans
+          rm -f release.env
+
+  security:
+    name: Dependency and secret scanning
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit Node dependencies (high severity and above)
+        run: pnpm audit --audit-level high
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # pip-audit cannot look up the editable project itself on PyPI and
+      # --strict turns that into a failure, so the audited set is the frozen
+      # dependency closure of a clean install rather than the environment.
+      - name: Audit Python dependencies
+        working-directory: services/document-engine
+        run: |
+          python -m venv .audit-venv
+          .audit-venv/bin/pip install --quiet pip-audit
+          .audit-venv/bin/pip install --quiet -e ".[dev]"
+          .audit-venv/bin/pip freeze --exclude-editable > audit-requirements.txt
+          .audit-venv/bin/pip-audit --strict --no-deps -r audit-requirements.txt
+
+      # The scan itself is unchanged: same action, same default rule set, same
+      # non-zero exit on any finding. Only the SARIF *artifact upload* is off.
+      #
+      # That upload is what actually broke the gate: the scan logged "no leaks
+      # found" and the step then died on "Failed to CreateArtifact: Artifact
+      # storage quota has been hit". A secret-scanning gate that fails on a
+      # billing counter rather than on a secret tells you nothing on a red run
+      # and nothing on a green one, so the upload goes and the verdict stays.
+      - name: Scan for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'

@@ -1,0 +1,19 @@
+# Findings gitleaks reports that are not secrets, each checked by hand
+# (Phase 20 Checkpoint 9). A fingerprint pins one line in one commit, so this
+# excuses exactly these historical lines and nothing written later; the
+# current tree marks the same fixtures inline with `gitleaks:allow`.
+#
+# Planted values that tests exist to detect, refuse or redact -- they must
+# look like credentials or the tests prove nothing:
+0a74d792b0cc688868c3ec35911299b7590ed292:packages/config/src/load-env.spec.ts:stripe-access-token:148
+0e78bdb28f93767100c672a618cfb8255fdda461:packages/config/src/release-manifest.spec.ts:stripe-access-token:144
+a9b74864f01177827a1a27cac083bf2b16c3341c:apps/api/src/common/logging/log-redaction.spec.ts:stripe-access-token:26
+# `http://api:4000/...` beside a shell `$1`, matched as "api:<key>":
+41c3f24d10edb114bb9543b8f8f4a5293703b4ae:perf/safety-under-load.sh:generic-api-key:406
+41c3f24d10edb114bb9543b8f8f4a5293703b4ae:perf/safety-under-load.sh:generic-api-key:410
+f329bb5ba0908cc42293a47f4b793d324647f9cc:scripts/release/staging-smoke.sh:generic-api-key:98
+f329bb5ba0908cc42293a47f4b793d324647f9cc:scripts/release/staging-smoke.sh:generic-api-key:109
+# A throwaway key for CI's ephemeral database, never used anywhere else:
+66fddcea4bb0188eeed82c543b5aabb31b070f7c:.github/workflows/ci.yml:generic-api-key:64
+# The documented local-development placeholder in .env.example (Phase 1):
+7b0bd28afe12bdf602124bda74d9694dceb713f4:.env.example:generic-api-key:55

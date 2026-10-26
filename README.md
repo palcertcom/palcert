@@ -1,15 +1,115 @@
-# PalCert source import
+# PalCert
 
-This new repository is being populated from the offline handover supplied on 2026-10-26. It uses new snapshot commits; it does not claim to preserve the original GitHub commit history or PR state.
+AI-powered document compliance, correction, verification and certification for
+universities, scientific journals, publishers and research institutions.
 
-The verified standalone history bundle remains available in the owner's handover package (334 reconstructed commits, 16 branches). Its SHA-256 is `d53b0412e972fdf1b5f5ffb36cb2d1fb7a9bbd8746259dac138e10f506630644`.
+```
+Define → Check → Fix → Verify → Approve → Certify
+```
 
-The import will preserve the exact source trees and executable bits for the base main, SmartFix, and institution revenue/reporting snapshots. Feature branches remain separate from main. No merge, release, CI success, or production deployment is implied by this import.
+PalCert lets an organization define its formatting and document requirements,
+checks uploaded DOCX/PDF documents against a specific immutable standard
+version, optionally repairs safe formatting violations (SmartFix), routes
+compliant documents for institutional approval, and issues a verifiable
+certificate.
 
-| Snapshot | Original commit | Reconstructed handover commit | Exact tree |
-| --- | --- | --- | --- |
-| Main baseline | 03b2d2cce4f8f485b575b5a8c0e1fa5668c47bcc | d9cd1cac556a2c201ddad1ff9e75aa80b5e9c8e5 | ea907445fd1de8e487e5f04d1f02214b43d6de0b |
-| SmartFix | ff3b1179c6c8afdac6bd7f47c51a7ff5f1451be7 | 7140bf929b67271066865da370b61bfa2fd0d3ce | fefb4907614c85ef4c550e95ae953ffcfd405004 |
-| Institution revenue and reports | f6b813a656be78e77b6ab38a3a06bd138cbf3b92 | 37a3f1f0eec473682d562460f4a0ab4126607ca7 | 52b04905f1bd09cbfe31704af6ab0ac0accf5df3 |
+> **Status: Phase 0 — Product and engineering foundation.**
+> No business functionality is implemented yet. See
+> [`docs/requirements/phases.md`](docs/requirements/phases.md) for the roadmap.
 
-Gitleaks 8.30.1 scanned all 334 reconstructed commits, including merges. The 19 findings were reviewed as planted test values, internal URLs, or explicit ephemeral CI/local development values. No live credential was identified in these findings. This is not a guarantee that every possible secret can be detected.
+## Repository layout
+
+```
+apps/
+  api/                  NestJS core backend (modular monolith)
+  web/                  Next.js frontend (Arabic/English, RTL-first)
+services/
+  document-engine/      Python/FastAPI document intelligence service
+packages/
+  contracts/            Shared types, error codes, API constants
+  config/               Centralized, validated configuration schemas
+  database/             Prisma schema, migrations and client factory
+docker/                 Local infrastructure and production images
+docs/
+  architecture/         System architecture
+  adr/                  Architecture decision records
+  requirements/         Product requirements and phase plan
+  security/             Security baseline and threat model
+  api/                  API conventions
+tests/                  Cross-service test assets
+test-documents/         Golden document fixtures (from Phase 6)
+infra/                  Deployment/ops assets
+```
+
+Directories are created when their phase begins — the tree above reflects what
+exists today.
+
+## Quick start
+
+Prerequisites: Node 22, pnpm 10, Python 3.11, Docker.
+
+```bash
+cp .env.example .env          # local placeholders only — never real secrets
+pnpm install
+pnpm docker:up                # PostgreSQL, Redis, MinIO
+pnpm db:generate && pnpm db:migrate
+pnpm dev                      # API on :4000, web on :3000
+```
+
+Document engine:
+
+```bash
+cd services/document-engine
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+uvicorn app.main:app --reload
+```
+
+Full instructions: [`docs/architecture/development-setup.md`](docs/architecture/development-setup.md).
+
+### Persistent full stack
+
+The whole product behind TLS at <https://localhost:8443>, built from the
+working tree, with data that survives rebuilds and restarts:
+
+```bash
+pnpm local:up        # build and start (never deletes data)
+pnpm local:status    # containers, volumes, URL
+pnpm local:stop      # stop (never deletes data)
+pnpm local:reset     # delete all local data — asks for confirmation
+```
+
+See [`docs/operations/local-environment.md`](docs/operations/local-environment.md).
+
+## Verifying the stack
+
+| Check | Command / URL |
+| --- | --- |
+| API liveness | `curl localhost:4000/health/live` |
+| API readiness | `curl localhost:4000/health/ready` |
+| API docs | <http://localhost:4000/api/docs> |
+| Web (English) | <http://localhost:3000/en> |
+| Web (Arabic, RTL) | <http://localhost:3000/ar> |
+| Document engine | `curl localhost:8000/health/live` |
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `pnpm lint` / `pnpm lint:fix` | ESLint across the TypeScript workspace |
+| `pnpm format` / `pnpm format:check` | Prettier |
+| `pnpm typecheck` | TypeScript project-wide type check |
+| `pnpm test` | Unit and integration tests (all packages) |
+| `pnpm --filter @palcert/api test:e2e` | API end-to-end tests (needs infra up) |
+| `pnpm py:lint` / `pnpm py:test` | Document engine lint and tests |
+| `pnpm db:migrate` | Create/apply a development migration |
+
+## Documentation
+
+- [Architecture overview](docs/architecture/overview.md)
+- [Architecture decision records](docs/adr/README.md)
+- [Product requirements](docs/requirements/product-overview.md)
+- [Phase plan](docs/requirements/phases.md)
+- [Security baseline](docs/security/baseline.md)
+- [API conventions](docs/api/conventions.md)
+- [Coding standards](docs/architecture/coding-standards.md)

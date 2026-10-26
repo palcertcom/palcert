@@ -1,0 +1,61 @@
+{
+  "description": "A blocking AI-assisted rule, representable only under rule schema v2. Phase 4 must not fabricate a verdict: INDETERMINATE with requiresReview.",
+  "rule": {
+    "ruleCode": "ETHICS.DECLARATION.PRESENT",
+    "scope": {
+      "kind": "SECTION",
+      "sectionKey": "ETHICS",
+      "property": "statementText"
+    },
+    "operator": "EXISTS",
+    "expected": {
+      "type": "NONE"
+    },
+    "evaluationMode": "AI_ASSISTED",
+    "severity": "CRITICAL",
+    "blocking": true,
+    "ruleSchemaVersion": 2
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "SECTION",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": []
+  },
+  "expectedResult": {
+    "ruleCode": "ETHICS.DECLARATION.PRESENT",
+    "outcome": "INDETERMINATE",
+    "reasonCode": "AI_REVIEW_REQUIRED",
+    "evidenceLevel": "NONE",
+    "requiresReview": true,
+    "blocking": true,
+    "severity": "CRITICAL",
+    "evaluationMode": "AI_ASSISTED",
+    "operator": "EXISTS",
+    "counts": {
+      "matchedFacts": 0,
+      "evaluatedFacts": 0,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "contract": "DocumentFactSet",
+  "description": "Coverage is required: absence of facts means nothing without it.",
+  "payload": {
+    "factSchemaVersion": 1,
+    "documentId": "d",
+    "extractor": {
+      "name": "s",
+      "version": "1"
+    },
+    "facts": []
+  }
+}

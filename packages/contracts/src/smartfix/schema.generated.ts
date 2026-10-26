@@ -1,0 +1,565 @@
+/**
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Source: contracts/schemas/evaluation.schema.json
+ * Regenerate: pnpm --filter @palcert/contracts run generate:evaluation
+ *
+ * Editing this by hand would reintroduce exactly the drift the generation step
+ * exists to prevent.
+ */
+
+/** The SmartFix JSON Schema, embedded verbatim from the source of truth. */
+export const SMARTFIX_JSON_SCHEMA = {
+  $schema: 'https://json-schema.org/draft/2020-12/schema',
+  $id: 'https://palcert.com/schemas/smartfix.schema.json',
+  title: 'PalCert SmartFix contracts',
+  description:
+    "The authoritative wire contract for deterministic DOCX correction, shared by the TypeScript API and the Python document engine. TypeScript types are GENERATED from this file (packages/contracts/src/smartfix/generated.ts); Python validates against it directly. Every action vocabulary here is CLOSED: additionalProperties is false and an unknown action type is rejected rather than ignored, because an action PalCert does not understand must never be executed against somebody's thesis.",
+  $defs: {
+    DecimalString: {
+      title: 'DecimalString',
+      description:
+        'An exact decimal carried as a string. A JSON number would be read back as a binary float, and a font size that drifts is a formatting change nobody asked for.',
+      type: 'string',
+      pattern: '^-?(0|[1-9][0-9]{0,17})(\\.[0-9]{1,12})?$',
+    },
+    Sha256Hex: {
+      title: 'Sha256Hex',
+      type: 'string',
+      pattern: '^[0-9a-f]{64}$',
+    },
+    NodeId: {
+      title: 'NodeId',
+      description:
+        'A Phase 6 structural locator, such as main/body/p:17/r:2. A locator, never a selector: nothing evaluates it as XPath and nothing accepts one from a client to address a document.',
+      type: 'string',
+      minLength: 1,
+      maxLength: 200,
+    },
+    FixEngineVersion: {
+      title: 'FixEngineVersion',
+      description:
+        "The mutation engine's own semantic version, deliberately separate from the application version, the git SHA and the DOCX analyzer version. A behaviour-changing transformation requires a decision about this number.",
+      type: 'string',
+      pattern: '^[0-9]+\\.[0-9]+\\.[0-9]+$',
+    },
+    FixTargetScope: {
+      title: 'FixTargetScope',
+      description: 'Which layer of the document an action edits.',
+      enum: ['SECTION_PROPERTIES', 'PARAGRAPH_PROPERTIES', 'RUN_PROPERTIES'],
+    },
+    ScriptChannel: {
+      title: 'ScriptChannel',
+      description:
+        'Which OOXML script channel a run-level action writes. WordprocessingML keeps Latin, complex-script and East Asian typography in separate attributes and elements, and writing the Latin channel for Arabic text changes nothing a reader can see while claiming the fix was applied. LATIN covers w:rFonts/@w:ascii and @w:hAnsi, w:sz, w:b and w:i; COMPLEX_SCRIPT covers @w:cs, w:szCs, w:bCs and w:iCs.',
+      enum: ['LATIN', 'COMPLEX_SCRIPT', 'EAST_ASIAN'],
+    },
+    FixActionType: {
+      title: 'FixActionType',
+      description:
+        'The closed vocabulary of transformations this engine can perform. Every one is a formatting property change on an existing element: nothing here creates, deletes, moves or rewrites content, because that is where academic meaning lives.',
+      enum: [
+        'SET_RUN_FONT_FAMILY',
+        'SET_RUN_FONT_SIZE',
+        'SET_RUN_BOLD',
+        'SET_RUN_ITALIC',
+        'SET_RUN_UNDERLINE',
+        'SET_PARAGRAPH_ALIGNMENT',
+        'SET_PARAGRAPH_LINE_SPACING',
+        'SET_PARAGRAPH_SPACING_BEFORE',
+        'SET_PARAGRAPH_SPACING_AFTER',
+        'SET_PARAGRAPH_INDENT_START',
+        'SET_PARAGRAPH_INDENT_END',
+        'SET_PARAGRAPH_FIRST_LINE_INDENT',
+        'SET_PARAGRAPH_HANGING_INDENT',
+        'SET_SECTION_MARGIN_TOP',
+        'SET_SECTION_MARGIN_BOTTOM',
+        'SET_SECTION_MARGIN_LEFT',
+        'SET_SECTION_MARGIN_RIGHT',
+        'SET_SECTION_HEADER_DISTANCE',
+        'SET_SECTION_FOOTER_DISTANCE',
+      ],
+    },
+    FixValue: {
+      title: 'FixValue',
+      description:
+        'A value an action sets or expects, as a closed three-way union. Written as alternatives rather than as one object with optional fields so that a numeric target can never be compared against a string by accident: a NUMBER value has a number and nothing else, and both runtimes reject the mixture.',
+      oneOf: [
+        {
+          title: 'FixNumberValue',
+          type: 'object',
+          additionalProperties: false,
+          required: ['kind', 'number'],
+          properties: {
+            kind: {
+              const: 'NUMBER',
+            },
+            number: {
+              $ref: '#/$defs/DecimalString',
+            },
+            unit: {
+              description: 'The PalCert canonical unit of the value.',
+              enum: ['POINT', 'MILLIMETRE', 'CENTIMETRE', 'INCH', 'COUNT', 'PERCENT', 'LINES'],
+            },
+          },
+        },
+        {
+          title: 'FixStringValue',
+          type: 'object',
+          additionalProperties: false,
+          required: ['kind', 'text'],
+          properties: {
+            kind: {
+              const: 'STRING',
+            },
+            text: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 200,
+            },
+          },
+        },
+        {
+          title: 'FixBooleanValue',
+          type: 'object',
+          additionalProperties: false,
+          required: ['kind', 'flag'],
+          properties: {
+            kind: {
+              const: 'BOOLEAN',
+            },
+            flag: {
+              type: 'boolean',
+            },
+          },
+        },
+      ],
+    },
+    FixAction: {
+      title: 'FixAction',
+      description:
+        'One deterministic property change on one element. There is no executable DSL here and there never will be: no XPath, no regular expression, no XML fragment and no script, from a user, an organization, a rule or a model. `before` is the effective value the planner observed; the mutator re-checks it and refuses rather than editing a document that has changed underneath the plan.',
+      type: 'object',
+      additionalProperties: false,
+      required: ['actionId', 'ruleCode', 'actionType', 'targetScope', 'nodeId', 'after'],
+      properties: {
+        actionId: {
+          description:
+            'Stable within a plan, so a manifest entry can name the action it came from.',
+          type: 'string',
+          pattern: '^[a-z0-9-]{1,64}$',
+        },
+        ruleCode: {
+          description: 'The standard rule that requires this change.',
+          type: 'string',
+          minLength: 1,
+          maxLength: 100,
+        },
+        actionType: {
+          $ref: '#/$defs/FixActionType',
+        },
+        targetScope: {
+          $ref: '#/$defs/FixTargetScope',
+        },
+        nodeId: {
+          $ref: '#/$defs/NodeId',
+        },
+        structuralPath: {
+          type: 'array',
+          maxItems: 32,
+          items: {
+            type: 'string',
+            maxLength: 40,
+          },
+        },
+        sectionIndex: {
+          description: 'Required for SECTION_PROPERTIES actions.',
+          type: 'integer',
+          minimum: 0,
+          maximum: 10000,
+        },
+        scriptChannel: {
+          $ref: '#/$defs/ScriptChannel',
+        },
+        before: {
+          $ref: '#/$defs/FixValue',
+        },
+        after: {
+          $ref: '#/$defs/FixValue',
+        },
+      },
+    },
+    FixabilityStatus: {
+      title: 'FixabilityStatus',
+      description: 'Why a failing rule can or cannot be corrected automatically.',
+      enum: [
+        'FIXABLE',
+        'PARTIALLY_FIXABLE',
+        'NOT_SUPPORTED',
+        'MANUAL_ACTION_REQUIRED',
+        'INSUFFICIENT_LOCATION_EVIDENCE',
+        'AMBIGUOUS_TARGET',
+        'SOURCE_DOCUMENT_UNSAFE_TO_EDIT',
+      ],
+    },
+    PlannedRule: {
+      title: 'PlannedRule',
+      description: 'One failing rule, and what SmartFix can do about it.',
+      type: 'object',
+      additionalProperties: false,
+      required: ['ruleCode', 'fixability', 'actionIds', 'targetCount', 'fixableTargetCount'],
+      properties: {
+        ruleCode: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 100,
+        },
+        fixability: {
+          $ref: '#/$defs/FixabilityStatus',
+        },
+        reasonCode: {
+          description: 'A stable code explaining a non-FIXABLE status, for the UI to translate.',
+          type: 'string',
+          maxLength: 80,
+        },
+        actionIds: {
+          type: 'array',
+          maxItems: 100000,
+          items: {
+            type: 'string',
+            pattern: '^[a-z0-9-]{1,64}$',
+          },
+        },
+        targetCount: {
+          description: 'How many elements must change for the rule to pass.',
+          type: 'integer',
+          minimum: 0,
+        },
+        fixableTargetCount: {
+          description: 'How many of them SmartFix can change safely.',
+          type: 'integer',
+          minimum: 0,
+        },
+        autofix: {
+          enum: ['NONE', 'SAFE', 'ADVANCED'],
+        },
+        evaluationMode: {
+          enum: ['DETERMINISTIC', 'AI_ASSISTED', 'MANUAL'],
+        },
+      },
+    },
+    SmartFixPlan: {
+      title: 'SmartFixPlan',
+      description:
+        'Exactly what PalCert intends to change, bound to exactly the artifacts it was computed from. A plan is free, immutable and hashed; execution uses the approved plan and never a regenerated one.',
+      type: 'object',
+      additionalProperties: false,
+      required: ['planSchemaVersion', 'source', 'engine', 'rules', 'actions'],
+      properties: {
+        planSchemaVersion: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 1000,
+        },
+        source: {
+          type: 'object',
+          additionalProperties: false,
+          required: [
+            'documentVersionId',
+            'documentSha256',
+            'analysisArtifactSha256',
+            'standardVersionId',
+            'standardContentHash',
+            'reportHash',
+            'ruleSchemaVersion',
+            'factSchemaVersion',
+          ],
+          properties: {
+            checkId: {
+              type: 'string',
+              maxLength: 64,
+            },
+            checkRunId: {
+              type: 'string',
+              maxLength: 64,
+            },
+            documentVersionId: {
+              type: 'string',
+              maxLength: 64,
+            },
+            documentSha256: {
+              $ref: '#/$defs/Sha256Hex',
+            },
+            analysisArtifactSha256: {
+              $ref: '#/$defs/Sha256Hex',
+            },
+            standardVersionId: {
+              type: 'string',
+              maxLength: 64,
+            },
+            standardContentHash: {
+              type: 'string',
+              maxLength: 100,
+            },
+            reportHash: {
+              $ref: '#/$defs/Sha256Hex',
+            },
+            ruleSchemaVersion: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 1000,
+            },
+            factSchemaVersion: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 1000,
+            },
+          },
+        },
+        engine: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['fixEngineName', 'fixEngineVersion', 'capabilityRegistryVersion'],
+          properties: {
+            fixEngineName: {
+              type: 'string',
+              maxLength: 80,
+            },
+            fixEngineVersion: {
+              $ref: '#/$defs/FixEngineVersion',
+            },
+            capabilityRegistryVersion: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 1000,
+            },
+          },
+        },
+        refusal: {
+          description:
+            'Set when the source document cannot be edited at all — tracked changes, document protection or a digital signature. The plan then carries no actions, and says why in a code the UI can translate.',
+          type: 'object',
+          additionalProperties: false,
+          required: ['code'],
+          properties: {
+            code: {
+              enum: [
+                'SMARTFIX_TRACKED_CHANGES_UNSUPPORTED',
+                'SMARTFIX_DOCUMENT_PROTECTED',
+                'SMARTFIX_SIGNED_DOCUMENT_UNSUPPORTED',
+                'SMARTFIX_SOURCE_FORMAT_UNSUPPORTED',
+              ],
+            },
+          },
+        },
+        rules: {
+          type: 'array',
+          maxItems: 5000,
+          items: {
+            $ref: '#/$defs/PlannedRule',
+          },
+        },
+        actions: {
+          type: 'array',
+          maxItems: 100000,
+          items: {
+            $ref: '#/$defs/FixAction',
+          },
+        },
+      },
+    },
+    ChangeManifestEntry: {
+      title: 'ChangeManifestEntry',
+      description:
+        'One change that was actually applied, verified against the corrected document. Deliberately carries no paragraph text: a formatting change is described by where it happened and what the value was, and storing the sentence would be storing the thesis.',
+      type: 'object',
+      additionalProperties: false,
+      required: ['actionId', 'ruleCode', 'actionType', 'nodeId', 'before', 'after'],
+      properties: {
+        actionId: {
+          type: 'string',
+          pattern: '^[a-z0-9-]{1,64}$',
+        },
+        ruleCode: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 100,
+        },
+        actionType: {
+          $ref: '#/$defs/FixActionType',
+        },
+        nodeId: {
+          $ref: '#/$defs/NodeId',
+        },
+        scriptChannel: {
+          $ref: '#/$defs/ScriptChannel',
+        },
+        sectionIndex: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 10000,
+        },
+        before: {
+          $ref: '#/$defs/FixValue',
+        },
+        after: {
+          $ref: '#/$defs/FixValue',
+        },
+        partName: {
+          description: 'The package part the change was written to.',
+          type: 'string',
+          maxLength: 300,
+        },
+      },
+    },
+    IntegrityProofs: {
+      title: 'IntegrityProofs',
+      description:
+        'Machine proofs that the transformation changed formatting and nothing else. These are safety evidence, not user-facing content: each is a digest over a canonical projection of the package, computed identically before and after.',
+      type: 'object',
+      additionalProperties: false,
+      required: [
+        'sourceVisibleTextHash',
+        'outputVisibleTextHash',
+        'sourceMediaSetHash',
+        'outputMediaSetHash',
+        'sourceFieldInstructionHash',
+        'outputFieldInstructionHash',
+        'sourceRelationshipHash',
+        'outputRelationshipHash',
+      ],
+      properties: {
+        sourceVisibleTextHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        outputVisibleTextHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        sourceMediaSetHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        outputMediaSetHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        sourceFieldInstructionHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        outputFieldInstructionHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        sourceRelationshipHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        outputRelationshipHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+      },
+    },
+    ChangeManifest: {
+      title: 'ChangeManifest',
+      description:
+        'What SmartFix actually changed, with the proofs that it changed nothing else. Produced by the mutation engine from the corrected package, never copied from the plan: a planned action is an intention, and only the output is evidence.',
+      type: 'object',
+      additionalProperties: false,
+      required: [
+        'manifestSchemaVersion',
+        'engine',
+        'planHash',
+        'sourceSha256',
+        'outputSha256',
+        'entries',
+        'integrity',
+        'changedParts',
+      ],
+      properties: {
+        manifestSchemaVersion: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 1000,
+        },
+        engine: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['fixEngineName', 'fixEngineVersion'],
+          properties: {
+            fixEngineName: {
+              type: 'string',
+              maxLength: 80,
+            },
+            fixEngineVersion: {
+              $ref: '#/$defs/FixEngineVersion',
+            },
+          },
+        },
+        planHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        sourceSha256: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        outputSha256: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        entries: {
+          type: 'array',
+          maxItems: 100000,
+          items: {
+            $ref: '#/$defs/ChangeManifestEntry',
+          },
+        },
+        changedParts: {
+          description: 'Package parts the mutation rewrote. Everything else is byte-identical.',
+          type: 'array',
+          maxItems: 500,
+          items: {
+            type: 'string',
+            maxLength: 300,
+          },
+        },
+        integrity: {
+          $ref: '#/$defs/IntegrityProofs',
+        },
+      },
+    },
+    FixEngineRequest: {
+      title: 'FixEngineRequest',
+      description:
+        'What the Node worker sends the document engine. No storage credential, no bucket, no object key and no database identifier crosses this boundary — the bytes travel as the request body and this is the metadata. `planHash` is recomputed by the engine over the plan it was handed; a mismatch refuses the mutation instead of applying a plan nobody approved.',
+      type: 'object',
+      additionalProperties: false,
+      required: ['expectedSourceSha256', 'plan', 'planHash'],
+      properties: {
+        expectedSourceSha256: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        plan: {
+          $ref: '#/$defs/SmartFixPlan',
+        },
+        planHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+      },
+    },
+    FixEngineResponse: {
+      title: 'FixEngineResponse',
+      type: 'object',
+      additionalProperties: false,
+      required: ['outputSha256', 'outputSizeBytes', 'manifest', 'manifestHash'],
+      properties: {
+        outputSha256: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+        outputSizeBytes: {
+          type: 'integer',
+          minimum: 1,
+        },
+        manifest: {
+          $ref: '#/$defs/ChangeManifest',
+        },
+        manifestHash: {
+          $ref: '#/$defs/Sha256Hex',
+        },
+      },
+    },
+  },
+} as const;

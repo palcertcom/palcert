@@ -1,0 +1,23 @@
+{
+  "contract": "ChangeManifestEntry",
+  "why": "A manifest describes where a formatting change happened and what the value was. Storing the sentence would be storing the thesis.",
+  "value": {
+    "actionId": "a-0001",
+    "ruleCode": "BODY_FONT_SIZE",
+    "actionType": "SET_RUN_FONT_SIZE",
+    "nodeId": "main/body/p:17/r:2",
+    "scriptChannel": "LATIN",
+    "before": {
+      "kind": "NUMBER",
+      "number": "11",
+      "unit": "POINT"
+    },
+    "after": {
+      "kind": "NUMBER",
+      "number": "12",
+      "unit": "POINT"
+    },
+    "partName": "word/document.xml",
+    "paragraphText": "The research question is..."
+  }
+}

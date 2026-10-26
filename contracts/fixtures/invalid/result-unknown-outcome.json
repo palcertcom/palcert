@@ -1,0 +1,30 @@
+{
+  "contract": "RuleEvaluationResult",
+  "description": "Outcomes are a closed vocabulary.",
+  "payload": {
+    "ruleCode": "R",
+    "outcome": "PROBABLY",
+    "reasonCode": "SATISFIED",
+    "evidenceLevel": "NONE",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "counts": {
+      "matchedFacts": 0,
+      "evaluatedFacts": 0,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "e",
+      "engineVersion": "1",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

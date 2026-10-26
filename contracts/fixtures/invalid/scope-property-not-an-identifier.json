@@ -1,0 +1,8 @@
+{
+  "contract": "FactScope",
+  "description": "Properties are lowerCamelCase identifiers, never free text.",
+  "payload": {
+    "kind": "DOCUMENT",
+    "property": "font size"
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "contract": "SmartFixPlan",
+  "why": "Every supported action shape in one plan, alongside the three reasons a failing rule is left for the author.",
+  "value": {
+    "planSchemaVersion": 1,
+    "source": {
+      "checkId": "3f1d6c0e-0d4e-4a1f-9c1a-8d6f2b4e7a10",
+      "checkRunId": "9c2a1b44-5f0e-4d2b-9a77-2b1c3d4e5f60",
+      "documentVersionId": "1a2b3c4d-5e6f-4071-8293-a4b5c6d7e8f9",
+      "documentSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "analysisArtifactSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "standardVersionId": "7d8e9f01-2345-4678-9abc-def012345678",
+      "standardContentHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "reportHash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "ruleSchemaVersion": 1,
+      "factSchemaVersion": 2
+    },
+    "engine": {
+      "fixEngineName": "palcert-docx-fixer",
+      "fixEngineVersion": "1.0.0",
+      "capabilityRegistryVersion": 1
+    },
+    "rules": [
+      {
+        "ruleCode": "BODY_FONT_SIZE",
+        "fixability": "FIXABLE",
+        "actionIds": ["a-0001"],
+        "targetCount": 1,
+        "fixableTargetCount": 1,
+        "autofix": "SAFE",
+        "evaluationMode": "DETERMINISTIC"
+      },
+      {
+        "ruleCode": "BODY_FONT_SIZE_AR",
+        "fixability": "FIXABLE",
+        "actionIds": ["a-0002"],
+        "targetCount": 1,
+        "fixableTargetCount": 1
+      },
+      {
+        "ruleCode": "MARGIN_LEFT",
+        "fixability": "FIXABLE",
+        "actionIds": ["a-0003"],
+        "targetCount": 1,
+        "fixableTargetCount": 1
+      },
+      {
+        "ruleCode": "HEADING_NOT_BOLD",
+        "fixability": "FIXABLE",
+        "actionIds": ["a-0004"],
+        "targetCount": 1,
+        "fixableTargetCount": 1
+      },
+      {
+        "ruleCode": "BODY_FONT_FAMILY",
+        "fixability": "FIXABLE",
+        "actionIds": ["a-0005"],
+        "targetCount": 1,
+        "fixableTargetCount": 1
+      },
+      {
+        "ruleCode": "ABSTRACT_PRESENT",
+        "fixability": "MANUAL_ACTION_REQUIRED",
+        "reasonCode": "SMARTFIX_CONTENT_CHANGE_REQUIRED",
+        "actionIds": [],
+        "targetCount": 1,
+        "fixableTargetCount": 0
+      },
+      {
+        "ruleCode": "FONT_FAMILY_ALLOWED_SET",
+        "fixability": "AMBIGUOUS_TARGET",
+        "reasonCode": "SMARTFIX_OPERATOR_AMBIGUOUS",
+        "actionIds": [],
+        "targetCount": 4,
+        "fixableTargetCount": 0
+      },
+      {
+        "ruleCode": "WORD_COUNT_RANGE",
+        "fixability": "NOT_SUPPORTED",
+        "reasonCode": "SMARTFIX_COUNT_NOT_EDITABLE",
+        "actionIds": [],
+        "targetCount": 1,
+        "fixableTargetCount": 0
+      }
+    ],
+    "actions": [
+      {
+        "actionId": "a-0001",
+        "ruleCode": "BODY_FONT_SIZE",
+        "actionType": "SET_RUN_FONT_SIZE",
+        "targetScope": "RUN_PROPERTIES",
+        "nodeId": "main/body/p:17/r:2",
+        "structuralPath": ["main", "body", "p:17", "r:2"],
+        "scriptChannel": "LATIN",
+        "before": {
+          "kind": "NUMBER",
+          "number": "11",
+          "unit": "POINT"
+        },
+        "after": {
+          "kind": "NUMBER",
+          "number": "12",
+          "unit": "POINT"
+        }
+      },
+      {
+        "actionId": "a-0002",
+        "ruleCode": "BODY_FONT_SIZE_AR",
+        "actionType": "SET_RUN_FONT_SIZE",
+        "targetScope": "RUN_PROPERTIES",
+        "nodeId": "main/body/p:18/r:1",
+        "scriptChannel": "COMPLEX_SCRIPT",
+        "after": {
+          "kind": "NUMBER",
+          "number": "14",
+          "unit": "POINT"
+        }
+      },
+      {
+        "actionId": "a-0003",
+        "ruleCode": "MARGIN_LEFT",
+        "actionType": "SET_SECTION_MARGIN_LEFT",
+        "targetScope": "SECTION_PROPERTIES",
+        "nodeId": "main/sect:1",
+        "sectionIndex": 0,
+        "before": {
+          "kind": "NUMBER",
+          "number": "25.4",
+          "unit": "MILLIMETRE"
+        },
+        "after": {
+          "kind": "NUMBER",
+          "number": "30",
+          "unit": "MILLIMETRE"
+        }
+      },
+      {
+        "actionId": "a-0004",
+        "ruleCode": "HEADING_NOT_BOLD",
+        "actionType": "SET_RUN_BOLD",
+        "targetScope": "RUN_PROPERTIES",
+        "nodeId": "main/body/p:3/r:1",
+        "scriptChannel": "LATIN",
+        "before": {
+          "kind": "BOOLEAN",
+          "flag": true
+        },
+        "after": {
+          "kind": "BOOLEAN",
+          "flag": false
+        }
+      },
+      {
+        "actionId": "a-0005",
+        "ruleCode": "BODY_FONT_FAMILY",
+        "actionType": "SET_RUN_FONT_FAMILY",
+        "targetScope": "RUN_PROPERTIES",
+        "nodeId": "footnote:4/p:2/r:1",
+        "scriptChannel": "LATIN",
+        "after": {
+          "kind": "STRING",
+          "text": "Times New Roman"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+[project]
+name = "palcert-document-engine"
+version = "0.1.0"
+description = "PalCert document intelligence service (DOCX/PDF parsing and analysis)"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.6.0",
+    "structlog>=24.4.0",
+    "jsonschema>=4.23.0",
+    # Prometheus text exposition (Phase 20 Checkpoint 3). A format library,
+    # not an agent: it opens no connection and reports to no vendor.
+    "prometheus-client>=0.21.0",
+    "referencing>=0.35.0",
+    # PDF analysis (Phase 13). Pinned exactly, not floored: the native engine
+    # decides what the analyzer sees, so a PDFium or qpdf that changed under a
+    # caret range would change stored evidence without changing any PalCert
+    # code. The analyzer records these versions in every artifact (§5, §101).
+    #
+    # Licensing was reviewed before either was added (§4). pypdfium2 is
+    # BSD-3-Clause/Apache-2.0 over PDFium, which is BSD-3-Clause. pikepdf is
+    # MPL-2.0, whose obligations attach to modifications of pikepdf's own
+    # files — PalCert makes none — over qpdf under Apache-2.0. PyMuPDF is
+    # deliberately NOT used: it is AGPL-3.0 without a commercial licence, and
+    # PalCert will not take on a strong-copyleft obligation for convenience.
+    "pypdfium2==5.13.0",
+    "pikepdf==10.13.0.post1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "httpx>=0.27.0",
+    "ruff>=0.7.0",
+    "mypy>=1.13.0",
+    "hypothesis>=6.100.0",
+    "types-jsonschema>=4.23.0",
+]
+
+[build-system]
+requires = ["setuptools>=83"]  # PYSEC-2026-3447
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF", "ANN", "S"]
+ignore = ["ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "ANN"]
+# PalCert is an Arabic product: Arabic letters, Arabic-Indic digits and the
+# Arabic decimal separator appear in source deliberately, in the script
+# classifier, the word-count definition and their tests. The "ambiguous
+# character" rules exist to catch homoglyph typos in Latin text and have
+# nothing useful to say about intentional Arabic.
+"app/docx/script.py" = ["RUF001", "RUF002", "RUF003"]
+"app/docx/wordcount.py" = ["RUF001", "RUF002", "RUF003"]
+"app/docx/nodes.py" = ["RUF001", "RUF002", "RUF003"]
+# E501 as well: the DOCX fixtures are OOXML string literals. A namespace URI
+# is a hundred characters on its own and splitting one across a concatenation
+# makes the fixture harder to read and easier to typo, which is the opposite
+# of what a golden corpus is for.
+"tests/docx/*" = ["S101", "ANN", "RUF001", "RUF002", "RUF003", "E501"]
+# The SmartFix corpus is the same kind of artifact: OOXML string literals,
+# Arabic sample text, and section references written with en dashes.
+"tests/smartfix/*" = ["S101", "ANN", "RUF001", "RUF002", "RUF003", "E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+disallow_untyped_defs = true
+
+# pypdfium2 ships no type stubs and no py.typed marker. The binding is a thin
+# ctypes wrapper over PDFium, so there is nothing for mypy to check inside it
+# anyway; what matters is that PalCert's own use of it is typed, which strict
+# mode still enforces at every call site.
+[[tool.mypy.overrides]]
+module = ["pypdfium2", "pypdfium2.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

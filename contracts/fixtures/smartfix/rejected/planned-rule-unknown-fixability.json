@@ -1,0 +1,11 @@
+{
+  "contract": "PlannedRule",
+  "why": "Fixability drives what the user is told and what the engine may do.",
+  "value": {
+    "ruleCode": "BODY_FONT_SIZE",
+    "fixability": "PROBABLY",
+    "actionIds": [],
+    "targetCount": 1,
+    "fixableTargetCount": 0
+  }
+}

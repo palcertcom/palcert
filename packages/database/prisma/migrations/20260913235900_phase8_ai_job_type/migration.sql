@@ -1,0 +1,12 @@
+-- =============================================================================
+-- Phase 8 — the AI review job type
+--
+-- In its own migration for the third time, for the same PostgreSQL reason as
+-- Phases 6 and 7: an enum value added inside a transaction cannot be used by
+-- that same transaction, and Prisma runs each migration file in one.
+--
+-- Phase 5's ledger is reused rather than duplicated (§58): one queue, one
+-- outbox, one retry policy. Asking a provider a question is another kind of
+-- work, not a reason for another queue framework.
+-- =============================================================================
+ALTER TYPE "ProcessingJobType" ADD VALUE IF NOT EXISTS 'AI_REVIEW';

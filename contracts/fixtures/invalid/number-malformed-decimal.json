@@ -1,0 +1,8 @@
+{
+  "contract": "FactValue",
+  "description": "Not a decimal number at all. A malformed measurement must be refused at the boundary rather than parsed into something arbitrary.",
+  "payload": {
+    "type": "NUMBER",
+    "number": "1.2.3"
+  }
+}

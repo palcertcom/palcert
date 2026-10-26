@@ -1,0 +1,38 @@
+{
+  "description": "Repository-owned snapshots used to generate PalCert's webhook destination classification. Four are IANA registry exports; ipv6-deprecated-extra.csv is not \u2014 it is a reviewed supplemental deny entry transcribed from RFC 4291 for the deprecated IPv4-compatible IPv6 form, which no IANA registry lists. The generator reads only these files, so regenerating the table is reproducible offline and CI needs no network. Refresh with: pnpm webhooks:refresh-iana",
+  "retrievedAt": "2026-09-17",
+  "policy": "Any address inside any entry below is refused as a webhook destination: IANA special-purpose and multicast registry entries, plus the reviewed supplemental deprecated forms. Phase 17 has zero allow exceptions.",
+  "files": {
+    "ipv4-special-registry.csv": {
+      "sourceUrl": "https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry-1.csv",
+      "sha256": "e4c26b2b412c524bbb323806070e622514088bbd835b3aa8cf16473e1dbec1e6",
+      "bytes": 2330,
+      "kind": "iana-registry"
+    },
+    "ipv6-special-registry.csv": {
+      "sourceUrl": "https://www.iana.org/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry-1.csv",
+      "sha256": "cab0a9cdba043e4824a03a529cc9afc490df290eab1cff1afa23e16afadedc60",
+      "bytes": 2171,
+      "kind": "iana-registry"
+    },
+    "ipv4-multicast-registry.csv": {
+      "sourceUrl": "https://www.iana.org/assignments/multicast-addresses/multicast-addresses.xhtml",
+      "sha256": "7e6a6c7c85fe1a2e7dcd3abfbd6c4f7e2bfffa6d1e8178eb311175232f9af208",
+      "bytes": 68,
+      "kind": "iana-registry"
+    },
+    "ipv6-multicast-registry.csv": {
+      "sourceUrl": "https://www.iana.org/assignments/ipv6-multicast-addresses/ipv6-multicast-addresses.xhtml",
+      "sha256": "f8c65e8dc05ec1a4aa2d810dff824c715d26d6f81f758e2c020749adde47b43d",
+      "bytes": 52,
+      "kind": "iana-registry"
+    },
+    "ipv6-deprecated-extra.csv": {
+      "sourceUrl": "https://www.rfc-editor.org/rfc/rfc4291#section-2.5.5.1",
+      "sha256": "10bb066109308849621cba5b442067972f79f8fda5940943f89f145459f4198c",
+      "bytes": 182,
+      "kind": "supplemental-deny",
+      "note": "Not an IANA export. RFC 4291 \u00a72.5.5.1 deprecates the IPv4-compatible IPv6 address, and no registry lists ::/96 as special-purpose, so it is transcribed here explicitly and reviewed as part of this repository rather than presented as a registry fact."
+    }
+  }
+}

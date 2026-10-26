@@ -1,0 +1,76 @@
+{
+  "description": "A blocking manual rule. Same treatment as the AI case: unresolved, never guessed.",
+  "rule": {
+    "ruleCode": "BLIND.REVIEW.ANONYMISED",
+    "scope": {
+      "kind": "METADATA",
+      "field": "author"
+    },
+    "operator": "NOT_EXISTS",
+    "expected": {
+      "type": "NONE"
+    },
+    "evaluationMode": "MANUAL",
+    "severity": "CRITICAL",
+    "blocking": true,
+    "ruleSchemaVersion": 2
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "METADATA",
+        "field": "author",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "METADATA",
+          "field": "author"
+        },
+        "value": {
+          "type": "STRING",
+          "text": "R. Rasheed"
+        },
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "meta-author"
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "BLIND.REVIEW.ANONYMISED",
+    "outcome": "INDETERMINATE",
+    "reasonCode": "MANUAL_REVIEW_REQUIRED",
+    "evidenceLevel": "NONE",
+    "requiresReview": true,
+    "blocking": true,
+    "severity": "CRITICAL",
+    "evaluationMode": "MANUAL",
+    "operator": "NOT_EXISTS",
+    "counts": {
+      "matchedFacts": 0,
+      "evaluatedFacts": 0,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

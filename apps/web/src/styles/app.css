@@ -1,0 +1,10 @@
+/* PalCert's stylesheet, in cascade order: tokens, then the element defaults,
+ * the shared components, the frames, the feature-specific rules, and last
+ * the public homepage. */
+@import './tokens.css';
+@import './base.css';
+@import './components.css';
+@import './shell.css';
+@import './features.css';
+@import './organization.css';
+@import './landing.css';

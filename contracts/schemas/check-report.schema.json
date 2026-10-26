@@ -1,0 +1,353 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://palcert.dev/schemas/check-report.schema.json",
+  "title": "PalCert check report",
+  "description": "The immutable machine report a completed check produces.\n\nIt is deliberately language-neutral: codes, typed values, and the rule titles and guidance the standard's author wrote in both languages. No sentence in it depends on the reader's UI language, because one artifact must mean the same thing to everyone who verifies it later.\n\nIt carries every identity needed to reproduce the outcome — the document version and its digest, the standard version and its content hash, the analysis and its artifact digest, and the analyzer and engine versions — so a result recorded today can still be explained after both have been replaced.",
+  "$defs": {
+    "Sha256Hex": { "title": "Sha256Hex", "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "ContentHash": {
+      "title": "ContentHash",
+      "description": "A standard's content hash, which carries its algorithm prefix.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "Uuid": {
+      "title": "Uuid",
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "DecimalString": {
+      "title": "DecimalString",
+      "description": "An exact decimal. Never a JSON number: binary floating point cannot represent 0.1, and a score that a reader recomputes must match to the digit.",
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]{0,17})(\\.[0-9]{1,12})?$"
+    },
+    "ComplianceDetermination": {
+      "title": "ComplianceDetermination",
+      "description": "What PalCert concluded, on its own axis and never merged with processing status. INDETERMINATE is not a soft FAIL: it means the evidence could not decide, and turning that into a failure would blame a document for what PalCert could not read.",
+      "enum": ["COMPLIANT", "NON_COMPLIANT", "REVIEW_REQUIRED", "INDETERMINATE"]
+    },
+    "ReportOrganization": {
+      "title": "ReportOrganization",
+      "description": "Snapshot of the standard's owner, so a historical report renders without joining live organization tables. Public catalogue fields only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["organizationId", "displayName"],
+      "properties": {
+        "organizationId": { "$ref": "#/$defs/Uuid" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "verificationStatus": { "enum": ["UNVERIFIED", "PENDING", "VERIFIED", "REJECTED"] }
+      }
+    },
+    "ReportStandard": {
+      "title": "ReportStandard",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "standardId",
+        "standardVersionId",
+        "code",
+        "nameEn",
+        "nameAr",
+        "versionLabel",
+        "contentHash",
+        "canonicalizationVersion",
+        "ruleSchemaVersion"
+      ],
+      "properties": {
+        "standardId": { "$ref": "#/$defs/Uuid" },
+        "standardVersionId": { "$ref": "#/$defs/Uuid" },
+        "code": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "nameEn": { "type": "string", "maxLength": 200 },
+        "nameAr": { "type": "string", "maxLength": 200 },
+        "versionLabel": { "type": "string", "maxLength": 50 },
+        "contentHash": { "$ref": "#/$defs/ContentHash" },
+        "canonicalizationVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "ruleSchemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "documentTypeId": { "$ref": "#/$defs/Uuid" },
+        "documentTypeName": { "type": "string", "maxLength": 200 }
+      }
+    },
+    "ReportDocument": {
+      "title": "ReportDocument",
+      "description": "The exact version checked. No filename: it is user content and the report is an integrity record, not a copy of the document.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["documentId", "documentVersionId", "versionNumber", "sha256", "format"],
+      "properties": {
+        "documentId": { "$ref": "#/$defs/Uuid" },
+        "documentVersionId": { "$ref": "#/$defs/Uuid" },
+        "versionNumber": { "type": "integer", "minimum": 1 },
+        "sha256": { "$ref": "#/$defs/Sha256Hex" },
+        "format": { "enum": ["DOCX", "PDF"] },
+        "sizeBytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ReportAnalysis": {
+      "title": "ReportAnalysis",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysisId",
+        "analyzerName",
+        "analyzerVersion",
+        "factSchemaVersion",
+        "analysisSchemaVersion",
+        "artifactSha256"
+      ],
+      "properties": {
+        "analysisId": { "$ref": "#/$defs/Uuid" },
+        "analyzerName": { "type": "string", "maxLength": 100 },
+        "analyzerVersion": { "type": "string", "maxLength": 50 },
+        "factSchemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "analysisSchemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "artifactSha256": { "$ref": "#/$defs/Sha256Hex" },
+        "factCount": { "type": "integer", "minimum": 0 },
+        "warningCodes": {
+          "type": "array",
+          "maxItems": 100,
+          "items": { "type": "string", "maxLength": 100 }
+        }
+      }
+    },
+    "ReportEngine": {
+      "title": "ReportEngine",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleEngineName",
+        "ruleEngineVersion",
+        "ruleSchemaVersion",
+        "factSchemaVersion",
+        "orchestratorVersion"
+      ],
+      "properties": {
+        "ruleEngineName": { "type": "string", "maxLength": 100 },
+        "ruleEngineVersion": { "type": "string", "maxLength": 50 },
+        "ruleSchemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "factSchemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "orchestratorVersion": {
+          "description": "The check orchestrator's own semantic version. Changing how a determination or a score is computed changes this, independently of the rule engine.",
+          "type": "string",
+          "maxLength": 50
+        }
+      }
+    },
+    "ReportScore": {
+      "title": "ReportScore",
+      "description": "The deterministic compliance score. AI-assisted and manual rules never contribute: a number nobody could reproduce from the evidence would be a number PalCert cannot defend.\n\n`value` is null when no deterministic rule with a positive weight was resolved — which is different from zero, and must never render as 0%.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "coverage",
+        "complete",
+        "passedWeight",
+        "evaluatedWeight",
+        "unresolvedWeight"
+      ],
+      "properties": {
+        "value": {
+          "oneOf": [{ "$ref": "#/$defs/DecimalString" }, { "type": "null" }]
+        },
+        "coverage": {
+          "description": "How much of the scorable deterministic weight was actually resolved. 1 means every scorable rule produced a verdict.",
+          "oneOf": [{ "$ref": "#/$defs/DecimalString" }, { "type": "null" }]
+        },
+        "complete": {
+          "description": "True only when no deterministic rule was left unresolved. A partial score must never be presented as authoritative.",
+          "type": "boolean"
+        },
+        "passedWeight": { "$ref": "#/$defs/DecimalString" },
+        "evaluatedWeight": { "$ref": "#/$defs/DecimalString" },
+        "unresolvedWeight": { "$ref": "#/$defs/DecimalString" }
+      }
+    },
+    "ReportCounts": {
+      "title": "ReportCounts",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "totalRules",
+        "passedRules",
+        "failedRules",
+        "notApplicableRules",
+        "reviewRequiredRules",
+        "indeterminateRules",
+        "errorRules",
+        "blockingFailures",
+        "criticalFailures",
+        "majorFailures",
+        "minorFailures",
+        "infoFailures",
+        "totalViolations",
+        "returnedViolations",
+        "truncatedRules"
+      ],
+      "properties": {
+        "totalRules": { "type": "integer", "minimum": 0 },
+        "passedRules": { "type": "integer", "minimum": 0 },
+        "failedRules": { "type": "integer", "minimum": 0 },
+        "notApplicableRules": { "type": "integer", "minimum": 0 },
+        "reviewRequiredRules": { "type": "integer", "minimum": 0 },
+        "indeterminateRules": { "type": "integer", "minimum": 0 },
+        "errorRules": { "type": "integer", "minimum": 0 },
+        "blockingFailures": { "type": "integer", "minimum": 0 },
+        "criticalFailures": { "type": "integer", "minimum": 0 },
+        "majorFailures": { "type": "integer", "minimum": 0 },
+        "minorFailures": { "type": "integer", "minimum": 0 },
+        "infoFailures": { "type": "integer", "minimum": 0 },
+        "totalViolations": { "type": "integer", "minimum": 0 },
+        "returnedViolations": { "type": "integer", "minimum": 0 },
+        "truncatedRules": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ReportRuleResult": {
+      "title": "ReportRuleResult",
+      "description": "One rule, as evaluated. Titles and guidance are copied from the standard snapshot so a historical report never needs to read a private organization table to render.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleCode",
+        "category",
+        "severity",
+        "blocking",
+        "evaluationMode",
+        "outcome",
+        "reasonCode",
+        "evidenceLevel",
+        "requiresReview",
+        "displayOrder",
+        "counts",
+        "totalViolationCount",
+        "returnedViolationCount",
+        "truncated",
+        "violations"
+      ],
+      "properties": {
+        "ruleCode": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "category": { "type": "string", "maxLength": 60 },
+        "severity": { "enum": ["INFO", "MINOR", "MAJOR", "CRITICAL"] },
+        "blocking": { "type": "boolean" },
+        "evaluationMode": { "enum": ["DETERMINISTIC", "AI_ASSISTED", "MANUAL"] },
+        "outcome": { "enum": ["PASS", "FAIL", "NOT_APPLICABLE", "INDETERMINATE", "ERROR"] },
+        "reasonCode": { "type": "string", "maxLength": 60 },
+        "evidenceLevel": {
+          "$comment": "ADVISORY arrives with Phase 18 Checkpoint 15 and marks a rule whose facts PalCert recognized rather than read; such a rule is always INDETERMINATE. The widening is additive — every report written before it stays valid — so `reportSchemaVersion` is unchanged, on the same reasoning that kept `citationAnalysisSchemaVersion` at 1 for an added optional field. Carrying the value is a record of what happened, not a presentation decision: without it an advisory result would be unrepresentable, and the report would have to misdescribe it as NONE.",
+          "enum": ["NONE", "DETERMINISTIC", "ADVISORY", "AI_PROVISIONAL", "HUMAN_CONFIRMED"]
+        },
+        "requiresReview": { "type": "boolean" },
+        "displayOrder": { "type": "integer", "minimum": 0 },
+        "titleEn": { "type": "string", "maxLength": 300 },
+        "titleAr": { "type": "string", "maxLength": 300 },
+        "guidanceEn": { "type": "string", "maxLength": 2000 },
+        "guidanceAr": { "type": "string", "maxLength": 2000 },
+        "operator": { "type": "string", "maxLength": 50 },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "matchedFacts",
+            "evaluatedFacts",
+            "passedFacts",
+            "failedFacts",
+            "indeterminateFacts"
+          ],
+          "properties": {
+            "matchedFacts": { "type": "integer", "minimum": 0 },
+            "evaluatedFacts": { "type": "integer", "minimum": 0 },
+            "passedFacts": { "type": "integer", "minimum": 0 },
+            "failedFacts": { "type": "integer", "minimum": 0 },
+            "indeterminateFacts": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "totalViolationCount": { "type": "integer", "minimum": 0 },
+        "returnedViolationCount": { "type": "integer", "minimum": 0 },
+        "truncated": { "type": "boolean" },
+        "violations": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": { "$ref": "#/$defs/ReportViolation" }
+        }
+      }
+    },
+    "ReportViolation": {
+      "title": "ReportViolation",
+      "description": "One failing observation. Values are bounded: an actual value may legitimately be '11 pt', but it must never become an excuse to copy a whole sensitive text field into a report (§87).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reasonCode"],
+      "properties": {
+        "reasonCode": { "type": "string", "maxLength": 60 },
+        "nodeId": { "type": "string", "maxLength": 200 },
+        "path": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "type": "string", "maxLength": 100 }
+        },
+        "elementType": { "type": "string", "maxLength": 40 },
+        "sectionKey": { "type": "string", "maxLength": 64 },
+        "ordinal": { "type": "integer", "minimum": 1 },
+        "page": {
+          "description": "Present only when the extractor genuinely knew it. Structural DOCX analysis never does, and never invents one.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "expectedValue": { "type": "string", "maxLength": 200 },
+        "expectedUnit": { "type": "string", "maxLength": 20 },
+        "actualValue": { "type": "string", "maxLength": 200 },
+        "actualUnit": { "type": "string", "maxLength": 20 },
+        "tolerance": { "$ref": "#/$defs/DecimalString" }
+      }
+    },
+    "CheckReport": {
+      "title": "CheckReport",
+      "description": "The complete immutable report. Hashing is over the canonical form of this object at `reportCanonicalizationVersion`; nothing outside it contributes to `reportHash`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reportSchemaVersion",
+        "reportCanonicalizationVersion",
+        "checkId",
+        "checkRunId",
+        "ownerUserId",
+        "document",
+        "organization",
+        "standard",
+        "analysis",
+        "engine",
+        "determination",
+        "score",
+        "counts",
+        "ruleResults",
+        "evaluationHash",
+        "generatedAt"
+      ],
+      "properties": {
+        "reportSchemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "reportCanonicalizationVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "checkId": { "$ref": "#/$defs/Uuid" },
+        "checkRunId": { "$ref": "#/$defs/Uuid" },
+        "ownerUserId": { "$ref": "#/$defs/Uuid" },
+        "document": { "$ref": "#/$defs/ReportDocument" },
+        "organization": { "$ref": "#/$defs/ReportOrganization" },
+        "standard": { "$ref": "#/$defs/ReportStandard" },
+        "analysis": { "$ref": "#/$defs/ReportAnalysis" },
+        "engine": { "$ref": "#/$defs/ReportEngine" },
+        "determination": { "$ref": "#/$defs/ComplianceDetermination" },
+        "score": { "$ref": "#/$defs/ReportScore" },
+        "counts": { "$ref": "#/$defs/ReportCounts" },
+        "ruleResults": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": { "$ref": "#/$defs/ReportRuleResult" }
+        },
+        "evaluationHash": {
+          "description": "Identifies the semantic evaluation: the same document, standard and engine versions producing the same outcomes hash identically, regardless of when the check ran or what it was called.",
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "generatedAt": { "type": "string", "format": "date-time", "maxLength": 40 }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+node_modules
+**/node_modules
+**/dist
+# Incremental-build state from the host.
+#
+# `**/dist` keeps compiled output out of the build context, but the matching
+# `*.tsbuildinfo` was still copied in. tsc then read a manifest saying every
+# file was already emitted, emitted nothing, and exited 0 — so the image built
+# from a workspace with no `dist` at all and the API compile failed with 1323
+# "cannot find module '@palcert/contracts'" errors. A build must not depend on
+# whether somebody ran a typecheck on the machine that started it.
+**/*.tsbuildinfo
+**/.next
+**/coverage
+**/generated
+.git
+.github
+docs
+test-documents
+.env
+.env.*
+!.env.example
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.venv

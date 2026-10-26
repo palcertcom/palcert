@@ -1,0 +1,7 @@
+{
+  "contract": "FactValue",
+  "description": "The discriminated field is absent, so the value claims to be a number while carrying none.",
+  "payload": {
+    "type": "NUMBER"
+  }
+}

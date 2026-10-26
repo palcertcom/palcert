@@ -1,0 +1,15 @@
+{
+  "contract": "DocumentFactSet",
+  "description": "The fact set is closed.",
+  "payload": {
+    "factSchemaVersion": 1,
+    "documentId": "d",
+    "extractor": {
+      "name": "s",
+      "version": "1"
+    },
+    "coverage": [],
+    "facts": [],
+    "extra": 1
+  }
+}

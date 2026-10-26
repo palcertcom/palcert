@@ -1,0 +1,1594 @@
+/* Component layer: the shared primitives every screen is built from.
+ *
+ * Class names that existing screens already use (pc-button, pc-field,
+ * pc-card, pc-table, pc-badge, …) are styled here as the product's primitives
+ * rather than renamed, so no screen loses a behaviour by being restyled.
+ */
+
+/* --- Buttons --------------------------------------------------------------- */
+/* Gold fill with dark text: the original design's signature button, at a
+   contrast (5.56 : 1) the original's white label did not reach. */
+
+/* Buttons that carry only a variant class ("secondary", "pc-danger",
+   "pc-button-quiet") take the base shape too; the variant sets the colours. */
+.pc-button,
+.pc-btn,
+button.button,
+button.secondary,
+button.pc-danger,
+button.pc-button-quiet,
+:where(.pc-page) button:not([class]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-block-size: 2.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--pc-gold);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-gold);
+  color: var(--pc-on-gold);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgb(76 76 76 / 12%);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.pc-button:hover:not(:disabled),
+.pc-btn:hover:not(:disabled),
+button.button:hover:not(:disabled),
+:where(.pc-page) button:not([class]):hover:not(:disabled) {
+  background: var(--pc-gold-hover);
+  border-color: var(--pc-gold-hover);
+}
+
+.pc-button:disabled,
+.pc-btn:disabled,
+button.button:disabled,
+:where(.pc-page) button:not([class]):disabled,
+.pc-button[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Secondary: an outlined button in charcoal, for the second choice on a row.
+   A page's unclassed buttons take it too — except an explicit submit, which
+   is the form's primary action and stays gold. */
+.pc-button-secondary,
+.pc-btn-secondary,
+button.button.secondary,
+button.secondary,
+:where(.pc-page) button:not([class]):not([type='submit']) {
+  background: var(--pc-surface);
+  color: var(--pc-text-strong);
+  border-color: var(--pc-border-strong);
+  box-shadow: none;
+}
+
+.pc-button-secondary:hover:not(:disabled),
+.pc-btn-secondary:hover:not(:disabled),
+button.button.secondary:hover:not(:disabled),
+button.secondary:hover:not(:disabled),
+:where(.pc-page) button:not([class]):not([type='submit']):hover:not(:disabled) {
+  background: var(--pc-surface-muted);
+  border-color: var(--pc-gold);
+}
+
+/* Quiet: text-weight actions (Cancel, Show older). */
+.pc-button-quiet,
+.pc-btn-quiet,
+button.pc-button-quiet {
+  background: transparent;
+  color: var(--pc-gold-text);
+  border-color: transparent;
+  box-shadow: none;
+  padding-inline: 0.5rem;
+}
+
+.pc-button-quiet:hover:not(:disabled),
+.pc-btn-quiet:hover:not(:disabled),
+button.pc-button-quiet:hover:not(:disabled) {
+  background: var(--pc-gold-tint);
+  border-color: transparent;
+}
+
+/* Destructive: outlined red, as the original's "Cancelled" row action. */
+.pc-button-danger,
+.pc-btn-danger,
+.pc-button.pc-danger,
+button.pc-danger {
+  background: var(--pc-surface);
+  color: var(--pc-danger);
+  border-color: color-mix(in srgb, var(--pc-danger) 55%, white);
+  box-shadow: none;
+}
+
+.pc-button-danger:hover:not(:disabled),
+.pc-btn-danger:hover:not(:disabled),
+.pc-button.pc-danger:hover:not(:disabled),
+button.pc-danger:hover:not(:disabled) {
+  background: var(--pc-danger-bg);
+  border-color: var(--pc-danger);
+}
+
+.pc-btn-sm,
+.pc-row-actions .pc-button {
+  min-block-size: 2rem;
+  padding: 0.3rem 0.7rem;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-btn-block {
+  inline-size: 100%;
+}
+
+/* A link that looks like a button, for "New document" and the like. */
+a.pc-button,
+a.pc-btn {
+  color: var(--pc-on-gold);
+}
+
+a.pc-button-secondary,
+a.pc-btn-secondary {
+  color: var(--pc-text-strong);
+}
+
+/* --- Forms ----------------------------------------------------------------- */
+
+.pc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-block-start: 1.25rem;
+}
+
+.pc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-inline-size: 0;
+}
+
+.pc-field label,
+.pc-label {
+  font-weight: 600;
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text-strong);
+}
+
+.pc-field input,
+.pc-field select,
+.pc-field textarea,
+.pc-input {
+  font: inherit;
+  color: var(--pc-text-strong);
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border-strong);
+  border-radius: var(--pc-radius-sm);
+  min-block-size: 2.75rem;
+  padding: 0.55rem 0.8rem;
+  /* `start` keeps Arabic input right-aligned without a separate rule. */
+  text-align: start;
+  inline-size: 100%;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+/* A select is as wide as its longest option unless told otherwise, and WebKit
+   counts that width toward the page's scroll width even when the box itself
+   is clamped. Let it shrink, and clip its own text instead of the page. */
+.pc-field select {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* WebKit ignores `overflow` on a select, so the field clips instead. The
+   padding, cancelled by the margin, leaves room for the 3px focus ring. */
+.pc-field:has(> select) {
+  overflow-x: clip;
+  padding-inline: 4px;
+  margin-inline: -4px;
+}
+
+.pc-field textarea {
+  min-block-size: 6rem;
+  resize: vertical;
+}
+
+.pc-field input::placeholder,
+.pc-field textarea::placeholder {
+  color: color-mix(in srgb, var(--pc-text-muted) 80%, white);
+}
+
+.pc-field input:hover,
+.pc-field select:hover,
+.pc-field textarea:hover {
+  border-color: var(--pc-gold-hover);
+}
+
+.pc-field input:focus-visible,
+.pc-field select:focus-visible,
+.pc-field textarea:focus-visible,
+.pc-input:focus-visible {
+  outline: none;
+  border-color: var(--pc-gold);
+  box-shadow: 0 0 0 3px var(--pc-gold-tint);
+}
+
+.pc-field input[type='checkbox'],
+.pc-field input[type='radio'] {
+  inline-size: auto;
+  min-block-size: 0;
+  accent-color: var(--pc-gold);
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--pc-gold);
+}
+
+.pc-field input[type='file'] {
+  padding: 0.45rem;
+  background: var(--pc-surface-muted);
+  border-style: dashed;
+}
+
+/* A visually hidden input inside a field (a file input driven by a button)
+   must stay 1px: the field's full-width input rule is more specific and would
+   otherwise stretch it past the viewport on small screens. */
+.pc-field input.pc-visually-hidden {
+  inline-size: 1px;
+  min-block-size: 0;
+  block-size: 1px;
+  padding: 0;
+  border: 0;
+}
+
+.pc-field input[aria-invalid='true'],
+.pc-field[data-invalid='true'] input,
+.pc-field[data-invalid='true'] select,
+.pc-field[data-invalid='true'] textarea {
+  border-color: var(--pc-danger);
+}
+
+.pc-field[data-invalid='true'] label {
+  color: var(--pc-danger);
+}
+
+.pc-field-error,
+.pc-error {
+  margin: 0;
+  font-size: var(--pc-text-sm);
+  color: var(--pc-danger);
+}
+
+.pc-field-errors {
+  margin-block: 0.25rem 0;
+  padding-inline-start: 1rem;
+  color: var(--pc-danger);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+
+.pc-inline-form .pc-field {
+  flex: 1 1 14rem;
+}
+
+fieldset {
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  padding: 1rem 1.1rem;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+legend {
+  font-weight: 600;
+  padding-inline: 0.4rem;
+  color: var(--pc-text-strong);
+}
+
+/* --- Cards and sections ---------------------------------------------------- */
+
+.pc-card,
+.card {
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  box-shadow: var(--pc-shadow-card);
+  padding: 1.25rem 1.5rem;
+  margin-block-start: 1.25rem;
+  min-inline-size: 0;
+}
+
+.pc-card > :first-child,
+.card > :first-child {
+  margin-block-start: 0;
+}
+
+.pc-card h2,
+.card h2 {
+  font-size: var(--pc-text-md);
+}
+
+.pc-section {
+  margin-block-start: 2rem;
+}
+
+.pc-section > h2 {
+  font-size: var(--pc-text-lg);
+}
+
+.card-list,
+.pc-card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.pc-card-grid > .pc-card {
+  margin: 0;
+}
+
+/* --- Page header ----------------------------------------------------------- */
+
+.pc-page-header,
+.page-header,
+.pc-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-block-end: 1.25rem;
+}
+
+.pc-page-header h1,
+.page-header h1 {
+  margin: 0;
+  font-size: var(--pc-text-xl);
+  /* A title can be an email address or an unbroken name; it wraps rather
+     than pushing the page sideways on a phone. */
+  overflow-wrap: anywhere;
+}
+
+.pc-page-header-text {
+  min-inline-size: 0;
+  flex: 1 1 24rem;
+}
+
+.pc-page-header-text p {
+  margin: 0.35rem 0 0;
+  color: var(--pc-text-muted);
+  max-inline-size: 72ch;
+}
+
+.pc-page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* --- Breadcrumbs ----------------------------------------------------------- */
+
+.pc-breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text-muted);
+}
+
+.pc-breadcrumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-inline-size: 0;
+}
+
+.pc-breadcrumbs a {
+  color: var(--pc-text-muted);
+  text-decoration: none;
+}
+
+.pc-breadcrumbs a:hover {
+  color: var(--pc-gold-text);
+  text-decoration: underline;
+}
+
+.pc-breadcrumbs [aria-current='page'] {
+  color: var(--pc-text-strong);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pc-breadcrumb-separator {
+  color: var(--pc-border-strong);
+}
+
+/* The chevron points along the reading direction. */
+html[dir='rtl'] .pc-breadcrumb-separator svg,
+html[dir='rtl'] .pc-icon-directional {
+  transform: scaleX(-1);
+}
+
+/* --- Status badges --------------------------------------------------------- */
+/* Small pills, as the original tables' "Verified" / "Pending". Colour is only
+   ever a second channel: the label always says the state. */
+
+.pc-status,
+.pc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  inline-size: max-content;
+  max-inline-size: 100%;
+  padding: 0.12rem 0.55rem;
+  border-radius: var(--pc-radius-sm);
+  border: 1px solid transparent;
+  background: var(--pc-info-bg);
+  color: var(--pc-info);
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.pc-status[data-tone='success'],
+.pc-badge-verified {
+  background: var(--pc-success-bg);
+  color: var(--pc-success);
+}
+
+.pc-status[data-tone='warning'],
+.pc-warning {
+  background: var(--pc-warning-bg);
+  color: var(--pc-warning);
+}
+
+.pc-status[data-tone='danger'] {
+  background: var(--pc-danger-bg);
+  color: var(--pc-danger);
+}
+
+.pc-status[data-tone='gold'] {
+  background: var(--pc-gold-tint);
+  color: var(--pc-gold-text-strong);
+}
+
+.pc-status[data-tone='neutral'] {
+  background: var(--pc-surface);
+  color: var(--pc-text-muted);
+  border-color: var(--pc-border-strong);
+}
+
+.pc-status-dot {
+  inline-size: 0.45rem;
+  block-size: 0.45rem;
+  border-radius: 50%;
+  background: currentcolor;
+  flex: none;
+}
+
+/* --- Tables ---------------------------------------------------------------- */
+/* Dense, thin-ruled, uppercase headers — the University and Ministry tables.
+   A wide table scrolls inside its own container, never the page. */
+
+.pc-table-scroll,
+.pc-table-container {
+  overflow-x: auto;
+  margin-block-start: 1rem;
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  -webkit-overflow-scrolling: touch;
+}
+
+.pc-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-table-scroll > .pc-table,
+.pc-table-container > .pc-table {
+  margin: 0;
+}
+
+.pc-table caption {
+  text-align: start;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--pc-text-strong);
+}
+
+.pc-table th,
+.pc-table td {
+  /* `start` keeps the first column against the correct edge in both directions. */
+  text-align: start;
+  padding: 0.75rem 1rem;
+  border-block-end: 1px solid var(--pc-border);
+  vertical-align: middle;
+}
+
+.pc-table thead th {
+  background: var(--pc-surface-muted);
+  color: var(--pc-text);
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-block-end-color: var(--pc-border-strong);
+}
+
+.pc-table tbody tr:last-child > * {
+  border-block-end: 0;
+}
+
+.pc-table tbody tr:hover {
+  background: color-mix(in srgb, var(--pc-cream) 55%, white);
+}
+
+.pc-table td a {
+  font-weight: 600;
+}
+
+.pc-table .pc-numeric {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* --- Toolbar and filter chips --------------------------------------------- */
+
+.pc-toolbar,
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-block: 0.75rem;
+}
+
+.pc-toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.pc-chip {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2rem;
+  padding: 0.25rem 0.85rem;
+  border: 1px solid var(--pc-border-strong);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface);
+  color: var(--pc-text-muted);
+  font: inherit;
+  font-size: var(--pc-text-sm);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pc-chip[aria-pressed='true'],
+.pc-chip[aria-current='page'] {
+  background: var(--pc-success-bg);
+  color: var(--pc-success);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* --- Tabs ------------------------------------------------------------------ */
+
+.pc-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-block-end: 1px solid var(--pc-border);
+  margin-block: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.pc-tabs a,
+.pc-tabs button {
+  display: inline-block;
+  padding: 0.6rem 0.9rem;
+  color: var(--pc-text-muted);
+  background: none;
+  border: 0;
+  border-block-end: 2px solid transparent;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pc-tabs [aria-current='page'],
+.pc-tabs [aria-selected='true'] {
+  color: var(--pc-text-strong);
+  border-block-end-color: var(--pc-gold);
+  font-weight: 600;
+}
+
+/* --- Step progress --------------------------------------------------------- */
+/* The Graduate flow's cream band: 01 … 05, gold dots, a solid rule for the
+   steps behind you and a dashed one for the step you are on. */
+
+.pc-steps {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 0;
+  list-style: none;
+  margin: 0 0 1.75rem;
+  padding: 1rem 1.5rem 1.1rem;
+  background: var(--pc-surface-muted);
+  border-radius: var(--pc-radius);
+  counter-reset: step;
+}
+
+.pc-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  color: var(--pc-text-muted);
+}
+
+.pc-step-number {
+  font-size: var(--pc-text-lg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.pc-step-label {
+  font-size: var(--pc-text-sm);
+  overflow-wrap: anywhere;
+}
+
+.pc-step-marker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  background: var(--pc-gold-line);
+  box-shadow: 0 0 0 4px var(--pc-surface);
+  z-index: 1;
+  color: var(--pc-white);
+}
+
+.pc-step::after {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(var(--pc-text-lg) + 0.5rem + 0.6rem);
+  inset-inline: 1.75rem 0.5rem;
+  border-block-start: 2px solid var(--pc-gold-line);
+}
+
+.pc-step:last-child::after {
+  display: none;
+}
+
+.pc-step[data-state='done'] .pc-step-marker,
+.pc-step[data-state='current'] .pc-step-marker {
+  background: var(--pc-gold);
+}
+
+.pc-step[data-state='done'],
+.pc-step[data-state='current'] {
+  color: var(--pc-text-strong);
+}
+
+.pc-step[data-state='done']::after {
+  border-block-start-color: var(--pc-gold);
+}
+
+.pc-step[data-state='current']::after {
+  border-block-start-style: dashed;
+  border-block-start-color: var(--pc-gold);
+}
+
+.pc-step[data-state='current'] .pc-step-label {
+  font-weight: 600;
+}
+
+@media (max-width: 47.99rem) {
+  .pc-steps {
+    padding-inline: 0.75rem;
+  }
+
+  /* Only the step in hand is written out on a phone; the others stay
+     readable to a screen reader, just not on screen. */
+  .pc-step:not([data-state='current']) .pc-step-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* --- Alerts and notices ---------------------------------------------------- */
+
+.pc-alert {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: var(--pc-radius);
+  border: 1px solid var(--pc-border);
+  border-inline-start-width: 4px;
+  background: var(--pc-surface);
+}
+
+.pc-alert-error {
+  color: var(--pc-danger);
+  background: var(--pc-danger-bg);
+  border-color: color-mix(in srgb, var(--pc-danger) 30%, white);
+  border-inline-start-color: var(--pc-danger);
+}
+
+.pc-alert-success {
+  color: var(--pc-success);
+  background: var(--pc-success-bg);
+  border-color: color-mix(in srgb, var(--pc-success) 30%, white);
+  border-inline-start-color: var(--pc-success);
+}
+
+.pc-alert-warning {
+  color: var(--pc-warning);
+  background: var(--pc-warning-bg);
+  border-color: color-mix(in srgb, var(--pc-warning) 30%, white);
+  border-inline-start-color: var(--pc-warning);
+}
+
+.pc-alert-info,
+.pc-notice,
+.pc-empty {
+  color: var(--pc-text);
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-inline-start: 4px solid var(--pc-gold);
+  border-radius: var(--pc-radius);
+  padding: 0.75rem 1rem;
+  margin-block: 1rem;
+}
+
+/* --- Empty, loading and error states -------------------------------------- */
+
+.pc-empty-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+  margin-block-start: 1rem;
+  background: var(--pc-surface);
+  border: 1px dashed var(--pc-border-strong);
+  border-radius: var(--pc-radius);
+}
+
+.pc-empty-state-art {
+  color: var(--pc-gold);
+  margin-block-end: 0.25rem;
+}
+
+.pc-empty-state h2,
+.pc-empty-state h3 {
+  font-size: var(--pc-text-md);
+  margin: 0;
+}
+
+.pc-empty-state p {
+  margin: 0;
+  color: var(--pc-text-muted);
+  max-inline-size: 48ch;
+}
+
+.pc-empty-state .pc-button,
+.pc-empty-state .pc-btn {
+  margin-block-start: 0.75rem;
+}
+
+.pc-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.25rem 0;
+  color: var(--pc-text-muted);
+}
+
+.pc-spinner {
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  border: 2px solid var(--pc-gold-line);
+  border-block-start-color: var(--pc-gold);
+  border-radius: 50%;
+  animation: pc-spin 0.8s linear infinite;
+  flex: none;
+}
+
+@keyframes pc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pc-skeleton {
+  display: block;
+  block-size: 0.9rem;
+  border-radius: var(--pc-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--pc-surface-sunken) 25%,
+    var(--pc-cream) 45%,
+    var(--pc-surface-sunken) 65%
+  );
+  background-size: 300% 100%;
+  animation: pc-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes pc-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+
+.pc-error-state {
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--pc-radius);
+  background: var(--pc-danger-bg);
+  color: var(--pc-danger);
+  border: 1px solid color-mix(in srgb, var(--pc-danger) 30%, white);
+}
+
+.pc-error-state h2 {
+  color: inherit;
+  font-size: var(--pc-text-md);
+}
+
+/* --- Lists, definitions, actions ------------------------------------------ */
+
+.pc-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+}
+
+.pc-list > li {
+  padding: 0.85rem 1rem;
+  border-block-end: 1px solid var(--pc-border);
+  min-inline-size: 0;
+}
+
+.pc-list > li:last-child {
+  border-block-end: 0;
+}
+
+/* Definition lists hold the values PalCert did not choose: email addresses,
+ * identifiers, role lists. At 390 px the widest of them decides the layout.
+ *
+ * `1fr` is not `minmax(0, 1fr)`: a grid track's automatic minimum is the
+ * item's min-content width, and an email address has no break opportunity, so
+ * the track grew past the viewport and the whole profile screen scrolled
+ * sideways (Checkpoint 20.8 measured 15 px on a phone). Capping the minimum at
+ * zero lets the track shrink; `overflow-wrap: anywhere` then gives the text
+ * somewhere to go instead of spilling out of it. Both are needed — either
+ * alone still overflows.
+ */
+.pc-definitions,
+.pc-summary {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+}
+
+/* HTML allows each name-value pair to be wrapped in a <div>; the wrapper must
+   not become a grid item itself, or the two columns collapse into one. */
+.pc-definitions > div,
+.pc-summary > div {
+  display: contents;
+}
+
+.pc-definitions dt,
+.pc-summary dt {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+/* Figures side by side while they fit, stacked on a phone; each group keeps
+   its label above its value, so a long label never pushes the page wider. */
+.pc-price-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin: 0 0 1rem;
+}
+
+.pc-price-figures > div {
+  flex: 1 1 14rem;
+  min-inline-size: 0;
+}
+
+.pc-price-figures dt {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-price-figures dd {
+  margin: 0.15rem 0 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pc-price-figures + .pc-hint {
+  margin-block-end: 1rem;
+}
+
+.pc-price-figures dd.pc-hint {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+  font-weight: 400;
+}
+
+.pc-definitions dd,
+.pc-summary dd {
+  margin-inline-start: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  color: var(--pc-text-strong);
+}
+
+.pc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+
+.pc-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-block-start: 1.25rem;
+}
+
+/* --- Account screens ------------------------------------------------------- */
+
+.pc-session-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pc-session {
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  padding: 0.9rem 1.1rem;
+  background: var(--pc-surface);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pc-session-current {
+  border-color: var(--pc-gold);
+  border-inline-start-width: 4px;
+}
+
+.pc-recovery-codes {
+  list-style: none;
+  padding: 1rem;
+  margin: 1rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.5rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-muted);
+  /* Codes are Latin characters and must read left-to-right even in Arabic. */
+  direction: ltr;
+  font-family: var(--pc-font-mono);
+}
+
+.pc-qr {
+  display: block;
+  margin-block: 1rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-white);
+  padding: 0.5rem;
+}
+
+.pc-secret {
+  direction: ltr;
+  text-align: start;
+  word-break: break-all;
+  background: var(--pc-surface-muted);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+/* --- Detail pages ----------------------------------------------------------- */
+/* One record: its main content, and a side column for the things done to it
+   and the facts about it. The side column moves below on a narrow screen. */
+
+.pc-back-link {
+  margin: 0 0 0.75rem;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: 1.5rem;
+  align-items: start;
+  margin-block-start: 1.5rem;
+}
+
+.pc-detail-main,
+.pc-detail-side {
+  display: grid;
+  gap: 1.25rem;
+  min-inline-size: 0;
+}
+
+.pc-detail-main > h2 {
+  margin: 0;
+  font-size: var(--pc-text-lg);
+}
+
+.pc-detail-side > .pc-card {
+  margin: 0;
+}
+
+.pc-card-title {
+  margin: 0 0 0.75rem;
+  font-size: var(--pc-text-md);
+}
+
+@media (max-width: 64rem) {
+  .pc-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --- Responsive tables ---------------------------------------------------- */
+/* DataTable: an ordinary table on a wide screen, a stack of labelled cards on
+   a phone. The label comes from the cell's own data-label, which is the
+   column header, so nothing on the card is unnamed. */
+
+.pc-table [data-align='end'] {
+  text-align: end;
+}
+
+@media (max-width: 47.99rem) {
+  .pc-table-responsive {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .pc-table-stack,
+  .pc-table-stack tbody,
+  .pc-table-stack tr,
+  .pc-table-stack td {
+    display: block;
+    inline-size: 100%;
+  }
+
+  .pc-table-stack thead {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .pc-table-stack tr {
+    margin-block-end: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--pc-border);
+    border-radius: var(--pc-radius);
+    background: var(--pc-surface);
+  }
+
+  .pc-table-stack tbody tr:hover {
+    background: var(--pc-surface);
+  }
+
+  .pc-table-stack td,
+  .pc-table-stack td[data-align='end'] {
+    display: grid;
+    grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.35rem 0;
+    border: 0;
+    text-align: start;
+    overflow-wrap: anywhere;
+  }
+
+  .pc-table-stack td::before {
+    content: attr(data-label);
+    color: var(--pc-text-muted);
+    font-size: var(--pc-text-sm);
+    font-weight: 600;
+  }
+
+  /* The row's name heads the card and needs no label. */
+  .pc-table-stack td[data-primary='true'] {
+    display: block;
+    padding-block: 0 0.5rem;
+    margin-block-end: 0.25rem;
+    border-block-end: 1px solid var(--pc-border);
+    font-weight: 600;
+  }
+
+  .pc-table-stack td[data-primary='true']::before {
+    content: none;
+  }
+}
+
+/* --- Arabic ---------------------------------------------------------------- */
+/* The same components, with Arabic's own weights and room: medium for labels
+   and controls, a little more line height so dots and marks are never
+   clipped, and no uppercase (it means nothing in Arabic script). */
+
+html[lang='ar']
+  :is(
+    .pc-button,
+    .pc-btn,
+    button.button,
+    .pc-page button:not([class]),
+    .pc-field label,
+    .pc-label,
+    legend,
+    .pc-table thead th,
+    .pc-table td a,
+    .pc-status,
+    .pc-badge,
+    .pc-chip[aria-current='page'],
+    .pc-tabs [aria-selected='true'],
+    .pc-step[data-state='current'] .pc-step-label,
+    .pc-breadcrumbs [aria-current='page']
+  ) {
+  font-weight: var(--pc-ar-weight-label);
+}
+
+/* A control never gets shorter than its Latin twin, and its label has room. */
+html[lang='ar']
+  :is(
+    .pc-button,
+    .pc-btn,
+    button.button,
+    button.secondary,
+    button.pc-danger,
+    button.pc-button-quiet,
+    .pc-page button:not([class])
+  ) {
+  line-height: 1.5;
+  padding-block: 0.45rem;
+}
+
+html[lang='ar'] :is(.pc-field input, .pc-field select, .pc-field textarea, .pc-input) {
+  line-height: 1.6;
+}
+
+/* Badges hold one or two Arabic words at a readable size, never squeezed. */
+html[lang='ar'] :is(.pc-status, .pc-badge) {
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  padding: 0.1rem 0.6rem;
+}
+
+/* Table headers: weight and size carry them, not capitals. */
+html[lang='ar'] .pc-table thead th {
+  font-size: var(--pc-text-sm);
+  text-transform: none;
+  color: var(--pc-text-strong);
+}
+
+html[lang='ar'] .pc-table td {
+  line-height: 1.6;
+}
+
+/* Two lines in one cell: the thing, and a quieter line about it. */
+.pc-cell-stack {
+  display: grid;
+  gap: 0.125rem;
+  min-inline-size: 0;
+}
+
+/* Billing inside a table cell: compact, no card around it. */
+.pc-table .pc-billing p {
+  margin: 0;
+}
+
+/* --- Timeline ---------------------------------------------------------------- */
+/* What happened to a record, oldest to newest, each entry with its own words. */
+
+.pc-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pc-timeline li {
+  display: grid;
+  gap: 0.125rem;
+  padding-inline-start: 1rem;
+  border-inline-start: 3px solid var(--pc-border-strong);
+}
+
+.pc-timeline li[data-tone='success'] {
+  border-inline-start-color: var(--pc-success);
+}
+
+.pc-timeline li[data-tone='danger'] {
+  border-inline-start-color: var(--pc-danger);
+}
+
+.pc-timeline li[data-tone='warning'] {
+  border-inline-start-color: var(--pc-warning);
+}
+
+.pc-timeline time {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+/* --- System pages: not found, not signed in, not allowed, failed ------------ */
+
+.pc-system-page {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 0.75rem;
+  min-block-size: 50vh;
+  max-inline-size: 36rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.pc-system-page .pc-title,
+.pc-system-page .pc-tagline {
+  margin: 0;
+}
+
+.pc-system-page .pc-actions {
+  justify-content: center;
+  margin-block-start: 0.5rem;
+}
+
+.pc-system-icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: 50%;
+  background: var(--pc-gold-tint);
+  color: var(--pc-gold-text);
+}
+
+/* ── Dialog ─────────────────────────────────────────────────────────────── */
+/* The native <dialog>: the platform makes the page inert and traps focus;
+   this only gives it the product's surface. */
+.pc-dialog {
+  inline-size: min(32rem, calc(100vw - 2rem));
+  max-block-size: calc(100dvh - 2rem);
+  padding: 0;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+  color: var(--pc-text);
+  box-shadow: var(--pc-shadow-menu);
+}
+
+.pc-dialog::backdrop {
+  background: rgb(46 46 46 / 45%);
+}
+
+.pc-dialog-body {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.pc-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pc-dialog-header h2 {
+  margin: 0;
+  font-size: var(--pc-text-lg);
+}
+
+.pc-dialog-close {
+  flex: none;
+  margin-block-start: -0.35rem;
+  margin-inline-end: -0.6rem;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.pc-dialog-description {
+  color: var(--pc-text-muted);
+}
+
+.pc-dialog-description > p {
+  margin: 0;
+}
+
+.pc-dialog .pc-actions {
+  justify-content: flex-end;
+}
+
+/* ── Resend confirmation link ───────────────────────────────────────────── */
+.pc-resend {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  margin-block-start: 1.25rem;
+  padding-block-start: 1.25rem;
+  border-block-start: 1px solid var(--pc-border);
+}
+
+.pc-resend > * {
+  margin: 0;
+}
+
+.pc-resend .pc-field {
+  justify-self: stretch;
+}
+
+.pc-resend-prompt {
+  font-weight: 600;
+}
+
+.pc-resend-sent {
+  margin: 0;
+  color: var(--pc-text);
+}
+
+/* A notice that belongs to the whole page, above both columns. */
+.pc-detail-grid > .pc-notice-card {
+  grid-column: 1 / -1;
+  border-inline-start: 4px solid var(--pc-gold);
+}
+
+/* ── Staff console ──────────────────────────────────────────────────────── */
+.pc-admin-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.pc-admin-figure {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+}
+
+.pc-admin-figure-label {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-admin-figure-value {
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-admin-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1.5rem;
+  margin-block-start: 1.5rem;
+}
+
+.pc-admin-cards > .pc-card {
+  margin: 0;
+}
+
+.pc-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+
+.pc-finding-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-finding-list li {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--pc-border);
+  border-inline-start: 4px solid var(--pc-danger);
+  border-radius: var(--pc-radius);
+  overflow-wrap: anywhere;
+}
+
+.pc-subheading {
+  margin-block: 1.25rem 0.5rem;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+  font-weight: 600;
+}
+
+.pc-role-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-role-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pc-grant-role {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  margin-block-start: 1rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--pc-border);
+}
+
+.pc-grant-role .pc-field {
+  justify-self: stretch;
+}
+
+.pc-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.pc-money {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pc-ledger-result {
+  display: grid;
+  gap: 1rem;
+  margin-block-start: 1rem;
+}
+
+.pc-fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pc-fieldset legend {
+  margin-block-end: 0.5rem;
+  padding: 0;
+  font-weight: 600;
+}
+
+.pc-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: 2.75rem;
+}
+
+.pc-field-inline {
+  max-inline-size: 16rem;
+}
+
+.pc-tag-removable {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-inline-end: 0.25rem;
+}
+
+.pc-tag-remove {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 1.5rem;
+  min-block-size: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pc-tag-remove:hover,
+.pc-tag-remove:focus-visible {
+  background: var(--pc-danger-bg, #fde8e7);
+  color: var(--pc-danger);
+}
+
+.pc-transfer {
+  margin-block-start: 1.5rem;
+}

@@ -1,0 +1,99 @@
+{
+  "description": "Font family compares case- and whitespace-insensitively, so 'times new roman' satisfies an allow-list containing 'Times New Roman'.",
+  "rule": {
+    "ruleCode": "BODY.FONT.FAMILY",
+    "scope": {
+      "kind": "ELEMENT",
+      "elementType": "PARAGRAPH",
+      "property": "fontFamily"
+    },
+    "operator": "IN",
+    "expected": {
+      "type": "STRING_LIST",
+      "values": ["Times New Roman", "Amiri"]
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "ELEMENT",
+        "elementType": "PARAGRAPH",
+        "property": "fontFamily",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontFamily"
+        },
+        "value": {
+          "type": "STRING",
+          "text": "times new roman"
+        },
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-1",
+          "page": 1,
+          "ordinal": 1
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontFamily"
+        },
+        "value": {
+          "type": "STRING",
+          "text": "Amiri"
+        },
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-2",
+          "page": 1,
+          "ordinal": 2
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "BODY.FONT.FAMILY",
+    "outcome": "PASS",
+    "reasonCode": "SATISFIED",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "IN",
+    "counts": {
+      "matchedFacts": 2,
+      "evaluatedFacts": 2,
+      "passedFacts": 2,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

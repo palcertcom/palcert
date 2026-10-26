@@ -1,0 +1,528 @@
+# Production-like stack for PalCert release testing.
+#
+# This is NOT `docker-compose.yml`. That file runs stateful dependencies for
+# local development, publishes every one of them on localhost, and expects the
+# application to run on the host with hot reload. Copying it into production
+# would expose PostgreSQL, Redis and the object store to whatever can reach the
+# host, which is the opposite of the boundary this file encodes.
+#
+# What this file is for: standing up every PalCert process from the same
+# immutable images a release would deploy, in the same topology, so a release
+# candidate can be smoke tested. It is deliberately vendor-neutral — no
+# Kubernetes, no cloud provider (ADR-0006 keeps them out of v1).
+#
+# ── The boundary ────────────────────────────────────────────────────────────
+#
+#   published to the host   →  proxy :8443 only (TLS)
+#   edge network            →  proxy, web, api
+#   storage network         →  proxy, minio
+#   internal network        →  api, worker, migrate, document-engine,
+#                              postgres, redis, minio, clamav
+#
+# `web` and `api` sit on both networks because the proxy must reach them; every
+# stateful and internal service sits only on `internal` and publishes no port
+# at all. A container with no `ports:` entry is unreachable from the host and
+# from anything outside its networks, which is what makes the boundary real
+# rather than documented.
+#
+# The one exception is the object store, and it is narrow: browsers upload to
+# and download from it with presigned URLs, so the proxy must reach it. It
+# does so over `storage`, a network holding exactly those two containers, so
+# the proxy gains a route to MinIO and to nothing else stateful.
+#
+# ── Secrets ─────────────────────────────────────────────────────────────────
+#
+# Nothing here carries a production credential. Every value comes from the
+# environment (`${VAR:?message}` fails the run when it is missing) or is an
+# obvious release-testing placeholder for a dependency that only exists inside
+# this stack. Point it at a real environment file with
+# `docker compose --env-file <file> -f docker/docker-compose.release.yml up`.
+
+name: palcert-release
+
+# Release identity is deliberately absent from this file.
+#
+# The commit and build time are baked into each image by its build, and a
+# deployment that could override them could lie about which build is running —
+# which is the one question the identity exists to answer. An earlier draft set
+# them here from the environment, and an unset variable overwrote the image's
+# real commit with an empty string.
+
+# Everything the API and the worker both need. They are the same image and the
+# same configuration; only the command and the probe differ.
+x-app-environment: &app-environment
+  NODE_ENV: production
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  LOG_PRETTY: 'false'
+  DATABASE_URL: postgresql://palcert_app:${POSTGRES_APP_PASSWORD:?set POSTGRES_APP_PASSWORD}@postgres:5432/palcert?schema=public
+  DATABASE_ADMIN_URL: postgresql://palcert:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/palcert?schema=public
+  REDIS_URL: redis://redis:6379
+  STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-https://minio:9000}
+  # The origin a *browser* uploads to and downloads from: the web app's own
+  # (Phase 20 Checkpoint 9). The web app's CSP is `connect-src 'self'`, so a
+  # presigned URL on any other origin is one the browser refuses to send. The
+  # proxy routes the bucket paths on that origin to MinIO.
+  #
+  # This defaulted to `https://localhost:9000` -- a port nothing published --
+  # and every upload through the UI failed in the browser with a CSP
+  # violation. Production refuses to boot unless it equals the origin of
+  # APP_PUBLIC_WEB_URL, which is why it follows that variable by default.
+  STORAGE_PUBLIC_ENDPOINT: ${STORAGE_PUBLIC_ENDPOINT:-${APP_PUBLIC_WEB_URL:-https://localhost:8443}}
+  # The release CA, so the API and worker verify MinIO's certificate instead of
+  # skipping verification. Nothing here sets NODE_TLS_REJECT_UNAUTHORIZED.
+  NODE_EXTRA_CA_CERTS: /certs/ca.crt
+  STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
+  STORAGE_FORCE_PATH_STYLE: 'true'
+  STORAGE_BUCKET: palcert-documents
+  STORAGE_QUARANTINE_BUCKET: palcert-quarantine
+  STORAGE_DERIVED_BUCKET: palcert-derived
+  STORAGE_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY_ID:?set STORAGE_ACCESS_KEY_ID}
+  STORAGE_SECRET_ACCESS_KEY: ${STORAGE_SECRET_ACCESS_KEY:?set STORAGE_SECRET_ACCESS_KEY}
+  STORAGE_SERVER_SIDE_ENCRYPTION: ${STORAGE_SERVER_SIDE_ENCRYPTION:-AES256}
+  # --- capacity knobs -------------------------------------------------------
+  # Passed through so an operator can size a deployment to its hardware.
+  #
+  # Checkpoint 20.6 found all three absent from this topology: they existed in
+  # the configuration schema with sensible defaults, and there was no way to
+  # set them on a running deployment. An operator who needed a larger pool for
+  # a bigger database, more worker concurrency for a slow analyzer, or a
+  # different rate limit for a trusted integration had to rebuild an image.
+  #
+  # The defaults below are exactly the schema's, so an environment that sets
+  # none of them behaves as it did before.
+  DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
+  API_RATE_LIMIT_LIMIT: ${API_RATE_LIMIT_LIMIT:-120}
+  API_RATE_LIMIT_TTL_SECONDS: ${API_RATE_LIMIT_TTL_SECONDS:-60}
+  WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+  CLAMAV_HOST: clamav
+  CLAMAV_PORT: '3310'
+  MALWARE_SCANNER: ${MALWARE_SCANNER:-clamav}
+  DOCUMENT_ENGINE_URL: http://document-engine:8000
+  DOC_ENGINE_URL: http://document-engine:8000
+  AUTH_MFA_SECRET_KEY: ${AUTH_MFA_SECRET_KEY:?set AUTH_MFA_SECRET_KEY}
+  CERTIFICATE_VERIFICATION_SECRET_KEY: ${CERTIFICATE_VERIFICATION_SECRET_KEY:?set CERTIFICATE_VERIFICATION_SECRET_KEY}
+  API_CLIENT_REVEAL_SECRET_KEY: ${API_CLIENT_REVEAL_SECRET_KEY:?set API_CLIENT_REVEAL_SECRET_KEY}
+  # The Phase 17 webhook keyring. Absent from this topology until the
+  # Checkpoint-20.4 recovery drill tried to start the API against a restored
+  # database that actually had a webhook endpoint in it: the API refused to
+  # start with "webhook encryption key k2 is not available", which is the
+  # right behaviour and the wrong configuration.
+  #
+  # Earlier release stacks never noticed, because their databases were empty
+  # and nothing needed a key. Required rather than defaulted: a webhook URL
+  # and signing secret are unreadable without the exact key id that sealed
+  # them, so a deployment that guesses here is a deployment that cannot serve
+  # its own stored data.
+  WEBHOOK_ENCRYPTION_KEYS: ${WEBHOOK_ENCRYPTION_KEYS:?set WEBHOOK_ENCRYPTION_KEYS}
+  WEBHOOK_ENCRYPTION_ACTIVE_KID: ${WEBHOOK_ENCRYPTION_ACTIVE_KID:?set WEBHOOK_ENCRYPTION_ACTIVE_KID}
+  # Admin-managed email (ADR-0146): the root key that seals the provider
+  # credential an administrator saves in the dashboard. Optional on purpose:
+  # without it PalCert boots and behaves exactly as before, and the dashboard
+  # refuses to store a credential. Once a credential is stored, this key must
+  # be kept and backed up separately from the database.
+  EMAIL_SETTINGS_ENCRYPTION_ACTIVE_KID: ${EMAIL_SETTINGS_ENCRYPTION_ACTIVE_KID:-}
+  EMAIL_SETTINGS_ENCRYPTION_KEYS: ${EMAIL_SETTINGS_ENCRYPTION_KEYS:-}
+  # Withdrawals (ADR-0150): seals payout destinations. Optional; without it
+  # payout destinations cannot be created or changed.
+  PAYOUT_DESTINATION_ENCRYPTION_ACTIVE_KID: ${PAYOUT_DESTINATION_ENCRYPTION_ACTIVE_KID:-}
+  PAYOUT_DESTINATION_ENCRYPTION_KEYS: ${PAYOUT_DESTINATION_ENCRYPTION_KEYS:-}
+  APP_PUBLIC_WEB_URL: ${APP_PUBLIC_WEB_URL:-https://localhost:8443}
+  API_CORS_ORIGINS: ${API_CORS_ORIGINS:-https://localhost:8443}
+  # Only the deployment network may speak for a client (Phase 20 Checkpoint 7).
+  # `uniquelocal` is Express's name for the RFC 1918 and unique-local ranges,
+  # which is what a Docker network is. A real deployment should narrow this to
+  # the load balancer's own addresses; what it must never be is unset, because
+  # then the per-IP throttles collapse every visitor onto the proxy.
+  API_TRUSTED_PROXIES: ${API_TRUSTED_PROXIES:-uniquelocal}
+  API_DOCS_ENABLED: 'false'
+  # Third-party integrations stay off unless the release test provides
+  # credentials. A stack that boots with them on but unconfigured would fail on
+  # first use rather than at startup.
+  AI_ENABLED: ${AI_ENABLED:-false}
+  # Payments default ON with caller-supplied credentials, because PalCert
+  # cannot currently boot with them off: the provider factory branches on
+  # PAYMENT_PROVIDER alone and constructs the Stripe client regardless of
+  # PAYMENTS_ENABLED, which then throws without a key. Recorded as F-024 in
+  # the Checkpoint 20.2 report; until it is fixed, a release test supplies
+  # credentials it never uses.
+  PAYMENTS_ENABLED: ${PAYMENTS_ENABLED:-true}
+  PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-stripe}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?set STRIPE_SECRET_KEY}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:?set STRIPE_WEBHOOK_SECRET}
+  NOTIFICATION_EMAIL_PROVIDER: ${NOTIFICATION_EMAIL_PROVIDER:-disabled}
+  # Telemetry (Phase 20 Checkpoint 3). On by default: an endpoint a scraper
+  # reaches only from inside the deployment network is not an exposure, and a
+  # release stack that ran without metrics would not be testing the shipped
+  # system. The token is optional and adds a second lock where the internal
+  # network is shared; the proxy already refuses `/metrics` from outside.
+  METRICS_ENABLED: ${METRICS_ENABLED:-true}
+  METRICS_TOKEN: ${METRICS_TOKEN:-}
+
+# Runtime hardening applied to every PalCert-owned container (Phase 20
+# Checkpoint 7).
+#
+# `no-new-privileges` stops a process gaining privileges through a setuid
+# binary. All four images already run as the unprivileged `palcert` user and
+# none of them needs setuid for anything, so this costs nothing and closes the
+# ordinary route from "code execution in the container" to "root in the
+# container".
+#
+# Capabilities are dropped wholesale. A Node or Python service that listens
+# above port 1024, reads its own files and talks to the network needs none of
+# the Linux capabilities a container gets by default — not CHOWN, not
+# SETUID/SETGID, and not NET_RAW, which is the one that makes packet spoofing
+# and ARP tricks possible from a compromised container.
+#
+# Deliberately *not* applied to postgres, redis, minio and clamav: those are
+# third-party images whose entrypoints change user and adjust file ownership,
+# and breaking the database in order to harden it would be a poor trade. A
+# managed deployment runs them as managed services anyway.
+x-palcert-hardening: &palcert-hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  # One-shot: the stack's own private CA and server certificates.
+  certs:
+    image: alpine/openssl:3.3.2
+    entrypoint: ['/bin/sh', '/release-certs.sh']
+    volumes:
+      - ./release-certs.sh:/release-certs.sh:ro
+      - certs:/certs
+      - storage-kms:/kms
+    restart: 'no'
+
+  # ── The only published surface ────────────────────────────────────────────
+  proxy:
+    image: nginx:1.27-alpine
+    <<: *palcert-hardening
+    # nginx's own entrypoint starts as root, chowns its cache directories and
+    # then drops to the `nginx` user. With every capability dropped it cannot,
+    # and the container crash-loops on
+    # `chown("/var/cache/nginx/client_temp") failed (Operation not permitted)`
+    # — which is how this list was arrived at rather than guessed. These three
+    # are what the drop-privileges dance needs; everything else a container
+    # gets by default, NET_RAW included, stays gone.
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    restart: unless-stopped
+    depends_on:
+      certs: { condition: service_completed_successfully }
+      web: { condition: service_healthy }
+      api: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    ports:
+      - '${PROXY_PORT:-8443}:8443'
+    volumes:
+      - ./release-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+      - certs:/certs:ro
+    # `storage` so presigned uploads and downloads reach MinIO; nothing else
+    # stateful is on it.
+    networks: [edge, storage]
+
+  # One-shot: the three buckets PalCert's production configuration requires to
+  # be distinct — clean, quarantine and derived. A managed deployment creates
+  # them with `pnpm storage:provision` or its own infrastructure; the release
+  # stack brings its own MinIO, so it brings its own provisioning too.
+  storage-init:
+    image: ${MINIO_MC_IMAGE:-quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z}
+    depends_on:
+      minio: { condition: service_healthy }
+    environment:
+      STORAGE_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY_ID:?set STORAGE_ACCESS_KEY_ID}
+      STORAGE_SECRET_ACCESS_KEY: ${STORAGE_SECRET_ACCESS_KEY:?set STORAGE_SECRET_ACCESS_KEY}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        # --insecure: the certificate is issued by the stack's private CA.
+        mc --insecure alias set release https://minio:9000 "$$STORAGE_ACCESS_KEY_ID" "$$STORAGE_SECRET_ACCESS_KEY"
+        for bucket in palcert-documents palcert-quarantine palcert-derived; do
+          mc --insecure mb --ignore-existing "release/$$bucket"
+          # Versioning is what makes a finalized object immutable in the face
+          # of a later overwrite, and the API's readiness probe checks for it:
+          # a bucket without it reports the storage dependency as unhealthy.
+          mc --insecure version enable "release/$$bucket"
+          # Encrypted at rest by default, not only when a request asks
+          # (Phase 20 Checkpoint 9). PalCert asks on every write it makes,
+          # but a restore writes objects back without the header, and a
+          # bucket default is what keeps those encrypted too. Needs MinIO's
+          # KMS key, which `certs` generates.
+          mc --insecure encrypt set sse-s3 "release/$$bucket"
+        done
+        # No anonymous policy on any of them. Every object PalCert serves goes
+        # out through a presigned URL with a bounded lifetime.
+        echo "buckets provisioned"
+    restart: 'no'
+    networks: [internal]
+
+  # ── Application images PalCert owns ───────────────────────────────────────
+  web:
+    image: ${WEB_IMAGE:-palcert/web:20.2}
+    <<: *palcert-hardening
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      METRICS_ENABLED: ${METRICS_ENABLED:-true}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+    networks: [edge]
+    # No ports. The proxy reaches it over the edge network.
+
+  api:
+    image: ${API_IMAGE:-palcert/api:20.2}
+    <<: *palcert-hardening
+    restart: unless-stopped
+    depends_on:
+      migrate-check: { condition: service_completed_successfully }
+      storage-init: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    environment: *app-environment
+    volumes:
+      - certs:/certs:ro
+    networks: [edge, internal]
+    healthcheck:
+      # Readiness, not liveness: compose uses this to gate `depends_on`, and
+      # what a dependent needs to know is whether the API can serve, not
+      # whether its process exists.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  worker:
+    image: ${WORKER_IMAGE:-palcert/worker:20.2}
+    <<: *palcert-hardening
+    restart: unless-stopped
+    depends_on:
+      migrate-check: { condition: service_completed_successfully }
+      storage-init: { condition: service_completed_successfully }
+      document-engine: { condition: service_healthy }
+    environment:
+      <<: *app-environment
+      WORKER_HOST: 0.0.0.0
+      WORKER_PORT: '4100'
+    volumes:
+      - certs:/certs:ro
+    networks: [internal]
+    # Long enough for an in-flight job to finish or relinquish its lease
+    # before SIGKILL. The job contract survives a hard kill — the lease lapses
+    # and a sweep reclaims it — but a clean stop costs an attempt less.
+    stop_grace_period: 40s
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4100/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # One migration step, not a race between replicas.
+  #
+  # Every API and worker container waits for this to exit 0. Without it each
+  # replica would run `migrate deploy` at startup and they would contend for
+  # the same advisory lock, with the losers either blocking or failing their
+  # health check while the winner works.
+  migrate:
+    # Its own image: the Prisma CLI is a devDependency, so the API bundle is
+    # built with --prod and correctly cannot run migrations. Keeping a
+    # schema-mutating tool out of every running replica is the point.
+    image: ${MIGRATE_IMAGE:-palcert/migrate:20.2}
+    <<: *palcert-hardening
+    depends_on:
+      certs: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+    environment: *app-environment
+    volumes:
+      - certs:/certs:ro
+    restart: 'no'
+    networks: [internal]
+
+  # The gate between "migrations ran" and "the application may serve".
+  #
+  # `migrate` exiting 0 means the migration job did what it was asked. It does
+  # not mean the database is at this build's level: an image can be deployed
+  # whose migrations never reached this database, and the application will
+  # start, pass its readiness probe, and fail only on the paths that needed
+  # the object the missing migration would have created. Checkpoint 20.3
+  # shipped precisely that and its end-to-end suite reported green. This
+  # service compares the migrations in the image against the applied history
+  # and exits non-zero on any difference, so `api` and `worker` -- which wait
+  # for it to complete successfully -- cannot open traffic on a stale schema.
+  migrate-check:
+    image: ${MIGRATE_IMAGE:-palcert/migrate:20.2}
+    <<: *palcert-hardening
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+    environment: *app-environment
+    volumes:
+      - certs:/certs:ro
+    # `prisma migrate status` rather than PalCert's own checker, and that is a
+    # deliberate trade. The checker gives richer output and distinct exit
+    # codes, but it needs the generated client and a `scripts/` directory that
+    # this image is built without -- Checkpoint 20.2 slimmed it on purpose.
+    # Prisma's own command is already here, enforces the same invariant, and
+    # exits non-zero for both a pending migration and a failed one. The richer
+    # checker runs where the repository is present: in CI, in the end-to-end
+    # harness, and in the recovery preflight.
+    command: ['node_modules/.bin/prisma', 'migrate', 'status', '--schema', 'prisma/schema.prisma']
+    restart: 'no'
+    networks: [internal]
+
+  document-engine:
+    image: ${ENGINE_IMAGE:-palcert/document-engine:20.2}
+    <<: *palcert-hardening
+    restart: unless-stopped
+    environment:
+      DOC_ENGINE_ENVIRONMENT: production
+      DOC_ENGINE_METRICS_ENABLED: ${METRICS_ENABLED:-true}
+      DOC_ENGINE_METRICS_TOKEN: ${METRICS_TOKEN:-}
+    networks: [internal]
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health/live').status==200 else 1)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  # ── Stateful services PalCert connects to ─────────────────────────────────
+  #
+  # Present so a release candidate can be tested end to end. In a real
+  # deployment these are managed services outside this file, which is why none
+  # of them is bundled into an application image.
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: palcert
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: palcert
+      # Read by the init script, which creates the least-privileged
+      # request-path role. PalCert refuses to boot in production when the
+      # request connection and the schema-owning connection are the same.
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?set POSTGRES_APP_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./release-postgres-init.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
+    networks: [internal]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U palcert -d palcert']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+    networks: [internal]
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    restart: unless-stopped
+    depends_on:
+      certs: { condition: service_completed_successfully }
+    command: ['server', '/data', '--certs-dir', '/certs/minio-certs']
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY_ID:?set STORAGE_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_ACCESS_KEY:?set STORAGE_SECRET_ACCESS_KEY}
+      # The SSE-S3 key, so `x-amz-server-side-encryption: AES256` -- which
+      # PalCert's production configuration sends on every object -- is
+      # honoured instead of refused with `501 KMS is not configured`
+      # (Phase 20 Checkpoint 9). Generated once by `certs`; see
+      # release-certs.sh.
+      MINIO_KMS_SECRET_KEY_FILE: /kms/key
+    volumes:
+      - minio-data:/data
+      - certs:/certs:ro
+      - storage-kms:/kms:ro
+    # `internal` for the API and worker; `storage` for the proxy, which is how
+    # a browser's presigned request arrives.
+    networks: [internal, storage]
+    # The console (:9001) is deliberately not started and not published: it is
+    # an administrative interface and has no place on a release-test surface.
+    healthcheck:
+      # `mc ready` polls until the cluster answers, and over TLS it needs
+      # longer than the 5s the plaintext development stack allowed.
+      # `curl` against MinIO's own liveness endpoint rather than `mc ready`,
+      # which polls until the cluster answers and regularly outlives a probe
+      # timeout. `-k` because the certificate is issued by the stack's private
+      # CA and this probe runs inside the container that serves it.
+      test: ['CMD', 'curl', '-fsk', 'https://127.0.0.1:9000/minio/health/live']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  clamav:
+    image: clamav/clamav:1.4
+    restart: unless-stopped
+    volumes:
+      - clamav-data:/var/lib/clamav
+    networks: [internal]
+    healthcheck:
+      test: ['CMD', 'clamdcheck.sh']
+      interval: 30s
+      timeout: 10s
+      retries: 30
+
+networks:
+  # Reachable from the proxy. Carries HTTP only.
+  edge:
+  # Everything stateful. Inbound isolation comes from publishing no ports —
+  # a container with no `ports:` entry is unreachable from the host.
+  #
+  # Deliberately NOT `internal: true`, which would also cut outbound traffic:
+  # ClamAV downloads virus signatures and would never become healthy, and the
+  # API needs egress for Stripe, the AI provider and SMTP when a release test
+  # enables them. Restricting egress is the deployment network's job, with a
+  # policy that can distinguish "signature updates" from "anything at all";
+  # expressing it as a blanket switch here would only look like security.
+  internal:
+  # The proxy and the object store, and nothing else. Browsers upload and
+  # download through presigned URLs on the web origin; the proxy forwards
+  # those paths to MinIO over this network. Keeping it separate from
+  # `internal` is what stops that route from also being a route to
+  # PostgreSQL, Redis or the document engine.
+  storage:
+
+volumes:
+  certs:
+  # MinIO's encryption-at-rest key; mounted by `certs` (to write it once) and
+  # `minio`, nothing else.
+  storage-kms:
+  postgres-data:
+  redis-data:
+  minio-data:
+  clamav-data:

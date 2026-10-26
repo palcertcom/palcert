@@ -1,0 +1,3 @@
+# Prisma migration lock file. Do not edit.
+# Changing the provider requires a new migration history.
+provider = "postgresql"

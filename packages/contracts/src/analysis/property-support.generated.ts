@@ -1,0 +1,1684 @@
+/**
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Source: contracts/registries/document-property-support.json
+ * Regenerate: pnpm --filter @palcert/contracts run generate:evaluation
+ *
+ * Editing this by hand would reintroduce exactly the drift the generation step
+ * exists to prevent.
+ */
+
+/** The document property support registry, embedded verbatim from the source of truth. */
+export const DOCUMENT_PROPERTY_SUPPORT_REGISTRY = {
+  $comment:
+    'The format-aware document property support registry (Phase 13 §61, §62). One table, consumed by the Python analyzers, the API and the web UI, so PDF compatibility is never described in three places that can disagree. EXACT means the format stores the property and PalCert reads it. DERIVED means PalCert computes it from the format under a documented definition, and evidence is labelled as derived. UNSUPPORTED means the format cannot answer it and a rule about it is INDETERMINATE rather than PASS. The registry deliberately does NOT merge a similar measurement with a different meaning: a DOCX marginLeft is an authoring instruction and a PDF observedContentInsetLeft is a measurement of where ink happens to start, so they are separate rows and a margin rule is not silently satisfied by an inset. Version 2 adds an optional `elementTypes` to a row: the element types an ELEMENT-scoped property is actually emitted for. Absent means the row does not say, which is how every Phase 13 row was written and stays written. Present, it is a closed list, and a rule naming an element type outside it is asking for a fact no analyzer produces — which matters for the Phase 18 citation properties, because the neighbouring REFERENCE_ENTRY element type carries no properties at all and an undeclared ELEMENT row would read as though it did. Version 3 adds ADVISORY, which is not a weaker EXACT and not a variant of DERIVED. DERIVED is a deterministic computation over what the format does store — an ink inset is measured, exhaustively and repeatably. ADVISORY is a recognition: PalCert believes it found something, the population is a lower bound rather than a total, and the evidence is labelled HEURISTIC all the way to the verdict. A rule about an ADVISORY property is INDETERMINATE with evidence level ADVISORY, never PASS and never FAIL, so the support level and the evaluator agree on what the number is worth.',
+  registryVersion: 3,
+  supportLevels: ['EXACT', 'DERIVED', 'ADVISORY', 'UNSUPPORTED'],
+  formats: ['DOCX', 'PDF'],
+  distinctSemantics: [
+    {
+      $comment:
+        'Pairs that measure something similar and mean something different. Never merge them.',
+      docx: 'marginLeft',
+      pdf: 'observedContentInsetLeft',
+    },
+    {
+      docx: 'marginRight',
+      pdf: 'observedContentInsetRight',
+    },
+    {
+      docx: 'marginTop',
+      pdf: 'observedContentInsetTop',
+    },
+    {
+      docx: 'marginBottom',
+      pdf: 'observedContentInsetBottom',
+    },
+    {
+      docx: 'paragraphCount',
+      pdf: '(none) — a PDF text block is not an authoring paragraph',
+    },
+  ],
+  properties: [
+    {
+      name: 'activeContentPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'Launch, URI, GoToR, RichMedia or JavaScript; never followed',
+      },
+    },
+    {
+      name: 'annotationCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'annotation entries across all pages',
+      },
+    },
+    {
+      name: 'attachmentCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'embedded file entries; never opened',
+      },
+    },
+    {
+      name: 'bodyWordCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'WORDS',
+      docx: {
+        support: 'DERIVED',
+        note: 'PalCert word count over the FINAL revision view',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'counted over the native text layer; unavailable on image-only pages',
+      },
+    },
+    {
+      name: 'bold',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:b, under toggle semantics',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'from the font descriptor weight where present, never from the name',
+      },
+    },
+    {
+      name: 'boldComplexScript',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:bCs, under toggle semantics',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no script-slot font model',
+      },
+    },
+    {
+      name: 'characterCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'CHARACTERS',
+      docx: {
+        support: 'DERIVED',
+        note: 'PalCert character count over the main story',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'counted over the native text layer',
+      },
+    },
+    {
+      name: 'characterCountNoWhitespace',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'CHARACTERS',
+      docx: {
+        support: 'DERIVED',
+        note: 'PalCert character count over the main story',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'counted over the native text layer',
+      },
+    },
+    {
+      name: 'citationTargetResolved',
+      scopes: ['ELEMENT'],
+      elementTypes: ['CITATION'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a Word citation resolves to a bibliography source record, not to a rendered reference entry; that relationship is nativeSourceResolved, and answering this one from it would make two different questions look like the same answer',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'a declared citation resolves to a declared reference entry by numeric label or internal destination; a citation PalCert could not resolve unambiguously carries no value, and the coverage says PARTIAL rather than answering for it',
+      },
+    },
+    {
+      name: 'claimedPdfAConformance',
+      scopes: ['DOCUMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the level a document CLAIMS in XMP; not a validation',
+      },
+    },
+    {
+      name: 'claimedPdfAPart',
+      scopes: ['DOCUMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the part a document CLAIMS in XMP; not a validation',
+      },
+    },
+    {
+      name: 'columnCount',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'DERIVED',
+        note: 'widest row, w:gridSpan included',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF stores no column definition',
+      },
+    },
+    {
+      name: 'commentCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:comment entries',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF annotations are counted separately as annotationCount',
+      },
+    },
+    {
+      name: 'commentsPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'the comments part',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF annotations are counted separately as annotationCount',
+      },
+    },
+    {
+      name: 'created',
+      scopes: ['METADATA'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'dcterms:created',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'XMP xmp:CreateDate or DocumentInfo /CreationDate',
+      },
+    },
+    {
+      name: 'creator',
+      scopes: ['METADATA'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'dc:creator',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'XMP dc:creator or DocumentInfo /Author under a stated precedence',
+      },
+    },
+    {
+      name: 'description',
+      scopes: ['METADATA'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'dc:description',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'XMP dc:description or DocumentInfo /Subject',
+      },
+    },
+    {
+      name: 'encrypted',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the document has an /Encrypt dictionary',
+      },
+    },
+    {
+      name: 'endnoteCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'user endnotes, separators excluded',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no endnote story',
+      },
+    },
+    {
+      name: 'endnoteWordCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'WORDS',
+      docx: {
+        support: 'DERIVED',
+        note: 'PalCert word count over the FINAL revision view',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no endnote story',
+      },
+    },
+    {
+      name: 'equationCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'm:oMath and m:oMathPara',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF carries no equation structure PalCert can trust',
+      },
+    },
+    {
+      name: 'figureCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:drawing and legacy pictures',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'tagged-PDF Figure structure only; an image object is not a figure',
+      },
+    },
+    {
+      name: 'figureHeight',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'wp:extent/@cy (EMU)',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'image object bounds on the page',
+      },
+    },
+    {
+      name: 'figurePlacement',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'wp:inline or wp:anchor',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'an OOXML anchoring property with no PDF equivalent',
+      },
+    },
+    {
+      name: 'figureWidth',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'wp:extent/@cx (EMU)',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'image object bounds on the page',
+      },
+    },
+    {
+      name: 'firstLineIndent',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:ind/@w:firstLine (twips)',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured first-line offset within a layout block',
+      },
+    },
+    {
+      name: 'fontEmbedded',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the font program is embedded in the PDF',
+      },
+    },
+    {
+      name: 'fontFamily',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:rFonts/@w:ascii|@w:hAnsi, resolved through the theme',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the font declared by the PDF, never a renderer substitute',
+      },
+    },
+    {
+      name: 'fontFamilyComplexScript',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:rFonts/@w:cs, resolved through the theme',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no script-slot font model; fontFamily covers all runs',
+      },
+    },
+    {
+      name: 'fontFamilyEastAsian',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:rFonts/@w:eastAsia, resolved through the theme',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no script-slot font model; fontFamily covers all runs',
+      },
+    },
+    {
+      name: 'fontSize',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:sz (half-points)',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'effective size after the text and object matrices',
+      },
+    },
+    {
+      name: 'fontSizeComplexScript',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:szCs (half-points)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no script-slot font model; fontSize covers all runs',
+      },
+    },
+    {
+      name: 'fontSubset',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the base font name carries a subset prefix',
+      },
+    },
+    {
+      name: 'footerDistance',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgMar/@w:footer (twips)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no footer story',
+      },
+    },
+    {
+      name: 'footerPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:footerReference',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no footer story',
+      },
+    },
+    {
+      name: 'footnoteCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'user footnotes, separators excluded',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no footnote story',
+      },
+    },
+    {
+      name: 'footnoteWordCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'WORDS',
+      docx: {
+        support: 'DERIVED',
+        note: 'PalCert word count over the FINAL revision view',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no footnote story',
+      },
+    },
+    {
+      name: 'formFieldCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'AcroForm field entries',
+      },
+    },
+    {
+      name: 'gutter',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgMar/@w:gutter (twips)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'an authoring property with no PDF equivalent',
+      },
+    },
+    {
+      name: 'hangingIndent',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:ind/@w:hanging (twips)',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured first-line offset within a layout block',
+      },
+    },
+    {
+      name: 'hasAlternativeText',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'wp:docPr/@descr or @title',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'tagged-PDF alternate text only',
+      },
+    },
+    {
+      name: 'headerDistance',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgMar/@w:header (twips)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no header story',
+      },
+    },
+    {
+      name: 'headerPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:headerReference',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no header story',
+      },
+    },
+    {
+      name: 'hiddenTextPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'effective w:vanish or w:webHidden',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'not reliably recoverable in this version',
+      },
+    },
+    {
+      name: 'highlight',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:highlight/@w:val',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'not reliably recoverable in this version',
+      },
+    },
+    {
+      name: 'imageObjectCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'image page objects; an image is not a Figure',
+      },
+    },
+    {
+      name: 'indentEnd',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:ind/@w:end|@w:right (twips)',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured block inset, not an authoring indent',
+      },
+    },
+    {
+      name: 'indentStart',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:ind/@w:start|@w:left (twips)',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured block inset, not an authoring indent',
+      },
+    },
+    {
+      name: 'italic',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:i, under toggle semantics',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'from the font descriptor italic angle/flag where present',
+      },
+    },
+    {
+      name: 'italicComplexScript',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:iCs, under toggle semantics',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no script-slot font model',
+      },
+    },
+    {
+      name: 'javaScriptPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'JavaScript actions or names; never executed',
+      },
+    },
+    {
+      name: 'keepNext',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:keepNext',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'a pagination hint that PDF has already resolved',
+      },
+    },
+    {
+      name: 'keywords',
+      scopes: ['METADATA'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'cp:keywords',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'XMP pdf:Keywords or DocumentInfo /Keywords',
+      },
+    },
+    {
+      name: 'language',
+      scopes: ['ELEMENT', 'METADATA'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:lang/@w:val (element) or dc:language (metadata)',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the document catalog /Lang entry where present',
+      },
+    },
+    {
+      name: 'languageComplexScript',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:lang/@w:bidi',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no script-slot language model',
+      },
+    },
+    {
+      name: 'lineCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'line breaking is a layout result',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'counted from rendered text geometry on pages with a native text layer',
+      },
+    },
+    {
+      name: 'lineSpacing',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:spacing/@w:line; unit depends on lineSpacingMode',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'baseline distance measured from rendered geometry',
+      },
+    },
+    {
+      name: 'lineSpacingMode',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:spacing/@w:lineRule',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'an OOXML spacing rule with no PDF equivalent',
+      },
+    },
+    {
+      name: 'listLevel',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:numPr/w:ilvl, after numbering resolution',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'tagged-PDF list structure only',
+      },
+    },
+    {
+      name: 'listStartValue',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:start, with w:startOverride applied',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'not represented in PDF structure',
+      },
+    },
+    {
+      name: 'marginBottom',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgMar/@w:bottom (twips)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF stores no authoring margin; see observedContentInsetBottom',
+      },
+    },
+    {
+      name: 'marginLeft',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgMar/@w:left (twips)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF stores no authoring margin; see observedContentInsetLeft',
+      },
+    },
+    {
+      name: 'marginRight',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgMar/@w:right (twips)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF stores no authoring margin; see observedContentInsetRight',
+      },
+    },
+    {
+      name: 'marginTop',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgMar/@w:top (twips)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF stores no authoring margin; see observedContentInsetTop',
+      },
+    },
+    {
+      name: 'mirrorMargins',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:mirrorMargins in settings',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'an authoring property with no PDF equivalent',
+      },
+    },
+    {
+      name: 'modified',
+      scopes: ['METADATA'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'dcterms:modified',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'XMP xmp:ModifyDate or DocumentInfo /ModDate',
+      },
+    },
+    {
+      name: 'nativeBibliographySourceCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: "records in Word's bibliography source store, found by its root element",
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF carries no bibliography source store',
+      },
+    },
+    {
+      name: 'nativeCitationCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'Word CITATION fields in the walked stories, FINAL revision view',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF has no native citation markup; a printed citation is text',
+      },
+    },
+    {
+      name: 'nativeSourceResolved',
+      scopes: ['ELEMENT'],
+      elementTypes: ['CITATION'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: "whether one CITATION field's tag matches a record in an exact source set; a citation PalCert could not resolve unambiguously carries no value, and the coverage says PARTIAL rather than answering for it",
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF has no citation element and no source store to resolve against',
+      },
+    },
+    {
+      name: 'numberFormat',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:numFmt/@w:val of the resolved level',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'not represented in PDF structure',
+      },
+    },
+    {
+      name: 'observedCitationCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'heuristic citation discovery is implemented for PDF only; a DOCX citation is read from markup and counted by nativeCitationCount, which is exact',
+      },
+      pdf: {
+        support: 'ADVISORY',
+        note: 'how many in-text citations the current heuristic detector recognized in an untagged PDF; a lower bound, never a total, and deliberately not the count of citations the author declared',
+      },
+    },
+    {
+      name: 'observedContentInsetBottom',
+      scopes: ['PAGE'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured distance from the display box to the bottommost rendered content',
+      },
+    },
+    {
+      name: 'observedContentInsetLeft',
+      scopes: ['PAGE'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured distance from the display box to the leftmost rendered content',
+      },
+    },
+    {
+      name: 'observedContentInsetRight',
+      scopes: ['PAGE'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured distance from the display box to the rightmost rendered content',
+      },
+    },
+    {
+      name: 'observedContentInsetTop',
+      scopes: ['PAGE'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured distance from the display box to the topmost rendered content',
+      },
+    },
+    {
+      name: 'observedReferenceCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'heuristic reference discovery is implemented for PDF only',
+      },
+      pdf: {
+        support: 'ADVISORY',
+        note: 'how many reference entries the current heuristic detector segmented out of the regions it recognized; a lower bound over the styles it knows, never a total',
+      },
+    },
+    {
+      name: 'observedReferenceRegionPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'heuristic region discovery is implemented for PDF only; a DOCX BIBLIOGRAPHY field proves a region exactly and that is referenceRegionPresent',
+      },
+      pdf: {
+        support: 'ADVISORY',
+        note: "a reference list PalCert recognized without the author declaring one; emitted only when true, because a list written in a style the detector does not know is invisible to it and its absence is not evidence of absence. Deliberately a separate property from referenceRegionPresent, which means 'proven by structure' and stays exact",
+      },
+    },
+    {
+      name: 'outlineCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'top-level outline entries',
+      },
+    },
+    {
+      name: 'pageBreakBefore',
+      scopes: ['ELEMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:pageBreakBefore',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'a pagination hint that PDF has already resolved',
+      },
+    },
+    {
+      name: 'pageCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'PAGES',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'rendered pagination is not stored in OOXML; a saved count is a stale hint',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the page tree is the document; PDF page count is authoritative',
+      },
+    },
+    {
+      name: 'pageHeight',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgSz/@w:h (twips)',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'from the effective display box after CropBox and rotation',
+      },
+    },
+    {
+      name: 'pageNumber',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'PAGES',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: "a paragraph's page is produced by layout, which structural analysis does not run",
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'content lives on a real stored page; no page number is invented',
+      },
+    },
+    {
+      name: 'pageOrientation',
+      scopes: ['DOCUMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgSz/@w:orient',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'derived from effective display geometry under a stated rule',
+      },
+    },
+    {
+      name: 'pageRotation',
+      scopes: ['PAGE'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the /Rotate entry, normalised to 0/90/180/270',
+      },
+    },
+    {
+      name: 'pageTextLayer',
+      scopes: ['PAGE'],
+      valueKind: 'ENUM',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'per-page text-layer classification',
+      },
+    },
+    {
+      name: 'pageWidth',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'MILLIMETRE',
+      docx: {
+        support: 'EXACT',
+        note: 'w:pgSz/@w:w (twips)',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'from the effective display box after CropBox and rotation',
+      },
+    },
+    {
+      name: 'paragraphAlignment',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:jc/@w:val',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'inferred from line geometry; PDF stores no alignment property',
+      },
+    },
+    {
+      name: 'paragraphCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'visible w:p in the main story',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF text block is not an authoring paragraph',
+      },
+    },
+    {
+      name: 'pdfVersion',
+      scopes: ['DOCUMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'the PDF header/catalog version',
+      },
+    },
+    {
+      name: 'referenceRegionPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'a BIBLIOGRAPHY field proves one exists; emitted only when true, because a hand-typed reference list is invisible to that proof and its absence is not evidence of absence',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'a tagged /BibEntry proves one exists; emitted only when true, because an untagged reference list is invisible to that proof and its absence is not evidence of absence',
+      },
+    },
+    {
+      name: 'renderedMargin',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'mirrored margins resolve to a physical side only once page parity is known',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF stores no authoring margin; see the observedContentInset properties',
+      },
+    },
+    {
+      name: 'rowCount',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'count of w:tr',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'tagged-PDF table structure only',
+      },
+    },
+    {
+      name: 'sectionBreakType',
+      scopes: ['DOCUMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:type/@w:val of the section',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no section concept',
+      },
+    },
+    {
+      name: 'sectionColumnCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:cols/@w:num, one fact per section',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no section concept',
+      },
+    },
+    {
+      name: 'sectionCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:sectPr occurrences',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no section concept',
+      },
+    },
+    {
+      name: 'signatureFieldCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'signature fields; validity is NOT asserted',
+      },
+    },
+    {
+      name: 'spacingAfter',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:spacing/@w:after (twips)',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured gap between layout blocks, not an authoring property',
+      },
+    },
+    {
+      name: 'spacingBefore',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:spacing/@w:before (twips)',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'measured gap between layout blocks, not an authoring property',
+      },
+    },
+    {
+      name: 'styleId',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:pStyle/@w:val',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF has no style catalogue',
+      },
+    },
+    {
+      name: 'subject',
+      scopes: ['METADATA'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'dc:subject',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'XMP dc:description or DocumentInfo /Subject',
+      },
+    },
+    {
+      name: 'tableAlignment',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:tblPr/w:jc/@w:val',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'not recoverable without trusted table structure',
+      },
+    },
+    {
+      name: 'tableCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:tbl in the main story',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'tagged-PDF structure only; never inferred from ruling lines',
+      },
+    },
+    {
+      name: 'tableOfContentsPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'a TOC field instruction',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF outline is navigation, not a table of contents field',
+      },
+    },
+    {
+      name: 'tableWidth',
+      scopes: ['ELEMENT'],
+      valueKind: 'NUMBER',
+      unit: 'POINT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:tblW where the type is dxa',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'not recoverable without trusted table structure',
+      },
+    },
+    {
+      name: 'tagged',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'a StructTreeRoot is present and readable',
+      },
+    },
+    {
+      name: 'textColor',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:color/@w:val',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'not advertised in this version; see docs/architecture/pdf-analysis.md',
+      },
+    },
+    {
+      name: 'textDirection',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:bidi (paragraph) and w:rtl (run)',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'not reliably recoverable from PDF content streams',
+      },
+    },
+    {
+      name: 'textLayer',
+      scopes: ['DOCUMENT'],
+      valueKind: 'ENUM',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'NATIVE_TEXT / IMAGE_ONLY / HYBRID / EMPTY_OR_UNKNOWN',
+      },
+    },
+    {
+      name: 'title',
+      scopes: ['METADATA'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'dc:title',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'XMP dc:title or DocumentInfo /Title under a stated precedence',
+      },
+    },
+    {
+      name: 'totalVisibleWordCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'WORDS',
+      docx: {
+        support: 'DERIVED',
+        note: 'PalCert word count over the FINAL revision view',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'counted over the native text layer',
+      },
+    },
+    {
+      name: 'trackedChangesPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:ins / w:del / w:move*',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF carries no revision markup',
+      },
+    },
+    {
+      name: 'trackedDeletionCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:del occurrences',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF carries no revision markup',
+      },
+    },
+    {
+      name: 'trackedFormattingChangesPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:pPrChange / w:rPrChange / w:tblPrChange',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF carries no revision markup',
+      },
+    },
+    {
+      name: 'trackedInsertionCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'COUNT',
+      docx: {
+        support: 'EXACT',
+        note: 'w:ins occurrences',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'PDF carries no revision markup',
+      },
+    },
+    {
+      name: 'underline',
+      scopes: ['ELEMENT'],
+      valueKind: 'STRING',
+      unit: null,
+      docx: {
+        support: 'EXACT',
+        note: 'w:u/@w:val',
+      },
+      pdf: {
+        support: 'UNSUPPORTED',
+        note: 'drawn as graphics in PDF; not a text property',
+      },
+    },
+    {
+      name: 'wordCount',
+      scopes: ['DOCUMENT'],
+      valueKind: 'NUMBER',
+      unit: 'WORDS',
+      docx: {
+        support: 'DERIVED',
+        note: 'PalCert word count over the FINAL revision view',
+      },
+      pdf: {
+        support: 'DERIVED',
+        note: 'counted over the native text layer; unavailable on image-only pages',
+      },
+    },
+    {
+      name: 'xfaPresent',
+      scopes: ['DOCUMENT'],
+      valueKind: 'BOOLEAN',
+      unit: null,
+      docx: {
+        support: 'UNSUPPORTED',
+        note: 'a PDF-only observation with no OOXML equivalent',
+      },
+      pdf: {
+        support: 'EXACT',
+        note: 'an XFA entry is present in the AcroForm',
+      },
+    },
+  ],
+} as const;

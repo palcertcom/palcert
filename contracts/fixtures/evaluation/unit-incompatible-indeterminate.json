@@ -1,0 +1,84 @@
+{
+  "description": "A pixel measurement against a millimetre rule. Without a resolution there is no answer, so INDETERMINATE - never FAIL.",
+  "rule": {
+    "ruleCode": "IMAGE.WIDTH.MIN",
+    "scope": {
+      "kind": "ELEMENT",
+      "elementType": "FIGURE",
+      "property": "width"
+    },
+    "operator": "GREATER_THAN_OR_EQUAL",
+    "expected": {
+      "type": "NUMBER",
+      "number": 50
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2,
+    "unit": "MILLIMETRE"
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "ELEMENT",
+        "elementType": "FIGURE",
+        "property": "width",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "FIGURE",
+          "property": "width"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "300"
+        },
+        "unit": "PIXEL",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "fig-1",
+          "page": 4,
+          "ordinal": 1
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "IMAGE.WIDTH.MIN",
+    "outcome": "INDETERMINATE",
+    "reasonCode": "UNIT_INCOMPATIBLE",
+    "evidenceLevel": "NONE",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "GREATER_THAN_OR_EQUAL",
+    "counts": {
+      "matchedFacts": 1,
+      "evaluatedFacts": 1,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 1
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

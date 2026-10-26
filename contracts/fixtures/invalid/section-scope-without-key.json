@@ -1,0 +1,8 @@
+{
+  "contract": "FactScope",
+  "description": "A SECTION scope must name its section.",
+  "payload": {
+    "kind": "SECTION",
+    "property": "wordCount"
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "description": "Five paragraphs, three at the wrong size. Counts must report 5 checked and 3 failed, with one violation per location.",
+  "rule": {
+    "ruleCode": "BODY.FONT.SIZE",
+    "scope": {
+      "kind": "ELEMENT",
+      "elementType": "PARAGRAPH",
+      "property": "fontSize"
+    },
+    "operator": "EQUALS",
+    "expected": {
+      "type": "NUMBER",
+      "number": 12
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2,
+    "unit": "POINT"
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "ELEMENT",
+        "elementType": "PARAGRAPH",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "12"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-1",
+          "page": 1,
+          "ordinal": 1
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-2",
+          "page": 1,
+          "ordinal": 2
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "12"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-3",
+          "page": 2,
+          "ordinal": 3
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "10.5"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-4",
+          "page": 2,
+          "ordinal": 4
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "14"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-5",
+          "page": 3,
+          "ordinal": 5
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "BODY.FONT.SIZE",
+    "outcome": "FAIL",
+    "reasonCode": "VALUE_MISMATCH",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "EQUALS",
+    "counts": {
+      "matchedFacts": 5,
+      "evaluatedFacts": 5,
+      "passedFacts": 2,
+      "failedFacts": 3,
+      "indeterminateFacts": 0
+    },
+    "violations": [
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-2",
+          "page": 1,
+          "ordinal": 2
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-4",
+          "page": 2,
+          "ordinal": 4
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "10.5",
+          "unit": "POINT",
+          "normalizedValue": "10.5",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-5",
+          "page": 3,
+          "ordinal": 5
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "14",
+          "unit": "POINT",
+          "normalizedValue": "14",
+          "normalizedUnit": "POINT"
+        }
+      }
+    ],
+    "totalViolationCount": 3,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

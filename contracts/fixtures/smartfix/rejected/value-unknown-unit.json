@@ -1,0 +1,9 @@
+{
+  "contract": "FixValue",
+  "why": "Units come from PalCert's registry; an unknown one has no conversion.",
+  "value": {
+    "kind": "NUMBER",
+    "number": "12",
+    "unit": "PIXELS"
+  }
+}

@@ -1,0 +1,12 @@
+-- =============================================================================
+-- Standard versions — the SUPERSEDED status
+--
+-- In its own migration on purpose. PostgreSQL will add an enum value inside a
+-- transaction but will not let the *same* transaction use it, and Prisma runs
+-- each migration file in one transaction. The next migration's constraints,
+-- trigger and functions all name the value, so it is committed first.
+--
+-- Placed after PUBLISHED so the enum reads in lifecycle order. Nothing orders
+-- by this enum; the position is for people reading the catalogue.
+-- =============================================================================
+ALTER TYPE "StandardVersionStatus" ADD VALUE IF NOT EXISTS 'SUPERSEDED' AFTER 'PUBLISHED';

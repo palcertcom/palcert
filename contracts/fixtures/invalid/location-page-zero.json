@@ -1,0 +1,9 @@
+{
+  "contract": "Location",
+  "description": "There is no page zero. Absent means unknown.",
+  "payload": {
+    "locationSchemaVersion": 1,
+    "nodeId": "p-1",
+    "page": 0
+  }
+}

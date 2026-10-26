@@ -1,0 +1,9 @@
+{
+  "contract": "FixValue",
+  "why": "The three value forms are alternatives, not optional fields on one object: a NUMBER carrying text would let a numeric target be compared against a string.",
+  "value": {
+    "kind": "NUMBER",
+    "number": "12",
+    "text": "twelve"
+  }
+}

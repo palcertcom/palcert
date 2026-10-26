@@ -1,0 +1,106 @@
+{
+  "description": "A violation whose location has no page number. Page is frequently unknown during structural DOCX extraction and must not be required.",
+  "rule": {
+    "ruleCode": "HEADING.L1.FONT",
+    "scope": {
+      "kind": "ELEMENT",
+      "elementType": "HEADING",
+      "property": "fontSize",
+      "level": 1
+    },
+    "operator": "EQUALS",
+    "expected": {
+      "type": "NUMBER",
+      "number": 16
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2,
+    "unit": "POINT"
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "ELEMENT",
+        "elementType": "HEADING",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "HEADING",
+          "property": "fontSize",
+          "level": 1
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "14"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "h-1",
+          "path": ["body", "p:3"]
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "HEADING.L1.FONT",
+    "outcome": "FAIL",
+    "reasonCode": "VALUE_MISMATCH",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "EQUALS",
+    "counts": {
+      "matchedFacts": 1,
+      "evaluatedFacts": 1,
+      "passedFacts": 0,
+      "failedFacts": 1,
+      "indeterminateFacts": 0
+    },
+    "violations": [
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "h-1",
+          "path": ["body", "p:3"]
+        },
+        "expected": {
+          "value": "16",
+          "unit": "POINT",
+          "normalizedValue": "16",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "14",
+          "unit": "POINT",
+          "normalizedValue": "14",
+          "normalizedUnit": "POINT"
+        }
+      }
+    ],
+    "totalViolationCount": 1,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

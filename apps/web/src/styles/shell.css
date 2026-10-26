@@ -1,0 +1,833 @@
+/* The frames every page sits in: the application (sidebar + topbar), the
+ * sign-in frame and the public frame.
+ *
+ * Written with logical properties throughout, so Arabic mirrors by itself:
+ * the sidebar sits at the inline start, menus open towards the inline end.
+ */
+
+/* === Application shell ==================================================== */
+
+/* The frame's parts and the page are all direct children of <body> (see
+   app-shell.tsx for why); this grid puts them in place. The rail column is
+   `auto`, so a signed-out page, which has no rail, simply has no column. */
+body:has(> .pc-app-topbar) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  min-block-size: 100vh;
+}
+
+body:has(> .pc-app-topbar) > * {
+  grid-column: 2;
+}
+
+body:has(> .pc-app-topbar) > .pc-app-topbar {
+  grid-row: 1;
+}
+
+body:has(> .pc-app-topbar) > .pc-app-context {
+  grid-row: 2;
+}
+
+body:has(> .pc-app-topbar) > :is(main, .pc-page) {
+  grid-row: 3;
+}
+
+body:has(> .pc-app-topbar) > .pc-wave {
+  grid-row: 4;
+}
+
+/* The rail is the full-height cream column; the sidebar inside it stays in
+   view while the page scrolls. */
+body:has(> .pc-app-topbar) > .pc-app-rail {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  inline-size: var(--pc-sidebar-width);
+  background: var(--pc-surface-muted);
+  border-inline-end: 1px solid var(--pc-border);
+}
+
+.pc-app-sidebar {
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem 0.875rem 1.5rem;
+  background: var(--pc-surface-muted);
+}
+
+.pc-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-inline: 0.5rem;
+  color: var(--pc-text-strong);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.005em;
+}
+
+.pc-brand-mark {
+  flex: none;
+  object-fit: contain;
+}
+
+.pc-brand:hover {
+  color: var(--pc-text-strong);
+}
+
+.pc-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.pc-brand-tagline {
+  font-size: var(--pc-text-xs);
+  font-weight: 400;
+  color: var(--pc-text-muted);
+  letter-spacing: 0;
+}
+
+.pc-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pc-nav-group h2 {
+  margin: 0 0 0.375rem;
+  padding-inline: 0.625rem;
+  font-size: var(--pc-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--pc-text-muted);
+}
+
+/* Deliberately not text-transform: uppercase. What a sighted reader sees
+   should match what the page says, and a heading rendered as "ORGANIZATION"
+   reads like a machine code (the QA resilience check says so, rightly). */
+
+.pc-nav-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.pc-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-block-size: 2.5rem;
+  padding: 0.4375rem 0.625rem;
+  border: 1px solid transparent;
+  border-radius: var(--pc-radius);
+  color: var(--pc-text);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.pc-nav-link .pc-icon {
+  flex: none;
+  color: var(--pc-gold-text);
+}
+
+.pc-nav-link:hover {
+  background: var(--pc-white);
+  color: var(--pc-text-strong);
+}
+
+/* The current section, as in the original: a white tile with a gold outline. */
+.pc-nav-link[aria-current='page'] {
+  background: var(--pc-white);
+  border-color: var(--pc-gold);
+  color: var(--pc-text-strong);
+  font-weight: 600;
+}
+
+.pc-nav-label {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.pc-nav-badge {
+  min-inline-size: 1.375rem;
+  padding: 0 0.375rem;
+  border-radius: 999px;
+  background: var(--pc-gold);
+  color: var(--pc-on-gold);
+  font-size: var(--pc-text-xs);
+  font-weight: 700;
+  line-height: 1.375rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-org-context {
+  display: grid;
+  gap: 0.375rem;
+  padding: 0.75rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-white);
+}
+
+.pc-org-context .pc-switcher {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.pc-org-context .pc-switcher select {
+  text-overflow: ellipsis;
+}
+
+.pc-org-context label {
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+  color: var(--pc-text-muted);
+}
+
+.pc-org-context select {
+  inline-size: 100%;
+  min-block-size: 2.5rem;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--pc-border-strong);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-white);
+  color: var(--pc-text-strong);
+  font: inherit;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-org-context-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  font-size: var(--pc-text-xs);
+}
+
+.pc-sidebar-footer {
+  margin-block-start: auto;
+  padding: 0.75rem 0.625rem 0;
+  border-block-start: 1px solid var(--pc-border);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-sidebar-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* --- Main column ---------------------------------------------------------- */
+
+.pc-app-topbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-block-size: var(--pc-topbar-height);
+  padding-inline: 2rem;
+  background: var(--pc-white);
+  border-block-end: 1px solid var(--pc-gold-line);
+}
+
+.pc-topbar-context {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.pc-topbar-brand {
+  display: none;
+}
+
+.pc-app-topbar[data-signed-out] .pc-topbar-brand {
+  display: inline-flex;
+}
+
+.pc-topbar-title {
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--pc-text-md);
+  font-weight: 600;
+  color: var(--pc-text-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pc-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline-start: auto;
+}
+
+.pc-icon-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--pc-radius);
+  background: transparent;
+  color: var(--pc-text);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pc-icon-button:hover {
+  background: var(--pc-surface-muted);
+  color: var(--pc-text-strong);
+}
+
+.pc-icon-button[aria-current='page'] {
+  border-color: var(--pc-gold);
+}
+
+.pc-count-badge {
+  position: absolute;
+  inset-block-start: 0.125rem;
+  inset-inline-end: 0.125rem;
+  min-inline-size: 1.125rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: var(--pc-gold);
+  color: var(--pc-on-gold);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.125rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-menu-toggle {
+  display: none;
+}
+
+.pc-app-context > .pc-breadcrumbs {
+  inline-size: 100%;
+  max-inline-size: var(--pc-content-max);
+  margin: 0 auto;
+  padding: 1.25rem 2rem 0;
+}
+
+/* The page's own header sits closer to the breadcrumb above it. */
+.pc-app-context:has(.pc-breadcrumbs) + :is(main, .pc-page) {
+  padding-block-start: 0.75rem;
+}
+
+.pc-app-context:focus {
+  outline: none;
+}
+
+/* The gold wave from the original, closing the workspace. Decorative only. */
+.pc-wave {
+  display: block;
+  inline-size: 100%;
+  block-size: clamp(5rem, 12vw, 9rem);
+  color: var(--pc-gold);
+  pointer-events: none;
+}
+
+/* --- Menus ---------------------------------------------------------------- */
+
+.pc-menu {
+  position: relative;
+}
+
+.pc-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: 2.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  padding-inline: 0.25rem 0.5rem;
+  border: 1px solid var(--pc-border);
+  border-radius: 999px;
+  background: var(--pc-white);
+  color: var(--pc-text-strong);
+  font: inherit;
+  font-size: var(--pc-text-sm);
+  cursor: pointer;
+}
+
+.pc-menu-trigger:hover {
+  border-color: var(--pc-border-strong);
+}
+
+.pc-menu-trigger[aria-expanded='true'] {
+  border-color: var(--pc-gold);
+}
+
+.pc-avatar {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+  background: var(--pc-gold-tint);
+  color: var(--pc-gold-text);
+  font-weight: 700;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-menu-name {
+  max-inline-size: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pc-menu-panel {
+  position: absolute;
+  inset-block-start: calc(100% + 0.375rem);
+  inset-inline-end: 0;
+  z-index: 40;
+  min-inline-size: 15rem;
+  padding: 0.375rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-white);
+  box-shadow: var(--pc-shadow-menu);
+}
+
+.pc-menu-header {
+  padding: 0.5rem 0.625rem 0.625rem;
+  border-block-end: 1px solid var(--pc-border);
+  margin-block-end: 0.25rem;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-menu-header strong {
+  display: block;
+  color: var(--pc-text-strong);
+  overflow-wrap: anywhere;
+}
+
+.pc-menu-header span {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-xs);
+}
+
+.pc-menu-header .pc-ltr {
+  display: block;
+}
+
+.pc-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  inline-size: 100%;
+  min-block-size: 2.5rem;
+  padding: 0.375rem 0.625rem;
+  border: 0;
+  border-radius: var(--pc-radius-sm);
+  background: transparent;
+  color: var(--pc-text);
+  font: inherit;
+  font-size: var(--pc-text-sm);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pc-menu-item .pc-icon {
+  color: var(--pc-gold-text);
+}
+
+.pc-menu-item:hover,
+.pc-menu-item:focus-visible {
+  background: var(--pc-surface-muted);
+  color: var(--pc-text-strong);
+}
+
+.pc-menu-item[aria-current='true'] {
+  font-weight: 600;
+}
+
+.pc-menu-separator {
+  block-size: 1px;
+  margin: 0.25rem 0;
+  background: var(--pc-border);
+}
+
+/* --- Locale switch -------------------------------------------------------- */
+
+.pc-locale-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-locale-switch a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-block-size: 2.5rem;
+  padding-inline: 0.625rem;
+  border-radius: var(--pc-radius);
+  color: var(--pc-text);
+  text-decoration: none;
+}
+
+.pc-locale-switch a:hover {
+  background: var(--pc-surface-muted);
+  color: var(--pc-text-strong);
+}
+
+.pc-locale-switch a .pc-icon {
+  color: var(--pc-gold-text);
+}
+
+/* --- Mobile: the sidebar becomes a drawer --------------------------------- */
+
+.pc-drawer-backdrop {
+  display: none;
+}
+
+@media (max-width: 64rem) {
+  body:has(> .pc-app-topbar) {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  body:has(> .pc-app-topbar) > .pc-app-rail {
+    display: contents;
+  }
+
+  .pc-app-sidebar {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 60;
+    inline-size: min(var(--pc-sidebar-width), 85vw);
+    box-shadow: var(--pc-shadow-menu);
+    transform: translateX(-105%);
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0.2s;
+  }
+
+  [dir='rtl'] .pc-app-sidebar {
+    transform: translateX(105%);
+  }
+
+  .pc-app-rail[data-open='true'] .pc-app-sidebar {
+    transform: none;
+    visibility: visible;
+  }
+
+  .pc-drawer-backdrop[data-open='true'] {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgb(46 46 46 / 35%);
+  }
+
+  .pc-menu-toggle {
+    display: inline-grid;
+  }
+
+  .pc-topbar-brand {
+    display: inline-flex;
+  }
+
+  .pc-topbar-title {
+    display: none;
+  }
+
+  .pc-app-topbar {
+    padding-inline: 1rem;
+  }
+
+  .pc-app-context > .pc-breadcrumbs {
+    padding-inline: 1rem;
+  }
+}
+
+.pc-drawer-close {
+  display: none;
+}
+
+@media (max-width: 64rem) {
+  .pc-drawer-close {
+    display: inline-grid;
+    position: absolute;
+    inset-block-start: 1rem;
+    inset-inline-end: 0.625rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .pc-menu-name,
+  .pc-locale-label,
+  .pc-topbar-brand .pc-brand-tagline {
+    display: none;
+  }
+
+  .pc-app-topbar[data-signed-out] .pc-topbar-actions .pc-btn-secondary {
+    display: none;
+  }
+}
+
+/* === Sign-in frame ======================================================== */
+/* Header, page, illustration and wave are children of <body> too; the grid
+   puts the form on one side and the illustration on the other, or the form
+   alone in the middle when there is no illustration. */
+
+body:has(> .pc-frame-auth) {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(1rem, 1fr) minmax(0, 40rem) minmax(0, 46rem) minmax(1rem, 1fr);
+  grid-template-rows: auto 1fr;
+  column-gap: 2rem;
+  min-block-size: 100vh;
+  padding-block-end: 9rem;
+  overflow-x: hidden;
+  background: var(--pc-white);
+}
+
+body:has(> .pc-frame-auth) > * {
+  grid-column: 2 / 4;
+}
+
+body:has(> .pc-frame-auth) > :is(main, .pc-page) {
+  grid-row: 2;
+  align-self: center;
+  justify-self: center;
+  z-index: 1;
+}
+
+body:has(> .pc-auth-aside) > :is(main, .pc-page) {
+  grid-column: 2;
+}
+
+body:has(> .pc-frame-auth) > .pc-auth-aside {
+  grid-column: 3;
+  grid-row: 2;
+  align-self: center;
+  z-index: 1;
+}
+
+.pc-auth-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-block-size: 5rem;
+  border-block-end: 1px solid var(--pc-gold-line);
+}
+
+body:has(> .pc-frame-auth) > .pc-frame-auth {
+  grid-row: 1;
+  margin-block-end: 2.5rem;
+}
+
+.pc-content-anchor {
+  position: absolute;
+}
+
+/* The auth pages render their own <main>; the frame styles it as a card. */
+body:has(> .pc-frame-auth) > .pc-page.pc-auth {
+  inline-size: 100%;
+  max-inline-size: 30rem;
+  margin: 0;
+  padding: 2rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: rgb(255 255 255 / 94%);
+  box-shadow: var(--pc-shadow-card);
+}
+
+body:has(> .pc-frame-auth) .pc-auth .pc-title {
+  text-align: center;
+  font-size: var(--pc-text-xl);
+}
+
+body:has(> .pc-frame-auth) .pc-auth > .pc-tagline {
+  text-align: center;
+}
+
+body:has(> .pc-frame-auth) .pc-auth .pc-form button[type='submit'] {
+  inline-size: 100%;
+  min-block-size: 3rem;
+  font-size: var(--pc-text-md);
+}
+
+body:has(> .pc-frame-auth) .pc-auth .pc-links {
+  justify-content: space-between;
+}
+
+.pc-auth-aside {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+}
+
+.pc-auth-art {
+  inline-size: min(100%, 30rem);
+  block-size: auto;
+}
+
+.pc-auth-invite {
+  display: grid;
+  gap: 0.25rem;
+  inline-size: min(100%, 30rem);
+}
+
+.pc-auth-invite p {
+  margin: 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-md);
+}
+
+.pc-auth-invite a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-xl);
+  text-decoration: none;
+}
+
+.pc-auth-invite a:hover {
+  color: var(--pc-gold-text);
+}
+
+/* The lattice: a quiet gold pattern behind the art, as in the original. */
+.pc-lattice {
+  position: absolute;
+  inset-block: 5rem 0;
+  inset-inline-end: 0;
+  z-index: 0;
+  inline-size: 60%;
+  opacity: 0.55;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle at center,
+    transparent 0.55rem,
+    var(--pc-gold-line) 0.6rem,
+    transparent 0.66rem
+  );
+  background-size: 1.25rem 1.25rem;
+  mask-image: linear-gradient(to bottom, transparent, black 20%, black 70%, transparent);
+}
+
+body:has(> .pc-frame-auth) > .pc-wave {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  z-index: 0;
+  block-size: clamp(7rem, 18vw, 15rem);
+}
+
+@media (max-width: 64rem) {
+  body:has(> .pc-frame-auth) {
+    grid-template-columns: 1rem minmax(0, 1fr) 0 1rem;
+    grid-template-rows: auto auto auto;
+    column-gap: 0;
+    padding-block-end: 7rem;
+  }
+
+  body:has(> .pc-frame-auth) > :is(main, .pc-page),
+  body:has(> .pc-auth-aside) > :is(main, .pc-page) {
+    grid-column: 2 / 4;
+  }
+
+  body:has(> .pc-frame-auth) > .pc-auth-aside {
+    grid-column: 2 / 4;
+    grid-row: 3;
+    margin-block-start: 2rem;
+  }
+
+  body:has(> .pc-frame-auth) > .pc-frame-auth {
+    margin-block-end: 1.5rem;
+  }
+
+  /* On a phone the form is the page; the picture would push it off screen. */
+  .pc-auth-art,
+  .pc-lattice {
+    display: none;
+  }
+
+  .pc-auth-invite {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .pc-auth-invite a {
+    font-size: var(--pc-text-lg);
+  }
+}
+
+@media (max-width: 40rem) {
+  body:has(> .pc-frame-auth) > .pc-page.pc-auth {
+    padding: 1.5rem 1rem;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+}
+
+/* === Public frame ========================================================= */
+
+body:has(> .pc-frame-public) {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+  background: var(--pc-white);
+}
+
+body:has(> .pc-frame-public) > .pc-frame-public {
+  inline-size: min(100% - 2rem, 90rem);
+  margin-inline: auto;
+  min-block-size: 4.5rem;
+}
+
+body:has(> .pc-frame-public) > :is(main, .pc-page) {
+  flex: 1;
+}
+
+@media print {
+  .pc-auth-header,
+  .pc-wave,
+  .pc-lattice,
+  .pc-app-footer {
+    display: none !important;
+  }
+}
+
+/* === Arabic =============================================================== */
+
+html[lang='ar'] :is(.pc-nav-link, .pc-menu-item, .pc-menu-trigger, .pc-locale-switch a) {
+  font-weight: var(--pc-ar-weight-label);
+}
+
+html[lang='ar'] :is(.pc-nav-link[aria-current='page'], .pc-nav-group h2, .pc-brand) {
+  font-weight: var(--pc-ar-weight-heading);
+}
+
+/* Section names are short in Arabic too, but a long organization section
+   must wrap onto a second line rather than be cut: it is a place name. */
+html[lang='ar'] .pc-nav-link {
+  line-height: 1.5;
+}

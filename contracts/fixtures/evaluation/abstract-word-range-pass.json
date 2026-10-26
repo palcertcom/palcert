@@ -1,0 +1,84 @@
+{
+  "description": "A BETWEEN rule over a word count that sits inside the range.",
+  "rule": {
+    "ruleCode": "ABSTRACT.WORDS.RANGE",
+    "scope": {
+      "kind": "SECTION",
+      "sectionKey": "ABSTRACT",
+      "property": "wordCount"
+    },
+    "operator": "BETWEEN",
+    "expected": {
+      "type": "NUMBER_RANGE",
+      "min": 150,
+      "max": 300
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2,
+    "unit": "WORDS"
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "SECTION",
+        "sectionKey": "ABSTRACT",
+        "property": "wordCount",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "SECTION",
+          "sectionKey": "ABSTRACT",
+          "property": "wordCount"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "212"
+        },
+        "unit": "WORDS",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "sect-abstract",
+          "page": 3
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "ABSTRACT.WORDS.RANGE",
+    "outcome": "PASS",
+    "reasonCode": "SATISFIED",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "BETWEEN",
+    "counts": {
+      "matchedFacts": 1,
+      "evaluatedFacts": 1,
+      "passedFacts": 1,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

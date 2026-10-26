@@ -1,0 +1,87 @@
+# Persistent local environment — an overlay on docker-compose.release.yml.
+#
+#   Use it through the scripts, not by hand:
+#     pnpm local:up | local:stop | local:status | local:logs | local:admin
+#     pnpm local:reset    (destructive, asks for confirmation)
+#   See docs/operations/local-environment.md.
+#
+# The same topology and images as a release (proxy on https://localhost:8443,
+# nothing stateful published to the host), built from the working tree, with
+# one difference that matters: the data lives in volumes with fixed names that
+# Compose does not own.
+#
+# ── Why the volumes are `external` ─────────────────────────────────────────
+#
+# A volume Compose created is a volume Compose may delete: `docker compose
+# down -v` removes it, and a changed project name silently starts a new, empty
+# one. These volumes are created once by `pnpm local:up` and declared
+# external here, so no Compose command — `up`, `build`, `down`, even
+# `down -v` — can remove or replace them. Rebuilding the web image recreates
+# the web container and nothing else; the database is never recreated by a UI
+# change. Deleting the data takes `pnpm local:reset`, which asks first.
+#
+# The names are stable on purpose (palcert-local-*), so the data survives a
+# checkout of another branch, a renamed directory or a fresh clone.
+
+name: palcert-local
+
+x-local-build-args: &local-build-args
+  APP_COMMIT: ${PALCERT_LOCAL_COMMIT:-local}
+  APP_VERSION: ${PALCERT_LOCAL_VERSION:-0.0.0-local}
+
+services:
+  web:
+    image: palcert-local/web:dev
+    build:
+      context: ..
+      dockerfile: docker/web.Dockerfile
+      args: *local-build-args
+  api:
+    image: palcert-local/api:dev
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+      target: runtime
+      args: *local-build-args
+  worker:
+    image: palcert-local/worker:dev
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+      target: worker
+      args: *local-build-args
+  migrate:
+    image: palcert-local/migrate:dev
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+      target: migrate
+      args: *local-build-args
+  migrate-check:
+    image: palcert-local/migrate:dev
+  document-engine:
+    image: palcert-local/document-engine:dev
+    build:
+      context: ..
+      dockerfile: docker/document-engine.Dockerfile
+      args: *local-build-args
+
+volumes:
+  postgres-data:
+    name: palcert-local-postgres
+    external: true
+  redis-data:
+    name: palcert-local-redis
+    external: true
+  minio-data:
+    name: palcert-local-minio
+    external: true
+  clamav-data:
+    name: palcert-local-clamav
+    external: true
+  certs:
+    name: palcert-local-certs
+    external: true
+  storage-kms:
+    name: palcert-local-kms
+    external: true

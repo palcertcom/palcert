@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    // nest-cli deletes dist on every build, so a retained .tsbuildinfo would
+    // wrongly report the output as up to date and emit nothing.
+    "incremental": false
+  },
+  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "**/*.e2e-spec.ts"]
+}

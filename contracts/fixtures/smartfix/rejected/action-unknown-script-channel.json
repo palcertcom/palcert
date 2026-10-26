@@ -1,0 +1,23 @@
+{
+  "contract": "FixAction",
+  "why": "The script channel vocabulary is closed; an unknown channel would leave the mutator to guess which OOXML attribute to write.",
+  "value": {
+    "actionId": "a-0001",
+    "ruleCode": "BODY_FONT_SIZE",
+    "actionType": "SET_RUN_FONT_SIZE",
+    "targetScope": "RUN_PROPERTIES",
+    "nodeId": "main/body/p:17/r:2",
+    "structuralPath": ["main", "body", "p:17", "r:2"],
+    "scriptChannel": "CYRILLIC",
+    "before": {
+      "kind": "NUMBER",
+      "number": "11",
+      "unit": "POINT"
+    },
+    "after": {
+      "kind": "NUMBER",
+      "number": "12",
+      "unit": "POINT"
+    }
+  }
+}

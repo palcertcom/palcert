@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://palcert.dev/schemas/ai-assessment.schema.json",
+  "title": "PalCert AI assessment output",
+  "description": "What an AI provider is permitted to return.\n\nThis schema is both the provider's structured-output constraint and PalCert's own independent validation. Those are deliberately the same document and deliberately applied twice: a provider honouring a schema is a convenience, not a guarantee, and nothing derived from an unvalidated payload is ever persisted.\n\nThe vocabulary is separate from the deterministic one on purpose. A machine rule PASSES or FAILS; an AI rule *appears* satisfied or not, on the evidence it was shown. Reusing PASS/FAIL here would erase in the data model the distinction the whole phase exists to preserve.",
+  "$defs": {
+    "NodeId": {
+      "title": "NodeId",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9:/._-]+$"
+    },
+    "Assessment": {
+      "title": "Assessment",
+      "description": "INSUFFICIENT_EVIDENCE is a first-class, encouraged answer. A model pressed to guess produces a confident sentence about a document it could not see, which is the most damaging thing it could do here.",
+      "enum": ["SATISFIED", "NOT_SATISFIED", "INSUFFICIENT_EVIDENCE"]
+    },
+    "EvidenceSufficiency": {
+      "title": "EvidenceSufficiency",
+      "description": "Whether the supplied context could support a conclusion at all. Deliberately two-valued: a numeric confidence would be read as a calibrated probability, which it is not.",
+      "enum": ["SUFFICIENT", "INSUFFICIENT"]
+    },
+    "AssessmentReasonCode": {
+      "title": "AssessmentReasonCode",
+      "description": "A closed vocabulary, so the UI never renders model prose as a status.",
+      "enum": [
+        "REQUIREMENT_MET",
+        "REQUIREMENT_NOT_MET",
+        "REQUIREMENT_PARTIALLY_MET",
+        "EVIDENCE_NOT_PRESENT",
+        "EVIDENCE_AMBIGUOUS",
+        "CONTEXT_TRUNCATED",
+        "RULE_NOT_APPLICABLE",
+        "PROVIDER_DECLINED"
+      ]
+    },
+    "UncertaintyReason": {
+      "title": "UncertaintyReason",
+      "enum": [
+        "SECTION_NOT_FOUND",
+        "STATEMENT_AMBIGUOUS",
+        "LANGUAGE_UNCLEAR",
+        "CONTEXT_INCOMPLETE",
+        "CONFLICTING_STATEMENTS",
+        "REQUIRES_DOMAIN_JUDGEMENT"
+      ]
+    },
+    "AIRuleAssessment": {
+      "title": "AIRuleAssessment",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleCode",
+        "assessment",
+        "reasonCode",
+        "evidenceSufficiency",
+        "evidenceNodeIds",
+        "explanationEn",
+        "explanationAr"
+      ],
+      "properties": {
+        "ruleCode": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "assessment": { "$ref": "#/$defs/Assessment" },
+        "reasonCode": { "$ref": "#/$defs/AssessmentReasonCode" },
+        "evidenceSufficiency": { "$ref": "#/$defs/EvidenceSufficiency" },
+        "evidenceNodeIds": {
+          "description": "Every id must be one PalCert supplied for this task. An id PalCert never sent is a fabricated citation, and the whole response is rejected rather than stored as evidence.",
+          "type": "array",
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/NodeId" }
+        },
+        "uncertaintyReasons": {
+          "type": "array",
+          "maxItems": 6,
+          "items": { "$ref": "#/$defs/UncertaintyReason" }
+        },
+        "explanationEn": { "type": "string", "minLength": 1, "maxLength": 1200 },
+        "explanationAr": { "type": "string", "minLength": 1, "maxLength": 1200 }
+      }
+    },
+    "AIRuleAssessmentResponse": {
+      "title": "AIRuleAssessmentResponse",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "assessments"],
+      "properties": {
+        "schemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "assessments": {
+          "description": "Exactly the rules that were requested — no more, no fewer, no duplicates. A rule the model added because it noticed something else is an unsolicited finding, which is a different feature with different consent.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": { "$ref": "#/$defs/AIRuleAssessment" }
+        }
+      }
+    },
+    "PriorityRecommendation": {
+      "title": "PriorityRecommendation",
+      "description": "Something the author could do next. Phrased as advice, never as a report of work PalCert has already performed — nothing in Phase 8 changes a document.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["priority", "relatedRuleCodes", "textEn", "textAr"],
+      "properties": {
+        "priority": { "enum": ["HIGH", "MEDIUM", "LOW"] },
+        "relatedRuleCodes": {
+          "type": "array",
+          "maxItems": 20,
+          "items": { "type": "string", "maxLength": 120 }
+        },
+        "textEn": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "textAr": { "type": "string", "minLength": 1, "maxLength": 600 }
+      }
+    },
+    "AIReportSupplementResponse": {
+      "title": "AIReportSupplementResponse",
+      "description": "The user-facing narrative. It explains the deterministic report; it never restates a score, issues a determination, or says anything about approval, acceptance or certification.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "summaryEn", "summaryAr", "priorityRecommendations"],
+      "properties": {
+        "schemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "summaryEn": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "summaryAr": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "priorityRecommendations": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "$ref": "#/$defs/PriorityRecommendation" }
+        }
+      }
+    },
+    "AIReviewDigest": {
+      "title": "AIReviewDigest",
+      "description": "The canonical object an `aiReviewHash` is computed over. Separate from the Phase 7 report hash in every way — different schema, different canonicalization version, different field — because conflating them would let AI output borrow the authority of a machine measurement.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "aiReviewSchemaVersion",
+        "aiReviewCanonicalizationVersion",
+        "provider",
+        "configuredModel",
+        "promptVersion",
+        "promptHash",
+        "contextBuilderVersion",
+        "contextHash",
+        "rulesHash",
+        "boundReportHash",
+        "boundEvaluationHash",
+        "assessments"
+      ],
+      "properties": {
+        "aiReviewSchemaVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "aiReviewCanonicalizationVersion": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "provider": { "type": "string", "maxLength": 50 },
+        "configuredModel": { "type": "string", "maxLength": 100 },
+        "providerReturnedModel": { "type": "string", "maxLength": 100 },
+        "promptVersion": { "type": "string", "maxLength": 20 },
+        "promptHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "contextBuilderVersion": { "type": "string", "maxLength": 50 },
+        "contextHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "rulesHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "boundReportHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "boundEvaluationHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "assessments": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ruleCode",
+              "assessment",
+              "reasonCode",
+              "evidenceSufficiency",
+              "evidenceNodeIds",
+              "requiresHumanReview"
+            ],
+            "properties": {
+              "ruleCode": { "type": "string", "maxLength": 120 },
+              "assessment": { "$ref": "#/$defs/Assessment" },
+              "reasonCode": { "$ref": "#/$defs/AssessmentReasonCode" },
+              "evidenceSufficiency": { "$ref": "#/$defs/EvidenceSufficiency" },
+              "evidenceNodeIds": {
+                "type": "array",
+                "maxItems": 20,
+                "items": { "$ref": "#/$defs/NodeId" }
+              },
+              "requiresHumanReview": { "type": "boolean" }
+            }
+          }
+        },
+        "supplement": { "$ref": "#/$defs/AIReportSupplementResponse" }
+      }
+    }
+  }
+}

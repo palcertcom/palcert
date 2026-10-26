@@ -1,0 +1,21 @@
+node_modules
+dist
+.next
+coverage
+generated
+pnpm-lock.yaml
+*.md
+
+# Python tool caches. They are git-ignored, but Prettier reads only the root
+# .gitignore, so a developer who has run mypy or pytest locally would otherwise
+# see the format gate fail on a few hundred generated JSON files it has no
+# business formatting.
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.hypothesis
+
+# The canonical report golden is byte-exact by definition: it is the RFC 8785
+# serialization whose SHA-256 is committed beside it. Reformatting it would
+# change the bytes the hash is over and break the very property it pins.
+contracts/fixtures/checks/report-v1-canonical.json

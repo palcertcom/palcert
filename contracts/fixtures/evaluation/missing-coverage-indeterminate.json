@@ -1,0 +1,59 @@
+{
+  "description": "The extractor said nothing about this domain. Silence is not evidence of compliance, so the default is INDETERMINATE.",
+  "rule": {
+    "ruleCode": "HEADING.L1.FONT",
+    "scope": {
+      "kind": "ELEMENT",
+      "elementType": "HEADING",
+      "property": "fontSize",
+      "level": 1
+    },
+    "operator": "EQUALS",
+    "expected": {
+      "type": "NUMBER",
+      "number": 16
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2,
+    "unit": "POINT"
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [],
+    "facts": []
+  },
+  "expectedResult": {
+    "ruleCode": "HEADING.L1.FONT",
+    "outcome": "INDETERMINATE",
+    "reasonCode": "NO_COMPLETE_EVIDENCE",
+    "evidenceLevel": "NONE",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "EQUALS",
+    "counts": {
+      "matchedFacts": 0,
+      "evaluatedFacts": 0,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

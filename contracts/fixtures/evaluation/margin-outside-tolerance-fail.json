@@ -1,0 +1,100 @@
+{
+  "description": "30 mm +/- 1 mm with an observed 3.2 cm = 32 mm: just outside, so it fails with OUTSIDE_TOLERANCE.",
+  "rule": {
+    "ruleCode": "MARGIN.TOP.EXACT",
+    "scope": {
+      "kind": "DOCUMENT",
+      "property": "marginTop"
+    },
+    "operator": "EQUALS",
+    "expected": {
+      "type": "NUMBER",
+      "number": 30
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2,
+    "unit": "MILLIMETRE",
+    "tolerance": 1
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "DOCUMENT",
+        "property": "marginTop",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "marginTop"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "3.2"
+        },
+        "unit": "CENTIMETRE",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "sect-1"
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "MARGIN.TOP.EXACT",
+    "outcome": "FAIL",
+    "reasonCode": "OUTSIDE_TOLERANCE",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "EQUALS",
+    "counts": {
+      "matchedFacts": 1,
+      "evaluatedFacts": 1,
+      "passedFacts": 0,
+      "failedFacts": 1,
+      "indeterminateFacts": 0
+    },
+    "violations": [
+      {
+        "reasonCode": "OUTSIDE_TOLERANCE",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "sect-1"
+        },
+        "expected": {
+          "value": "30",
+          "unit": "MILLIMETRE",
+          "normalizedValue": "3",
+          "normalizedUnit": "CENTIMETRE"
+        },
+        "actual": {
+          "value": "3.2",
+          "unit": "CENTIMETRE",
+          "normalizedValue": "3.2",
+          "normalizedUnit": "CENTIMETRE"
+        }
+      }
+    ],
+    "totalViolationCount": 1,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

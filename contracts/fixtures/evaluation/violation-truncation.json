@@ -1,0 +1,6667 @@
+{
+  "description": "250 identically wrong paragraphs. The count must stay exact at 250 while the returned list is capped at 100 and truncated is true.",
+  "rule": {
+    "ruleCode": "BODY.FONT.SIZE",
+    "scope": {
+      "kind": "ELEMENT",
+      "elementType": "PARAGRAPH",
+      "property": "fontSize"
+    },
+    "operator": "EQUALS",
+    "expected": {
+      "type": "NUMBER",
+      "number": 12
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2,
+    "unit": "POINT"
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "ELEMENT",
+        "elementType": "PARAGRAPH",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0000",
+          "page": 1,
+          "ordinal": 1
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0001",
+          "page": 1,
+          "ordinal": 2
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0002",
+          "page": 1,
+          "ordinal": 3
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0003",
+          "page": 1,
+          "ordinal": 4
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0004",
+          "page": 1,
+          "ordinal": 5
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0005",
+          "page": 1,
+          "ordinal": 6
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0006",
+          "page": 1,
+          "ordinal": 7
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0007",
+          "page": 1,
+          "ordinal": 8
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0008",
+          "page": 1,
+          "ordinal": 9
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0009",
+          "page": 1,
+          "ordinal": 10
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0010",
+          "page": 1,
+          "ordinal": 11
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0011",
+          "page": 1,
+          "ordinal": 12
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0012",
+          "page": 1,
+          "ordinal": 13
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0013",
+          "page": 1,
+          "ordinal": 14
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0014",
+          "page": 1,
+          "ordinal": 15
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0015",
+          "page": 1,
+          "ordinal": 16
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0016",
+          "page": 1,
+          "ordinal": 17
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0017",
+          "page": 1,
+          "ordinal": 18
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0018",
+          "page": 1,
+          "ordinal": 19
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0019",
+          "page": 1,
+          "ordinal": 20
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0020",
+          "page": 1,
+          "ordinal": 21
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0021",
+          "page": 1,
+          "ordinal": 22
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0022",
+          "page": 1,
+          "ordinal": 23
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0023",
+          "page": 1,
+          "ordinal": 24
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0024",
+          "page": 1,
+          "ordinal": 25
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0025",
+          "page": 1,
+          "ordinal": 26
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0026",
+          "page": 1,
+          "ordinal": 27
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0027",
+          "page": 1,
+          "ordinal": 28
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0028",
+          "page": 1,
+          "ordinal": 29
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0029",
+          "page": 1,
+          "ordinal": 30
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0030",
+          "page": 1,
+          "ordinal": 31
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0031",
+          "page": 1,
+          "ordinal": 32
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0032",
+          "page": 1,
+          "ordinal": 33
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0033",
+          "page": 1,
+          "ordinal": 34
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0034",
+          "page": 1,
+          "ordinal": 35
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0035",
+          "page": 1,
+          "ordinal": 36
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0036",
+          "page": 1,
+          "ordinal": 37
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0037",
+          "page": 1,
+          "ordinal": 38
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0038",
+          "page": 1,
+          "ordinal": 39
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0039",
+          "page": 1,
+          "ordinal": 40
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0040",
+          "page": 2,
+          "ordinal": 41
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0041",
+          "page": 2,
+          "ordinal": 42
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0042",
+          "page": 2,
+          "ordinal": 43
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0043",
+          "page": 2,
+          "ordinal": 44
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0044",
+          "page": 2,
+          "ordinal": 45
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0045",
+          "page": 2,
+          "ordinal": 46
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0046",
+          "page": 2,
+          "ordinal": 47
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0047",
+          "page": 2,
+          "ordinal": 48
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0048",
+          "page": 2,
+          "ordinal": 49
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0049",
+          "page": 2,
+          "ordinal": 50
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0050",
+          "page": 2,
+          "ordinal": 51
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0051",
+          "page": 2,
+          "ordinal": 52
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0052",
+          "page": 2,
+          "ordinal": 53
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0053",
+          "page": 2,
+          "ordinal": 54
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0054",
+          "page": 2,
+          "ordinal": 55
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0055",
+          "page": 2,
+          "ordinal": 56
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0056",
+          "page": 2,
+          "ordinal": 57
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0057",
+          "page": 2,
+          "ordinal": 58
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0058",
+          "page": 2,
+          "ordinal": 59
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0059",
+          "page": 2,
+          "ordinal": 60
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0060",
+          "page": 2,
+          "ordinal": 61
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0061",
+          "page": 2,
+          "ordinal": 62
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0062",
+          "page": 2,
+          "ordinal": 63
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0063",
+          "page": 2,
+          "ordinal": 64
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0064",
+          "page": 2,
+          "ordinal": 65
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0065",
+          "page": 2,
+          "ordinal": 66
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0066",
+          "page": 2,
+          "ordinal": 67
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0067",
+          "page": 2,
+          "ordinal": 68
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0068",
+          "page": 2,
+          "ordinal": 69
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0069",
+          "page": 2,
+          "ordinal": 70
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0070",
+          "page": 2,
+          "ordinal": 71
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0071",
+          "page": 2,
+          "ordinal": 72
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0072",
+          "page": 2,
+          "ordinal": 73
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0073",
+          "page": 2,
+          "ordinal": 74
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0074",
+          "page": 2,
+          "ordinal": 75
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0075",
+          "page": 2,
+          "ordinal": 76
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0076",
+          "page": 2,
+          "ordinal": 77
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0077",
+          "page": 2,
+          "ordinal": 78
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0078",
+          "page": 2,
+          "ordinal": 79
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0079",
+          "page": 2,
+          "ordinal": 80
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0080",
+          "page": 3,
+          "ordinal": 81
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0081",
+          "page": 3,
+          "ordinal": 82
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0082",
+          "page": 3,
+          "ordinal": 83
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0083",
+          "page": 3,
+          "ordinal": 84
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0084",
+          "page": 3,
+          "ordinal": 85
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0085",
+          "page": 3,
+          "ordinal": 86
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0086",
+          "page": 3,
+          "ordinal": 87
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0087",
+          "page": 3,
+          "ordinal": 88
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0088",
+          "page": 3,
+          "ordinal": 89
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0089",
+          "page": 3,
+          "ordinal": 90
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0090",
+          "page": 3,
+          "ordinal": 91
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0091",
+          "page": 3,
+          "ordinal": 92
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0092",
+          "page": 3,
+          "ordinal": 93
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0093",
+          "page": 3,
+          "ordinal": 94
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0094",
+          "page": 3,
+          "ordinal": 95
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0095",
+          "page": 3,
+          "ordinal": 96
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0096",
+          "page": 3,
+          "ordinal": 97
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0097",
+          "page": 3,
+          "ordinal": 98
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0098",
+          "page": 3,
+          "ordinal": 99
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0099",
+          "page": 3,
+          "ordinal": 100
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0100",
+          "page": 3,
+          "ordinal": 101
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0101",
+          "page": 3,
+          "ordinal": 102
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0102",
+          "page": 3,
+          "ordinal": 103
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0103",
+          "page": 3,
+          "ordinal": 104
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0104",
+          "page": 3,
+          "ordinal": 105
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0105",
+          "page": 3,
+          "ordinal": 106
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0106",
+          "page": 3,
+          "ordinal": 107
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0107",
+          "page": 3,
+          "ordinal": 108
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0108",
+          "page": 3,
+          "ordinal": 109
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0109",
+          "page": 3,
+          "ordinal": 110
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0110",
+          "page": 3,
+          "ordinal": 111
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0111",
+          "page": 3,
+          "ordinal": 112
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0112",
+          "page": 3,
+          "ordinal": 113
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0113",
+          "page": 3,
+          "ordinal": 114
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0114",
+          "page": 3,
+          "ordinal": 115
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0115",
+          "page": 3,
+          "ordinal": 116
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0116",
+          "page": 3,
+          "ordinal": 117
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0117",
+          "page": 3,
+          "ordinal": 118
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0118",
+          "page": 3,
+          "ordinal": 119
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0119",
+          "page": 3,
+          "ordinal": 120
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0120",
+          "page": 4,
+          "ordinal": 121
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0121",
+          "page": 4,
+          "ordinal": 122
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0122",
+          "page": 4,
+          "ordinal": 123
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0123",
+          "page": 4,
+          "ordinal": 124
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0124",
+          "page": 4,
+          "ordinal": 125
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0125",
+          "page": 4,
+          "ordinal": 126
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0126",
+          "page": 4,
+          "ordinal": 127
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0127",
+          "page": 4,
+          "ordinal": 128
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0128",
+          "page": 4,
+          "ordinal": 129
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0129",
+          "page": 4,
+          "ordinal": 130
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0130",
+          "page": 4,
+          "ordinal": 131
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0131",
+          "page": 4,
+          "ordinal": 132
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0132",
+          "page": 4,
+          "ordinal": 133
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0133",
+          "page": 4,
+          "ordinal": 134
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0134",
+          "page": 4,
+          "ordinal": 135
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0135",
+          "page": 4,
+          "ordinal": 136
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0136",
+          "page": 4,
+          "ordinal": 137
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0137",
+          "page": 4,
+          "ordinal": 138
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0138",
+          "page": 4,
+          "ordinal": 139
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0139",
+          "page": 4,
+          "ordinal": 140
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0140",
+          "page": 4,
+          "ordinal": 141
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0141",
+          "page": 4,
+          "ordinal": 142
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0142",
+          "page": 4,
+          "ordinal": 143
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0143",
+          "page": 4,
+          "ordinal": 144
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0144",
+          "page": 4,
+          "ordinal": 145
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0145",
+          "page": 4,
+          "ordinal": 146
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0146",
+          "page": 4,
+          "ordinal": 147
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0147",
+          "page": 4,
+          "ordinal": 148
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0148",
+          "page": 4,
+          "ordinal": 149
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0149",
+          "page": 4,
+          "ordinal": 150
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0150",
+          "page": 4,
+          "ordinal": 151
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0151",
+          "page": 4,
+          "ordinal": 152
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0152",
+          "page": 4,
+          "ordinal": 153
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0153",
+          "page": 4,
+          "ordinal": 154
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0154",
+          "page": 4,
+          "ordinal": 155
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0155",
+          "page": 4,
+          "ordinal": 156
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0156",
+          "page": 4,
+          "ordinal": 157
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0157",
+          "page": 4,
+          "ordinal": 158
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0158",
+          "page": 4,
+          "ordinal": 159
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0159",
+          "page": 4,
+          "ordinal": 160
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0160",
+          "page": 5,
+          "ordinal": 161
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0161",
+          "page": 5,
+          "ordinal": 162
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0162",
+          "page": 5,
+          "ordinal": 163
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0163",
+          "page": 5,
+          "ordinal": 164
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0164",
+          "page": 5,
+          "ordinal": 165
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0165",
+          "page": 5,
+          "ordinal": 166
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0166",
+          "page": 5,
+          "ordinal": 167
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0167",
+          "page": 5,
+          "ordinal": 168
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0168",
+          "page": 5,
+          "ordinal": 169
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0169",
+          "page": 5,
+          "ordinal": 170
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0170",
+          "page": 5,
+          "ordinal": 171
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0171",
+          "page": 5,
+          "ordinal": 172
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0172",
+          "page": 5,
+          "ordinal": 173
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0173",
+          "page": 5,
+          "ordinal": 174
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0174",
+          "page": 5,
+          "ordinal": 175
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0175",
+          "page": 5,
+          "ordinal": 176
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0176",
+          "page": 5,
+          "ordinal": 177
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0177",
+          "page": 5,
+          "ordinal": 178
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0178",
+          "page": 5,
+          "ordinal": 179
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0179",
+          "page": 5,
+          "ordinal": 180
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0180",
+          "page": 5,
+          "ordinal": 181
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0181",
+          "page": 5,
+          "ordinal": 182
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0182",
+          "page": 5,
+          "ordinal": 183
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0183",
+          "page": 5,
+          "ordinal": 184
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0184",
+          "page": 5,
+          "ordinal": 185
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0185",
+          "page": 5,
+          "ordinal": 186
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0186",
+          "page": 5,
+          "ordinal": 187
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0187",
+          "page": 5,
+          "ordinal": 188
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0188",
+          "page": 5,
+          "ordinal": 189
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0189",
+          "page": 5,
+          "ordinal": 190
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0190",
+          "page": 5,
+          "ordinal": 191
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0191",
+          "page": 5,
+          "ordinal": 192
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0192",
+          "page": 5,
+          "ordinal": 193
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0193",
+          "page": 5,
+          "ordinal": 194
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0194",
+          "page": 5,
+          "ordinal": 195
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0195",
+          "page": 5,
+          "ordinal": 196
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0196",
+          "page": 5,
+          "ordinal": 197
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0197",
+          "page": 5,
+          "ordinal": 198
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0198",
+          "page": 5,
+          "ordinal": 199
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0199",
+          "page": 5,
+          "ordinal": 200
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0200",
+          "page": 6,
+          "ordinal": 201
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0201",
+          "page": 6,
+          "ordinal": 202
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0202",
+          "page": 6,
+          "ordinal": 203
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0203",
+          "page": 6,
+          "ordinal": 204
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0204",
+          "page": 6,
+          "ordinal": 205
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0205",
+          "page": 6,
+          "ordinal": 206
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0206",
+          "page": 6,
+          "ordinal": 207
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0207",
+          "page": 6,
+          "ordinal": 208
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0208",
+          "page": 6,
+          "ordinal": 209
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0209",
+          "page": 6,
+          "ordinal": 210
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0210",
+          "page": 6,
+          "ordinal": 211
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0211",
+          "page": 6,
+          "ordinal": 212
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0212",
+          "page": 6,
+          "ordinal": 213
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0213",
+          "page": 6,
+          "ordinal": 214
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0214",
+          "page": 6,
+          "ordinal": 215
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0215",
+          "page": 6,
+          "ordinal": 216
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0216",
+          "page": 6,
+          "ordinal": 217
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0217",
+          "page": 6,
+          "ordinal": 218
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0218",
+          "page": 6,
+          "ordinal": 219
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0219",
+          "page": 6,
+          "ordinal": 220
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0220",
+          "page": 6,
+          "ordinal": 221
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0221",
+          "page": 6,
+          "ordinal": 222
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0222",
+          "page": 6,
+          "ordinal": 223
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0223",
+          "page": 6,
+          "ordinal": 224
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0224",
+          "page": 6,
+          "ordinal": 225
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0225",
+          "page": 6,
+          "ordinal": 226
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0226",
+          "page": 6,
+          "ordinal": 227
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0227",
+          "page": 6,
+          "ordinal": 228
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0228",
+          "page": 6,
+          "ordinal": 229
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0229",
+          "page": 6,
+          "ordinal": 230
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0230",
+          "page": 6,
+          "ordinal": 231
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0231",
+          "page": 6,
+          "ordinal": 232
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0232",
+          "page": 6,
+          "ordinal": 233
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0233",
+          "page": 6,
+          "ordinal": 234
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0234",
+          "page": 6,
+          "ordinal": 235
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0235",
+          "page": 6,
+          "ordinal": 236
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0236",
+          "page": 6,
+          "ordinal": 237
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0237",
+          "page": 6,
+          "ordinal": 238
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0238",
+          "page": 6,
+          "ordinal": 239
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0239",
+          "page": 6,
+          "ordinal": 240
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0240",
+          "page": 7,
+          "ordinal": 241
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0241",
+          "page": 7,
+          "ordinal": 242
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0242",
+          "page": 7,
+          "ordinal": 243
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0243",
+          "page": 7,
+          "ordinal": 244
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0244",
+          "page": 7,
+          "ordinal": 245
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0245",
+          "page": 7,
+          "ordinal": 246
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0246",
+          "page": 7,
+          "ordinal": 247
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0247",
+          "page": 7,
+          "ordinal": 248
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0248",
+          "page": 7,
+          "ordinal": 249
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "PARAGRAPH",
+          "property": "fontSize"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "11"
+        },
+        "unit": "POINT",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0249",
+          "page": 7,
+          "ordinal": 250
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "BODY.FONT.SIZE",
+    "outcome": "FAIL",
+    "reasonCode": "VALUE_MISMATCH",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "EQUALS",
+    "counts": {
+      "matchedFacts": 250,
+      "evaluatedFacts": 250,
+      "passedFacts": 0,
+      "failedFacts": 250,
+      "indeterminateFacts": 0
+    },
+    "violations": [
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0000",
+          "page": 1,
+          "ordinal": 1
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0001",
+          "page": 1,
+          "ordinal": 2
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0002",
+          "page": 1,
+          "ordinal": 3
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0003",
+          "page": 1,
+          "ordinal": 4
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0004",
+          "page": 1,
+          "ordinal": 5
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0005",
+          "page": 1,
+          "ordinal": 6
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0006",
+          "page": 1,
+          "ordinal": 7
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0007",
+          "page": 1,
+          "ordinal": 8
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0008",
+          "page": 1,
+          "ordinal": 9
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0009",
+          "page": 1,
+          "ordinal": 10
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0010",
+          "page": 1,
+          "ordinal": 11
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0011",
+          "page": 1,
+          "ordinal": 12
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0012",
+          "page": 1,
+          "ordinal": 13
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0013",
+          "page": 1,
+          "ordinal": 14
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0014",
+          "page": 1,
+          "ordinal": 15
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0015",
+          "page": 1,
+          "ordinal": 16
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0016",
+          "page": 1,
+          "ordinal": 17
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0017",
+          "page": 1,
+          "ordinal": 18
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0018",
+          "page": 1,
+          "ordinal": 19
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0019",
+          "page": 1,
+          "ordinal": 20
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0020",
+          "page": 1,
+          "ordinal": 21
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0021",
+          "page": 1,
+          "ordinal": 22
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0022",
+          "page": 1,
+          "ordinal": 23
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0023",
+          "page": 1,
+          "ordinal": 24
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0024",
+          "page": 1,
+          "ordinal": 25
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0025",
+          "page": 1,
+          "ordinal": 26
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0026",
+          "page": 1,
+          "ordinal": 27
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0027",
+          "page": 1,
+          "ordinal": 28
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0028",
+          "page": 1,
+          "ordinal": 29
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0029",
+          "page": 1,
+          "ordinal": 30
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0030",
+          "page": 1,
+          "ordinal": 31
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0031",
+          "page": 1,
+          "ordinal": 32
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0032",
+          "page": 1,
+          "ordinal": 33
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0033",
+          "page": 1,
+          "ordinal": 34
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0034",
+          "page": 1,
+          "ordinal": 35
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0035",
+          "page": 1,
+          "ordinal": 36
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0036",
+          "page": 1,
+          "ordinal": 37
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0037",
+          "page": 1,
+          "ordinal": 38
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0038",
+          "page": 1,
+          "ordinal": 39
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0039",
+          "page": 1,
+          "ordinal": 40
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0040",
+          "page": 2,
+          "ordinal": 41
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0041",
+          "page": 2,
+          "ordinal": 42
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0042",
+          "page": 2,
+          "ordinal": 43
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0043",
+          "page": 2,
+          "ordinal": 44
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0044",
+          "page": 2,
+          "ordinal": 45
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0045",
+          "page": 2,
+          "ordinal": 46
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0046",
+          "page": 2,
+          "ordinal": 47
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0047",
+          "page": 2,
+          "ordinal": 48
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0048",
+          "page": 2,
+          "ordinal": 49
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0049",
+          "page": 2,
+          "ordinal": 50
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0050",
+          "page": 2,
+          "ordinal": 51
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0051",
+          "page": 2,
+          "ordinal": 52
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0052",
+          "page": 2,
+          "ordinal": 53
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0053",
+          "page": 2,
+          "ordinal": 54
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0054",
+          "page": 2,
+          "ordinal": 55
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0055",
+          "page": 2,
+          "ordinal": 56
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0056",
+          "page": 2,
+          "ordinal": 57
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0057",
+          "page": 2,
+          "ordinal": 58
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0058",
+          "page": 2,
+          "ordinal": 59
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0059",
+          "page": 2,
+          "ordinal": 60
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0060",
+          "page": 2,
+          "ordinal": 61
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0061",
+          "page": 2,
+          "ordinal": 62
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0062",
+          "page": 2,
+          "ordinal": 63
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0063",
+          "page": 2,
+          "ordinal": 64
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0064",
+          "page": 2,
+          "ordinal": 65
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0065",
+          "page": 2,
+          "ordinal": 66
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0066",
+          "page": 2,
+          "ordinal": 67
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0067",
+          "page": 2,
+          "ordinal": 68
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0068",
+          "page": 2,
+          "ordinal": 69
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0069",
+          "page": 2,
+          "ordinal": 70
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0070",
+          "page": 2,
+          "ordinal": 71
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0071",
+          "page": 2,
+          "ordinal": 72
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0072",
+          "page": 2,
+          "ordinal": 73
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0073",
+          "page": 2,
+          "ordinal": 74
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0074",
+          "page": 2,
+          "ordinal": 75
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0075",
+          "page": 2,
+          "ordinal": 76
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0076",
+          "page": 2,
+          "ordinal": 77
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0077",
+          "page": 2,
+          "ordinal": 78
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0078",
+          "page": 2,
+          "ordinal": 79
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0079",
+          "page": 2,
+          "ordinal": 80
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0080",
+          "page": 3,
+          "ordinal": 81
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0081",
+          "page": 3,
+          "ordinal": 82
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0082",
+          "page": 3,
+          "ordinal": 83
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0083",
+          "page": 3,
+          "ordinal": 84
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0084",
+          "page": 3,
+          "ordinal": 85
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0085",
+          "page": 3,
+          "ordinal": 86
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0086",
+          "page": 3,
+          "ordinal": 87
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0087",
+          "page": 3,
+          "ordinal": 88
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0088",
+          "page": 3,
+          "ordinal": 89
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0089",
+          "page": 3,
+          "ordinal": 90
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0090",
+          "page": 3,
+          "ordinal": 91
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0091",
+          "page": 3,
+          "ordinal": 92
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0092",
+          "page": 3,
+          "ordinal": 93
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0093",
+          "page": 3,
+          "ordinal": 94
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0094",
+          "page": 3,
+          "ordinal": 95
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0095",
+          "page": 3,
+          "ordinal": 96
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0096",
+          "page": 3,
+          "ordinal": 97
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0097",
+          "page": 3,
+          "ordinal": 98
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0098",
+          "page": 3,
+          "ordinal": 99
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      },
+      {
+        "reasonCode": "VALUE_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "p-0099",
+          "page": 3,
+          "ordinal": 100
+        },
+        "expected": {
+          "value": "12",
+          "unit": "POINT",
+          "normalizedValue": "12",
+          "normalizedUnit": "POINT"
+        },
+        "actual": {
+          "value": "11",
+          "unit": "POINT",
+          "normalizedValue": "11",
+          "normalizedUnit": "POINT"
+        }
+      }
+    ],
+    "totalViolationCount": 250,
+    "truncated": true,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

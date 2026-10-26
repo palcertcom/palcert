@@ -1,0 +1,15 @@
+# Recovery-drill overlay (Phase 20 Checkpoint 4).
+#
+# Publishes the destination database and object store to the host so the
+# recovery tooling can reach them, which is how a real restore runs: an
+# operator points `restore.mjs` at the endpoints of the environment being
+# rebuilt. The release topology never publishes these — that is the whole
+# point of Checkpoint 20.2's boundary — so this overlay exists to be applied
+# during a drill and removed after, and is never part of a deployment.
+services:
+  postgres:
+    ports:
+      - '127.0.0.1:${DRILL_POSTGRES_PORT:-55432}:5432'
+  minio:
+    ports:
+      - '127.0.0.1:${DRILL_MINIO_PORT:-59000}:9000'

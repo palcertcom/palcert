@@ -1,0 +1,15 @@
+# Optional AI configuration for an existing api/worker deployment.
+# Pass this file last with -f and load the server-only AI values with --env-file.
+# See ../docs/operations/ai-configuration.md. No credentials belong in this file.
+
+x-ai-environment: &ai-environment
+  AI_ENABLED: ${AI_ENABLED:?set AI_ENABLED}
+  AI_PRIMARY_PROVIDER: ${AI_PRIMARY_PROVIDER:?set AI_PRIMARY_PROVIDER}
+  ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:?set ANTHROPIC_MODEL}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?set ANTHROPIC_API_KEY}
+
+services:
+  api:
+    environment: *ai-environment
+  worker:
+    environment: *ai-environment

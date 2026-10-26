@@ -1,0 +1,305 @@
+/**
+ * GENERATED FILE — DO NOT EDIT.
+ *
+ * Source: contracts/schemas/evaluation.schema.json
+ * Regenerate: pnpm --filter @palcert/contracts run generate:evaluation
+ *
+ * Editing this by hand would reintroduce exactly the drift the generation step
+ * exists to prevent.
+ */
+
+/** The AI context JSON Schema, embedded verbatim from the source of truth. */
+export const AI_CONTEXT_JSON_SCHEMA = {
+  $schema: 'https://json-schema.org/draft/2020-12/schema',
+  $id: 'https://palcert.dev/schemas/ai-context.schema.json',
+  title: 'PalCert AI context bundle',
+  description:
+    'The bounded, sanitized representation of a document that PalCert sends to an AI provider.\n\nIts entire purpose is to be *less* than the document. A thesis is unpublished research, and the default must never be to ship the whole of it to a third party because that was the easiest thing to build. The bundle carries an outline, the specific nodes a task needs, safe metadata, and the deterministic findings already computed — and says explicitly, in `truncation`, whatever it had to leave out.\n\nEvery text field here is UNTRUSTED. It is authored by whoever wrote the document or the standard, and it reaches the model only inside data delimiters, never as an instruction.',
+  $defs: {
+    NodeId: {
+      title: 'NodeId',
+      description:
+        'A Phase 6 structural locator, e.g. `main/body/p:17`. Locators, never selectors: nothing evaluates them as a path expression, and nothing accepts one from a client.',
+      type: 'string',
+      minLength: 1,
+      maxLength: 200,
+      pattern: '^[A-Za-z0-9:/._-]+$',
+    },
+    OutlineEntry: {
+      title: 'OutlineEntry',
+      description:
+        "One heading. The outline is how a model learns a document's shape without reading it.",
+      type: 'object',
+      additionalProperties: false,
+      required: ['nodeId', 'level', 'text'],
+      properties: {
+        nodeId: {
+          $ref: '#/$defs/NodeId',
+        },
+        level: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 9,
+        },
+        text: {
+          type: 'string',
+          maxLength: 300,
+        },
+      },
+    },
+    ContextNode: {
+      title: 'ContextNode',
+      description:
+        'One selected paragraph. `text` is bounded per node and `truncated` says so when it was cut — a model told a paragraph ends where it does not will reason about a sentence nobody wrote.',
+      type: 'object',
+      additionalProperties: false,
+      required: ['nodeId', 'text'],
+      properties: {
+        nodeId: {
+          $ref: '#/$defs/NodeId',
+        },
+        story: {
+          enum: ['MAIN_DOCUMENT', 'HEADER', 'FOOTER', 'FOOTNOTE', 'ENDNOTE', 'TEXTBOX', 'COMMENT'],
+        },
+        sectionKey: {
+          type: 'string',
+          maxLength: 64,
+        },
+        headingLevel: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 9,
+        },
+        text: {
+          type: 'string',
+          maxLength: 4000,
+        },
+        truncated: {
+          type: 'boolean',
+        },
+      },
+    },
+    ContextMetadata: {
+      title: 'ContextMetadata',
+      description:
+        'Document-level facts a semantic rule may genuinely need — an anonymization rule has to see the author metadata to say whether it leaks. Nothing else from the package is included.',
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        paragraphCount: {
+          type: 'integer',
+          minimum: 0,
+        },
+        wordCount: {
+          type: 'integer',
+          minimum: 0,
+        },
+        sectionCount: {
+          type: 'integer',
+          minimum: 0,
+        },
+        hasTrackedChanges: {
+          type: 'boolean',
+        },
+        declaredAuthor: {
+          type: 'string',
+          maxLength: 200,
+        },
+        declaredTitle: {
+          type: 'string',
+          maxLength: 300,
+        },
+        declaredCompany: {
+          type: 'string',
+          maxLength: 200,
+        },
+      },
+    },
+    DeterministicFinding: {
+      title: 'DeterministicFinding',
+      description:
+        'A Phase 7 machine result, supplied so the model can explain it rather than re-measure it. These values are authoritative; the model may restate them and must never contradict them.',
+      type: 'object',
+      additionalProperties: false,
+      required: ['ruleCode', 'outcome', 'severity', 'blocking'],
+      properties: {
+        ruleCode: {
+          type: 'string',
+          maxLength: 120,
+        },
+        outcome: {
+          enum: ['PASS', 'FAIL', 'NOT_APPLICABLE', 'INDETERMINATE', 'ERROR'],
+        },
+        reasonCode: {
+          type: 'string',
+          maxLength: 60,
+        },
+        severity: {
+          enum: ['INFO', 'MINOR', 'MAJOR', 'CRITICAL'],
+        },
+        blocking: {
+          type: 'boolean',
+        },
+        titleEn: {
+          type: 'string',
+          maxLength: 300,
+        },
+        titleAr: {
+          type: 'string',
+          maxLength: 300,
+        },
+        expectedValue: {
+          type: 'string',
+          maxLength: 200,
+        },
+        actualValue: {
+          type: 'string',
+          maxLength: 200,
+        },
+        unit: {
+          type: 'string',
+          maxLength: 20,
+        },
+        violationCount: {
+          type: 'integer',
+          minimum: 0,
+        },
+      },
+    },
+    ContextRule: {
+      title: 'ContextRule',
+      description:
+        "One AI-assisted rule, as the standard's author wrote it. Titles and guidance are organization-authored text and therefore untrusted in exactly the way document text is.",
+      type: 'object',
+      additionalProperties: false,
+      required: ['ruleCode', 'severity', 'blocking'],
+      properties: {
+        ruleCode: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 120,
+        },
+        category: {
+          type: 'string',
+          maxLength: 60,
+        },
+        severity: {
+          enum: ['INFO', 'MINOR', 'MAJOR', 'CRITICAL'],
+        },
+        blocking: {
+          type: 'boolean',
+        },
+        titleEn: {
+          type: 'string',
+          maxLength: 300,
+        },
+        titleAr: {
+          type: 'string',
+          maxLength: 300,
+        },
+        guidanceEn: {
+          type: 'string',
+          maxLength: 2000,
+        },
+        guidanceAr: {
+          type: 'string',
+          maxLength: 2000,
+        },
+      },
+    },
+    ContextTruncation: {
+      title: 'ContextTruncation',
+      description:
+        'What the builder left out. Never silent: an assessment made on a quarter of the evidence, presented as complete, is worse than no assessment.',
+      type: 'object',
+      additionalProperties: false,
+      required: ['truncated'],
+      properties: {
+        truncated: {
+          type: 'boolean',
+        },
+        droppedNodeCount: {
+          type: 'integer',
+          minimum: 0,
+        },
+        truncatedNodeCount: {
+          type: 'integer',
+          minimum: 0,
+        },
+        droppedOutlineCount: {
+          type: 'integer',
+          minimum: 0,
+        },
+        reason: {
+          enum: ['NONE', 'NODE_BUDGET', 'CHARACTER_BUDGET', 'TOKEN_BUDGET'],
+        },
+      },
+    },
+    AIContextBundle: {
+      title: 'AIContextBundle',
+      description:
+        'Everything one provider request may see about the document. Hashed as `contextHash` so an invocation can prove what it supplied without storing the prompt.',
+      type: 'object',
+      additionalProperties: false,
+      required: [
+        'contextSchemaVersion',
+        'contextBuilderVersion',
+        'purpose',
+        'outline',
+        'nodes',
+        'metadata',
+        'deterministicFindings',
+        'rules',
+        'truncation',
+      ],
+      properties: {
+        contextSchemaVersion: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 1000,
+        },
+        contextBuilderVersion: {
+          type: 'string',
+          maxLength: 50,
+        },
+        purpose: {
+          enum: ['RULE_ASSESSMENT', 'REPORT_SUPPLEMENT'],
+        },
+        outline: {
+          type: 'array',
+          maxItems: 400,
+          items: {
+            $ref: '#/$defs/OutlineEntry',
+          },
+        },
+        nodes: {
+          type: 'array',
+          maxItems: 400,
+          items: {
+            $ref: '#/$defs/ContextNode',
+          },
+        },
+        metadata: {
+          $ref: '#/$defs/ContextMetadata',
+        },
+        deterministicFindings: {
+          type: 'array',
+          maxItems: 1000,
+          items: {
+            $ref: '#/$defs/DeterministicFinding',
+          },
+        },
+        rules: {
+          type: 'array',
+          maxItems: 100,
+          items: {
+            $ref: '#/$defs/ContextRule',
+          },
+        },
+        truncation: {
+          $ref: '#/$defs/ContextTruncation',
+        },
+      },
+    },
+  },
+} as const;

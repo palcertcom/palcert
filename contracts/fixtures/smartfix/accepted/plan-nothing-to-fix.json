@@ -1,0 +1,26 @@
+{
+  "contract": "SmartFixPlan",
+  "why": "A compliant document yields a valid plan with no rules and no actions, not an error.",
+  "value": {
+    "planSchemaVersion": 1,
+    "source": {
+      "checkId": "3f1d6c0e-0d4e-4a1f-9c1a-8d6f2b4e7a10",
+      "checkRunId": "9c2a1b44-5f0e-4d2b-9a77-2b1c3d4e5f60",
+      "documentVersionId": "1a2b3c4d-5e6f-4071-8293-a4b5c6d7e8f9",
+      "documentSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "analysisArtifactSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "standardVersionId": "7d8e9f01-2345-4678-9abc-def012345678",
+      "standardContentHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "reportHash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "ruleSchemaVersion": 1,
+      "factSchemaVersion": 2
+    },
+    "engine": {
+      "fixEngineName": "palcert-docx-fixer",
+      "fixEngineVersion": "1.0.0",
+      "capabilityRegistryVersion": 1
+    },
+    "rules": [],
+    "actions": []
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "contract": "FixValue",
+  "why": "A toggle is a boolean value.",
+  "value": {
+    "kind": "BOOLEAN",
+    "flag": false
+  }
+}

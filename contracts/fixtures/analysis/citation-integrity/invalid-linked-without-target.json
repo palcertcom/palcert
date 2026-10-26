@@ -1,0 +1,1266 @@
+{
+  "analysisSchemaVersion": 2,
+  "analyzer": {
+    "name": "palcert-docx",
+    "version": "1"
+  },
+  "factSchemaVersion": 2,
+  "factSet": {
+    "coverage": [
+      {
+        "kind": "PAGE",
+        "note": "WordprocessingML does not store rendered pagination",
+        "status": "UNAVAILABLE"
+      },
+      {
+        "elementType": "PARAGRAPH",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "PARAGRAPH",
+        "kind": "ELEMENT",
+        "property": "fontFamily",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "PARAGRAPH",
+        "kind": "ELEMENT",
+        "property": "fontFamilyComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "PARAGRAPH",
+        "kind": "ELEMENT",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "PARAGRAPH",
+        "kind": "ELEMENT",
+        "property": "fontSizeComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADING",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADING",
+        "kind": "ELEMENT",
+        "property": "fontFamily",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADING",
+        "kind": "ELEMENT",
+        "property": "fontFamilyComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADING",
+        "kind": "ELEMENT",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADING",
+        "kind": "ELEMENT",
+        "property": "fontSizeComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADER",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADER",
+        "kind": "ELEMENT",
+        "property": "fontFamily",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADER",
+        "kind": "ELEMENT",
+        "property": "fontFamilyComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADER",
+        "kind": "ELEMENT",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "HEADER",
+        "kind": "ELEMENT",
+        "property": "fontSizeComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTER",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTER",
+        "kind": "ELEMENT",
+        "property": "fontFamily",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTER",
+        "kind": "ELEMENT",
+        "property": "fontFamilyComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTER",
+        "kind": "ELEMENT",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTER",
+        "kind": "ELEMENT",
+        "property": "fontSizeComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTNOTE",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTNOTE",
+        "kind": "ELEMENT",
+        "property": "fontFamily",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTNOTE",
+        "kind": "ELEMENT",
+        "property": "fontFamilyComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTNOTE",
+        "kind": "ELEMENT",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FOOTNOTE",
+        "kind": "ELEMENT",
+        "property": "fontSizeComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "ENDNOTE",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "ENDNOTE",
+        "kind": "ELEMENT",
+        "property": "fontFamily",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "ENDNOTE",
+        "kind": "ELEMENT",
+        "property": "fontFamilyComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "ENDNOTE",
+        "kind": "ELEMENT",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "ENDNOTE",
+        "kind": "ELEMENT",
+        "property": "fontSizeComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "TEXTBOX",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "TEXTBOX",
+        "kind": "ELEMENT",
+        "property": "fontFamily",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "TEXTBOX",
+        "kind": "ELEMENT",
+        "property": "fontFamilyComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "TEXTBOX",
+        "kind": "ELEMENT",
+        "property": "fontSize",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "TEXTBOX",
+        "kind": "ELEMENT",
+        "property": "fontSizeComplexScript",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "CAPTION",
+        "kind": "ELEMENT",
+        "note": "captions are recognized from SEQ fields only",
+        "status": "PARTIAL"
+      },
+      {
+        "elementType": "CAPTION",
+        "kind": "ELEMENT",
+        "property": "fontFamily",
+        "status": "PARTIAL"
+      },
+      {
+        "elementType": "CAPTION",
+        "kind": "ELEMENT",
+        "property": "fontFamilyComplexScript",
+        "status": "PARTIAL"
+      },
+      {
+        "elementType": "CAPTION",
+        "kind": "ELEMENT",
+        "property": "fontSize",
+        "status": "PARTIAL"
+      },
+      {
+        "elementType": "CAPTION",
+        "kind": "ELEMENT",
+        "property": "fontSizeComplexScript",
+        "status": "PARTIAL"
+      },
+      {
+        "elementType": "TABLE",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "LIST",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "FIGURE",
+        "kind": "ELEMENT",
+        "note": "legacy VML pictures carry no extent",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "EQUATION",
+        "kind": "ELEMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "elementType": "CITATION",
+        "kind": "ELEMENT",
+        "note": "semantic classification is not part of structural analysis",
+        "status": "UNAVAILABLE"
+      },
+      {
+        "elementType": "REFERENCE_ENTRY",
+        "kind": "ELEMENT",
+        "note": "semantic classification is not part of structural analysis",
+        "status": "UNAVAILABLE"
+      },
+      {
+        "kind": "DOCUMENT",
+        "status": "COMPLETE"
+      },
+      {
+        "kind": "DOCUMENT",
+        "note": "a saved page count is a stale application hint, not a measurement",
+        "property": "pageCount",
+        "status": "UNAVAILABLE"
+      },
+      {
+        "kind": "DOCUMENT",
+        "property": "marginLeft",
+        "status": "COMPLETE"
+      },
+      {
+        "kind": "DOCUMENT",
+        "property": "marginRight",
+        "status": "COMPLETE"
+      },
+      {
+        "kind": "METADATA",
+        "status": "UNAVAILABLE"
+      }
+    ],
+    "documentId": "fixture-document",
+    "extractor": {
+      "name": "palcert-docx",
+      "version": "1"
+    },
+    "factSchemaVersion": 2,
+    "facts": [
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "bodyWordCount"
+        },
+        "unit": "WORDS",
+        "value": {
+          "number": "5",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "characterCount"
+        },
+        "unit": "CHARACTERS",
+        "value": {
+          "number": "27",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "characterCountNoWhitespace"
+        },
+        "unit": "CHARACTERS",
+        "value": {
+          "number": "23",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "commentCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "commentsPresent"
+        },
+        "value": {
+          "boolean": false,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "endnoteCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "endnoteWordCount"
+        },
+        "unit": "WORDS",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "equationCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "figureCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "footerDistance"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "12.7",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "footerPresent"
+        },
+        "value": {
+          "boolean": false,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "footnoteCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "footnoteWordCount"
+        },
+        "unit": "WORDS",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "gutter"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "headerDistance"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "12.7",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "headerPresent"
+        },
+        "value": {
+          "boolean": false,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "hiddenTextPresent"
+        },
+        "value": {
+          "boolean": false,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "marginBottom"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "30.00375",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "marginLeft"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "30.00375",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "marginRight"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "30.00375",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "marginTop"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "30.00375",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "mirrorMargins"
+        },
+        "value": {
+          "boolean": false,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "pageHeight"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "297.003611111111",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/section:1",
+          "ordinal": 1,
+          "path": ["main", "section:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "pageWidth"
+        },
+        "unit": "MILLIMETRE",
+        "value": {
+          "number": "210.008611111111",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "paragraphCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "2",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "sectionCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "1",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "tableCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "tableOfContentsPresent"
+        },
+        "value": {
+          "boolean": false,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "totalVisibleWordCount"
+        },
+        "unit": "WORDS",
+        "value": {
+          "number": "5",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "trackedChangesPresent"
+        },
+        "value": {
+          "boolean": false,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "trackedDeletionCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "trackedFormattingChangesPresent"
+        },
+        "value": {
+          "boolean": false,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "trackedInsertionCount"
+        },
+        "unit": "COUNT",
+        "value": {
+          "number": "0",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "wordCount"
+        },
+        "unit": "WORDS",
+        "value": {
+          "number": "5",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "elementType": "HEADING",
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:1/r:1",
+          "path": ["main", "body", "p:1", "r:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "elementType": "HEADING",
+          "kind": "ELEMENT",
+          "level": 1,
+          "property": "bold"
+        },
+        "value": {
+          "boolean": true,
+          "type": "BOOLEAN"
+        }
+      },
+      {
+        "location": {
+          "elementType": "HEADING",
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:1/r:1",
+          "path": ["main", "body", "p:1", "r:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "elementType": "HEADING",
+          "kind": "ELEMENT",
+          "level": 1,
+          "property": "fontFamily"
+        },
+        "value": {
+          "text": "Calibri",
+          "type": "STRING"
+        }
+      },
+      {
+        "location": {
+          "elementType": "HEADING",
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:1/r:1",
+          "path": ["main", "body", "p:1", "r:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "elementType": "HEADING",
+          "kind": "ELEMENT",
+          "level": 1,
+          "property": "fontSize"
+        },
+        "unit": "POINT",
+        "value": {
+          "number": "16",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "elementType": "HEADING",
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:1",
+          "path": ["main", "body", "p:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "elementType": "HEADING",
+          "kind": "ELEMENT",
+          "level": 1,
+          "property": "styleId"
+        },
+        "value": {
+          "text": "Heading1",
+          "type": "STRING"
+        }
+      },
+      {
+        "location": {
+          "elementType": "PARAGRAPH",
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:2/r:1",
+          "path": ["main", "body", "p:2", "r:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "elementType": "PARAGRAPH",
+          "kind": "ELEMENT",
+          "property": "fontFamily"
+        },
+        "value": {
+          "text": "Calibri",
+          "type": "STRING"
+        }
+      },
+      {
+        "location": {
+          "elementType": "PARAGRAPH",
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:2/r:1",
+          "path": ["main", "body", "p:2", "r:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "elementType": "PARAGRAPH",
+          "kind": "ELEMENT",
+          "property": "fontFamilyComplexScript"
+        },
+        "value": {
+          "text": "Arial",
+          "type": "STRING"
+        }
+      },
+      {
+        "location": {
+          "elementType": "PARAGRAPH",
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:2/r:1",
+          "path": ["main", "body", "p:2", "r:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "elementType": "PARAGRAPH",
+          "kind": "ELEMENT",
+          "property": "fontSize"
+        },
+        "unit": "POINT",
+        "value": {
+          "number": "12",
+          "type": "NUMBER"
+        }
+      },
+      {
+        "location": {
+          "elementType": "PARAGRAPH",
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:2/r:1",
+          "path": ["main", "body", "p:2", "r:1"]
+        },
+        "provenance": {
+          "sourceKind": "OOXML"
+        },
+        "scope": {
+          "elementType": "PARAGRAPH",
+          "kind": "ELEMENT",
+          "property": "fontSizeComplexScript"
+        },
+        "unit": "POINT",
+        "value": {
+          "number": "13",
+          "type": "NUMBER"
+        }
+      }
+    ]
+  },
+  "source": {
+    "documentId": "fixture-document",
+    "sha256": "c685a32058524aa6c1aaebb0912527648abc0aa8fa67db800c73c6a2c8e67007"
+  },
+  "structuralModel": {
+    "analysisSchemaVersion": 1,
+    "paragraphs": [
+      {
+        "effective": {
+          "outlineLevel": {
+            "source": "PARAGRAPH_STYLE",
+            "styleId": "Heading1",
+            "value": 0
+          }
+        },
+        "headingLevel": 1,
+        "inTable": false,
+        "locator": {
+          "nodeId": "main/body/p:1",
+          "path": ["main", "body", "p:1"],
+          "story": "MAIN_DOCUMENT"
+        },
+        "revision": "UNCHANGED",
+        "runs": [
+          {
+            "effective": {
+              "b": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Heading1",
+                "value": true
+              },
+              "font.ascii": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Normal",
+                "value": "Calibri"
+              },
+              "font.cs": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Normal",
+                "value": "Arial"
+              },
+              "font.hAnsi": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Normal",
+                "value": "Calibri"
+              },
+              "fontSize": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Heading1",
+                "value": "16"
+              },
+              "fontSizeComplexScript": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Normal",
+                "value": "13"
+              }
+            },
+            "hidden": false,
+            "length": 11,
+            "locator": {
+              "nodeId": "main/body/p:1/r:1",
+              "path": ["main", "body", "p:1", "r:1"],
+              "story": "MAIN_DOCUMENT"
+            },
+            "revision": "UNCHANGED",
+            "segments": [
+              {
+                "channel": "LATIN",
+                "fontFamily": "Calibri",
+                "fontSizePoints": "16",
+                "length": 11,
+                "slot": "ascii"
+              }
+            ]
+          }
+        ],
+        "sectionIndex": 0,
+        "story": "MAIN_DOCUMENT",
+        "styleId": "Heading1",
+        "text": "Chapter One"
+      }
+    ],
+    "profile": "TRANSITIONAL"
+  },
+  "warnings": [
+    {
+      "code": "METADATA_PART_MISSING",
+      "detail": {}
+    }
+  ],
+  "format": "DOCX",
+  "citationAnalysis": {
+    "citationAnalysisSchemaVersion": 1,
+    "coverage": [
+      {
+        "domain": "NATIVE_CITATIONS",
+        "status": "COMPLETE"
+      },
+      {
+        "domain": "NATIVE_BIBLIOGRAPHY_SOURCES",
+        "status": "COMPLETE"
+      },
+      {
+        "domain": "NATIVE_SOURCE_RESOLUTION",
+        "status": "COMPLETE"
+      },
+      {
+        "domain": "SEMANTIC_CITATIONS",
+        "status": "PARTIAL",
+        "reasonCode": "SEMANTIC_CLASSIFICATION_NOT_EXHAUSTIVE"
+      },
+      {
+        "domain": "SEMANTIC_REFERENCE_ENTRIES",
+        "status": "PARTIAL",
+        "reasonCode": "SEMANTIC_CLASSIFICATION_NOT_EXHAUSTIVE"
+      },
+      {
+        "domain": "REFERENCE_REGION",
+        "status": "PARTIAL",
+        "reasonCode": "SEMANTIC_CLASSIFICATION_NOT_EXHAUSTIVE"
+      }
+    ],
+    "citations": [
+      {
+        "id": "c1",
+        "ordinal": 1,
+        "sourceKind": "OOXML",
+        "citationKind": "WORD_NATIVE_FIELD",
+        "parseMethod": "FIELD_INSTRUCTION",
+        "parseStatus": "PARSED",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:1/fld:1",
+          "story": "MAIN_DOCUMENT",
+          "ordinal": 1
+        },
+        "rawText": "(Smith, 2024)",
+        "normalizedText": "(Smith, 2024)",
+        "nativeTag": "Smi24",
+        "authorTokens": ["Smith"],
+        "yearToken": "2024",
+        "locatorPresent": false,
+        "targetCount": 1,
+        "resolutionStatus": "LINKED",
+        "truncated": false
+      },
+      {
+        "id": "c2",
+        "ordinal": 2,
+        "sourceKind": "HEURISTIC",
+        "citationKind": "NUMERIC_LABEL",
+        "parseMethod": "LABEL_PATTERN",
+        "parseStatus": "PARSED",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/footnote:1/p:1",
+          "story": "FOOTNOTE"
+        },
+        "rawText": "[3, 5]",
+        "numericLabels": [3, 5],
+        "numericLabelsRaw": "[3, 5]",
+        "confidence": "0.8",
+        "targetCount": 0,
+        "resolutionStatus": "UNRESOLVED",
+        "truncated": false
+      }
+    ],
+    "references": [
+      {
+        "id": "r1",
+        "ordinal": 1,
+        "sourceKind": "HEURISTIC",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "main/body/p:40",
+          "story": "MAIN_DOCUMENT"
+        },
+        "rawText": "Smith, J. (2024). A study. Journal of Things, 4(2), 10-20. doi:10.1234/abc",
+        "parseMethod": "REGION_MEMBERSHIP",
+        "parseStatus": "PARTIAL",
+        "confidence": "0.7",
+        "identifiers": [
+          {
+            "scheme": "DOI",
+            "raw": "doi:10.1234/abc",
+            "normalized": "10.1234/abc",
+            "intentEvidence": "LABEL_PREFIX",
+            "boundaryStatus": "UNAMBIGUOUS",
+            "syntaxStatus": "VALID"
+          }
+        ],
+        "authors": [
+          {
+            "raw": "Smith, J.",
+            "normalizedFamily": "Smith",
+            "corporate": false
+          }
+        ],
+        "year": "2024",
+        "title": "A study",
+        "containerTitle": "Journal of Things",
+        "volume": "4",
+        "issue": "2",
+        "pages": "10-20",
+        "duplicateStatus": "NONE",
+        "citedByCount": 1,
+        "truncated": false
+      }
+    ],
+    "bibliographySources": [
+      {
+        "id": "s1",
+        "tag": "Smi24",
+        "sourceType": "JournalArticle",
+        "authors": [
+          {
+            "raw": "Smith, John",
+            "normalizedFamily": "Smith",
+            "corporate": false
+          }
+        ],
+        "year": "2024",
+        "title": "A study",
+        "containerTitle": "Journal of Things",
+        "identifiers": [],
+        "citedByCount": 1
+      }
+    ],
+    "links": [
+      {
+        "citationId": "c1",
+        "linkStatus": "LINKED",
+        "linkMethod": "NATIVE_TAG",
+        "candidateCount": 0
+      }
+    ],
+    "summary": {
+      "observedCitationCount": 2,
+      "nativeCitationCount": 1,
+      "observedReferenceCount": 1,
+      "bibliographySourceCount": 1,
+      "linkedCitationCount": 1,
+      "ambiguousCitationCount": 0,
+      "unresolvedCitationCount": 1,
+      "observedUncitedReferenceCount": 0,
+      "observedDuplicateReferenceCount": 0,
+      "referenceRegionObserved": true,
+      "truncationFlags": []
+    }
+  }
+}

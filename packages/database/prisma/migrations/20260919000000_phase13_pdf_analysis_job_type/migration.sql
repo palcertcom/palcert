@@ -1,0 +1,14 @@
+-- =============================================================================
+-- Phase 13 — the PDF analysis job type
+--
+-- In its own migration for the same reason as Phase 6's DOCX_ANALYSIS:
+-- PostgreSQL adds an enum value inside a transaction but will not let the same
+-- transaction use it, and Prisma runs each migration file in one transaction.
+--
+-- A separate job type rather than reusing DOCX_ANALYSIS for a PDF. The
+-- orchestration is identical and shares one handler; the ledger entry is what
+-- differs, and it matters: during an incident an operator reading the job
+-- ledger should be able to see which analyzer is failing without joining to
+-- document_versions to discover what each job was actually carrying.
+-- =============================================================================
+ALTER TYPE "ProcessingJobType" ADD VALUE IF NOT EXISTS 'PDF_ANALYSIS';

@@ -1,0 +1,9 @@
+{
+  "contract": "FixValue",
+  "why": "A JSON number is read back as a binary float. A font size that drifts is a formatting change nobody asked for.",
+  "value": {
+    "kind": "NUMBER",
+    "number": 12.5,
+    "unit": "POINT"
+  }
+}

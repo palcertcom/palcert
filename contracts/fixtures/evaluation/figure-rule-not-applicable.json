@@ -1,0 +1,65 @@
+{
+  "description": "A caption rule over a document that genuinely contains no figures. NOT_APPLICABLE, deliberately not PASS.",
+  "rule": {
+    "ruleCode": "FIGURE.CAPTION.CASE",
+    "scope": {
+      "kind": "ELEMENT",
+      "elementType": "CAPTION",
+      "property": "textCase"
+    },
+    "operator": "EQUALS",
+    "expected": {
+      "type": "STRING",
+      "text": "SENTENCE"
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "ELEMENT",
+        "elementType": "CAPTION",
+        "property": "textCase",
+        "status": "COMPLETE",
+        "note": "The document contains no figures."
+      }
+    ],
+    "facts": []
+  },
+  "expectedResult": {
+    "ruleCode": "FIGURE.CAPTION.CASE",
+    "outcome": "NOT_APPLICABLE",
+    "reasonCode": "NO_MATCHING_FACTS",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "EQUALS",
+    "counts": {
+      "matchedFacts": 0,
+      "evaluatedFacts": 0,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

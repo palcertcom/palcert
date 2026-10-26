@@ -1,0 +1,311 @@
+name: Release
+
+# Build a release candidate once, publish it, and record what was published.
+#
+# Everything downstream — staging, production, rollback, redeployment after a
+# disaster — reads the manifest this produces and resolves images by digest.
+# Nothing after this workflow rebuilds anything, which is the whole point: the
+# bytes that were tested in staging are the bytes that serve production,
+# because they are the same bytes and not merely the same source.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish images to the registry (off for a dry run)'
+        type: boolean
+        default: true
+
+# One release at a time, and never cancelled part-way: a cancelled run can
+# leave images pushed with no manifest recording them, which is worse than a
+# queue.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  # Lowercased below: OCI repository names must be lowercase, GitHub owners
+  # need not be.
+  OWNER: ${{ github.repository_owner }}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Source gates. A release candidate that fails any of these is not built.
+  # ---------------------------------------------------------------------------
+  gates:
+    name: Source gates
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  build:
+    name: Build, scan and publish
+    needs: [gates]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Publishing to the repository's own package registry. No long-lived
+      # credential: the job's token is scoped to this run.
+      packages: write
+      # Lets the build attach a provenance attestation to each image.
+      id-token: write
+      attestations: write
+    outputs:
+      release-version: ${{ steps.manifest.outputs.release-version }}
+      commit: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve the registry namespace
+        id: ns
+        run: echo "owner=${OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to the registry
+        if: inputs.publish != false
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # Build once. Each image is built exactly one time in this job and never
+      # rebuilt afterwards; the digest each push returns is the release.
+      # -----------------------------------------------------------------------
+      - name: Build and push the API image
+        id: api
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          target: runtime
+          push: ${{ inputs.publish != false }}
+          load: ${{ inputs.publish == false }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-api:sha-${{ github.sha }}
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+            APP_BUILT_AT=${{ github.event.repository.updated_at }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Build and push the worker image
+        id: worker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          target: worker
+          push: ${{ inputs.publish != false }}
+          load: ${{ inputs.publish == false }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-worker:sha-${{ github.sha }}
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+            APP_BUILT_AT=${{ github.event.repository.updated_at }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Build and push the migration image
+        id: migrate
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          target: migrate
+          push: ${{ inputs.publish != false }}
+          load: ${{ inputs.publish == false }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-migrate:sha-${{ github.sha }}
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+            APP_BUILT_AT=${{ github.event.repository.updated_at }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Build and push the web image
+        id: web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/web.Dockerfile
+          push: ${{ inputs.publish != false }}
+          load: ${{ inputs.publish == false }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-web:sha-${{ github.sha }}
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+            APP_BUILT_AT=${{ github.event.repository.updated_at }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+      - name: Build and push the document-engine image
+        id: engine
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/document-engine.Dockerfile
+          push: ${{ inputs.publish != false }}
+          load: ${{ inputs.publish == false }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-document-engine:sha-${{ github.sha }}
+          build-args: |
+            APP_COMMIT=${{ github.sha }}
+            APP_BUILT_AT=${{ github.event.repository.updated_at }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=engine
+          cache-to: type=gha,mode=max,scope=engine
+
+      # -----------------------------------------------------------------------
+      # Runtime gates, against the images just built.
+      # -----------------------------------------------------------------------
+      # By digest, so the gate inspects the exact bytes that were pushed rather
+      # than whatever a tag points at now. Passing no arguments here used to
+      # inspect nothing and report success.
+      - name: Check images ship no development-only packages
+        run: |
+          node scripts/check-image-dependencies.mjs \
+            "$REGISTRY/$OWNER/palcert-api@${{ steps.api.outputs.digest }}" \
+            "$REGISTRY/$OWNER/palcert-worker@${{ steps.worker.outputs.digest }}" \
+            "$REGISTRY/$OWNER/palcert-migrate@${{ steps.migrate.outputs.digest }}" \
+            "$REGISTRY/$OWNER/palcert-web@${{ steps.web.outputs.digest }}" \
+            "$REGISTRY/$OWNER/palcert-document-engine@${{ steps.engine.outputs.digest }}"
+        env:
+          REGISTRY: ${{ env.REGISTRY }}
+          OWNER: ${{ steps.ns.outputs.owner }}
+
+      - name: Scan the runtime images for vulnerabilities
+        run: bash scripts/release/scan-images.sh
+        env:
+          IMAGE_REFS: |
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-api@${{ steps.api.outputs.digest }}
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-worker@${{ steps.worker.outputs.digest }}
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-migrate@${{ steps.migrate.outputs.digest }}
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-web@${{ steps.web.outputs.digest }}
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-document-engine@${{ steps.engine.outputs.digest }}
+
+      - name: Generate an SBOM for every shipped image
+        run: bash scripts/release/generate-sboms.sh
+        env:
+          SBOM_DIR: sbom
+          IMAGE_REFS: |
+            api=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-api@${{ steps.api.outputs.digest }}
+            worker=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-worker@${{ steps.worker.outputs.digest }}
+            migrate=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-migrate@${{ steps.migrate.outputs.digest }}
+            web=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-web@${{ steps.web.outputs.digest }}
+            engine=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-document-engine@${{ steps.engine.outputs.digest }}
+
+      - name: Prove the images carry no fixture secrets
+        run: bash scripts/release/check-image-secrets.sh
+        env:
+          IMAGE_REFS: |
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-api@${{ steps.api.outputs.digest }}
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-worker@${{ steps.worker.outputs.digest }}
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-migrate@${{ steps.migrate.outputs.digest }}
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-web@${{ steps.web.outputs.digest }}
+            ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-document-engine@${{ steps.engine.outputs.digest }}
+
+      # The secret scan above passing tells us nothing by itself: PalCert's
+      # images are clean, so a scanner that always said "clean" would look
+      # identical. This plants both leak shapes it is meant to catch in a
+      # throwaway image and requires a refusal for each. It found the checks
+      # inverted the first time it ran.
+      - name: Prove the secret scan can fail
+        run: bash scripts/release/test-image-secret-detection.sh
+        env:
+          BASE_IMAGE: ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-api@${{ steps.api.outputs.digest }}
+
+      # -----------------------------------------------------------------------
+      # Record what was published. This file is the release.
+      # -----------------------------------------------------------------------
+      - name: Write the release manifest
+        id: manifest
+        run: |
+          node scripts/release/make-manifest.mjs \
+            --commit "${{ github.sha }}" \
+            --registry "${{ env.REGISTRY }}" \
+            --owner "${{ steps.ns.outputs.owner }}" \
+            --out release-manifest.json \
+            --digest api=${{ steps.api.outputs.digest }} \
+            --digest worker=${{ steps.worker.outputs.digest }} \
+            --digest migrate=${{ steps.migrate.outputs.digest }} \
+            --digest web=${{ steps.web.outputs.digest }} \
+            --digest documentEngine=${{ steps.engine.outputs.digest }}
+          version=$(node -e "process.stdout.write(require('./release-manifest.json').releaseVersion)")
+          echo "release-version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Verify the manifest before anything may deploy from it
+        run: |
+          node scripts/release/verify-manifest.mjs \
+            --manifest release-manifest.json \
+            --expect-commit "${{ github.sha }}" \
+            ${{ inputs.publish != false && '--registry-check' || '' }}
+
+      # Freeze the verified manifest into one indivisible release set, with
+      # the supply-chain evidence recomputed from the reports rather than
+      # taken on trust. Staging, production and rollback read this file.
+      - name: Freeze the release
+        run: |
+          node scripts/release/freeze-release.mjs \
+            --manifest release-manifest.json \
+            --out release-freeze.json \
+            --sbom-dir sbom --scan-dir scan \
+            --provenance https://slsa.dev/provenance/v1
+
+      # One machine-readable description of the release: the frozen manifest
+      # and its supply-chain evidence, plus the analyzer and schema versions
+      # that decide what every stored report and certificate claim means
+      # (Phase 20 Checkpoint 9). It refuses if the manifest is not the frozen
+      # one or if the API and the engine disagree about analyzer versions.
+      - name: Describe the release
+        run: |
+          node scripts/release/describe-release.mjs \
+            --freeze release-freeze.json --out release-descriptor.json
+
+      # A gate that has only ever reported success is not demonstrated. This
+      # substitutes a tag for a digest, swaps one image, drops another and
+      # rewrites the commit, and requires each to be refused — with a control
+      # asserting the honest rendering is still accepted.
+      - name: Prove a substituted image cannot be promoted
+        env:
+          FREEZE: release-freeze.json
+        run: bash scripts/release/test-substitution-refused.sh
+
+      # The tag step checks that each tag resolves to its recorded digest. That
+      # check could not pass for any image until Checkpoint 20.9, and nothing
+      # noticed because this workflow had never run; this shows it passing
+      # against an honest registry and refusing a tag that moved.
+      - name: Prove the tag check can pass and can fail
+        run: bash scripts/release/test-tag-release.sh
+
+      # The human-readable tag is added last, and only to images that already
+      # exist by digest. A tag is a label for an artifact, never the artifact.
+      - name: Tag the published images with the release version
+        if: inputs.publish != false
+        run: bash scripts/release/tag-release.sh release-manifest.json
+
+      - name: Attach the release record to the run
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.manifest.outputs.release-version }}
+          path: |
+            release-manifest.json
+            release-freeze.json
+            release-descriptor.json
+            sbom/
+            scan/
+          if-no-files-found: error
+          retention-days: 90

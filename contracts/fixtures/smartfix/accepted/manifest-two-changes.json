@@ -1,0 +1,63 @@
+{
+  "contract": "ChangeManifest",
+  "why": "The manifest records what was applied and proves, hash for hash, that text, media, fields and relationships came through unchanged.",
+  "value": {
+    "manifestSchemaVersion": 1,
+    "engine": {
+      "fixEngineName": "palcert-docx-fixer",
+      "fixEngineVersion": "1.0.0"
+    },
+    "planHash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "outputSha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "changedParts": ["word/document.xml"],
+    "entries": [
+      {
+        "actionId": "a-0001",
+        "ruleCode": "BODY_FONT_SIZE",
+        "actionType": "SET_RUN_FONT_SIZE",
+        "nodeId": "main/body/p:17/r:2",
+        "scriptChannel": "LATIN",
+        "before": {
+          "kind": "NUMBER",
+          "number": "11",
+          "unit": "POINT"
+        },
+        "after": {
+          "kind": "NUMBER",
+          "number": "12",
+          "unit": "POINT"
+        },
+        "partName": "word/document.xml"
+      },
+      {
+        "actionId": "a-0003",
+        "ruleCode": "MARGIN_LEFT",
+        "actionType": "SET_SECTION_MARGIN_LEFT",
+        "nodeId": "main/sect:1",
+        "sectionIndex": 0,
+        "before": {
+          "kind": "NUMBER",
+          "number": "25.4",
+          "unit": "MILLIMETRE"
+        },
+        "after": {
+          "kind": "NUMBER",
+          "number": "30",
+          "unit": "MILLIMETRE"
+        },
+        "partName": "word/document.xml"
+      }
+    ],
+    "integrity": {
+      "sourceVisibleTextHash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "outputVisibleTextHash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "sourceMediaSetHash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "outputMediaSetHash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "sourceFieldInstructionHash": "3333333333333333333333333333333333333333333333333333333333333333",
+      "outputFieldInstructionHash": "3333333333333333333333333333333333333333333333333333333333333333",
+      "sourceRelationshipHash": "4444444444444444444444444444444444444444444444444444444444444444",
+      "outputRelationshipHash": "4444444444444444444444444444444444444444444444444444444444444444"
+    }
+  }
+}

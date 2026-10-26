@@ -1,0 +1,8 @@
+{
+  "contract": "FactValue",
+  "description": "A JSON number loses exactness through binary float. Numbers cross this boundary as decimal strings.",
+  "payload": {
+    "type": "NUMBER",
+    "number": 11
+  }
+}

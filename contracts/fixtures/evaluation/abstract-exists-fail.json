@@ -1,0 +1,85 @@
+{
+  "description": "The abstract is required and the extractor searched completely, so its absence is a genuine FAIL rather than missing evidence.",
+  "rule": {
+    "ruleCode": "ABSTRACT.PRESENT",
+    "scope": {
+      "kind": "SECTION",
+      "sectionKey": "ABSTRACT",
+      "property": "wordCount"
+    },
+    "operator": "EXISTS",
+    "expected": {
+      "type": "NONE"
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "CRITICAL",
+    "blocking": true,
+    "ruleSchemaVersion": 2
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "SECTION",
+        "property": "wordCount",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "SECTION",
+          "sectionKey": "INTRODUCTION",
+          "property": "wordCount"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "450"
+        },
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "sect-intro"
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "ABSTRACT.PRESENT",
+    "outcome": "FAIL",
+    "reasonCode": "REQUIRED_VALUE_MISSING",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": true,
+    "severity": "CRITICAL",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "EXISTS",
+    "counts": {
+      "matchedFacts": 0,
+      "evaluatedFacts": 0,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [
+      {
+        "reasonCode": "REQUIRED_VALUE_MISSING",
+        "actual": {
+          "value": "absent"
+        }
+      }
+    ],
+    "totalViolationCount": 1,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

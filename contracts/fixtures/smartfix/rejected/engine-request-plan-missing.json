@@ -1,0 +1,8 @@
+{
+  "contract": "FixEngineRequest",
+  "why": "The engine applies the approved plan, never a regenerated one, so the plan is not optional.",
+  "value": {
+    "expectedSourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "planHash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  }
+}

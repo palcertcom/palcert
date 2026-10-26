@@ -1,0 +1,12 @@
+-- =============================================================================
+-- Phase 6 — the analysis job type
+--
+-- In its own migration on purpose. PostgreSQL will add an enum value inside a
+-- transaction but will not let the *same* transaction use it, and Prisma runs
+-- each migration file in one transaction. Splitting the value out means it is
+-- committed before anything references it.
+--
+-- Phase 5's ledger is reused rather than duplicated (§89): one queue, one
+-- outbox, one retry policy. Analysis is simply another kind of work.
+-- =============================================================================
+ALTER TYPE "ProcessingJobType" ADD VALUE IF NOT EXISTS 'DOCX_ANALYSIS';

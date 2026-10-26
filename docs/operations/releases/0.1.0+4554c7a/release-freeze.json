@@ -1,0 +1,114 @@
+{
+  "commit": "4554c7a2f88c148e16e4e2f93801d1c9df1e0df6",
+  "freezeVersion": 1,
+  "frozenAt": "2026-09-23T22:18:54.143Z",
+  "images": {
+    "api": {
+      "digest": "sha256:890ca53000db0dd2e79efd02fc7d21eb4b16c2bfebfab0f6c4b4c9a7518e7e95",
+      "reference": "127.0.0.1:5001/testowner/palcert-api@sha256:890ca53000db0dd2e79efd02fc7d21eb4b16c2bfebfab0f6c4b4c9a7518e7e95"
+    },
+    "documentEngine": {
+      "digest": "sha256:7d1668d307b0e3fd5d64fabb83fea9e286fe9dfc0461050f3c9fc0618e091c17",
+      "reference": "127.0.0.1:5001/testowner/palcert-document-engine@sha256:7d1668d307b0e3fd5d64fabb83fea9e286fe9dfc0461050f3c9fc0618e091c17"
+    },
+    "migrate": {
+      "digest": "sha256:7bc1c438b5a9ff7d6ddd27b7bab9891bfd8102da067ed25ca7be72ca5fad5525",
+      "reference": "127.0.0.1:5001/testowner/palcert-migrate@sha256:7bc1c438b5a9ff7d6ddd27b7bab9891bfd8102da067ed25ca7be72ca5fad5525"
+    },
+    "web": {
+      "digest": "sha256:41b641f4da3c628d4cffbc1ce3faca4c3c0f4f94c3b3e8bcb766731689ee3f3a",
+      "reference": "127.0.0.1:5001/testowner/palcert-web@sha256:41b641f4da3c628d4cffbc1ce3faca4c3c0f4f94c3b3e8bcb766731689ee3f3a"
+    },
+    "worker": {
+      "digest": "sha256:2126e1fc7e55c711466c287c4b17399ed1d46b4f008b770c146c52af81a71935",
+      "reference": "127.0.0.1:5001/testowner/palcert-worker@sha256:2126e1fc7e55c711466c287c4b17399ed1d46b4f008b770c146c52af81a71935"
+    }
+  },
+  "manifest": {
+    "digest": "sha256:c6133b6db49bc81bab84547bd7b693430d7601ec303efbd97aec37c7b414dc9c",
+    "file": "release-manifest.json"
+  },
+  "migration": {
+    "checksum": "71cabeb96307dd75b88507bf11234265e0e68e2834a409f8b5833e9d9d07ea82",
+    "count": 64,
+    "head": "20260926000000_phase20_revoke_public_function_execute"
+  },
+  "registry": "127.0.0.1:5001",
+  "releaseTag": "0.1.0-4554c7a",
+  "releaseVersion": "0.1.0+4554c7a",
+  "schemaVersions": {
+    "certificateClaimCanonicalization": 1,
+    "certificateClaimSchema": 1,
+    "reportCanonicalization": 1,
+    "reportSchema": 1
+  },
+  "supplyChain": {
+    "provenance": {
+      "attachedTo": "the image index in the registry",
+      "predicateType": "https://slsa.dev/provenance/v1"
+    },
+    "sbom": {
+      "api": {
+        "digest": "sha256:7089e8123712ad0889c1d7dd0cd1193f9b314dd0927395b7d599bcfbbfe6fcb4",
+        "file": "palcert-api.spdx.json",
+        "format": "SPDX-2.3",
+        "packages": 333
+      },
+      "documentEngine": {
+        "digest": "sha256:be73f2f6128c950b3491edef5653ebe73cf445dfc9989d2daf0cb092d2aae133",
+        "file": "palcert-documentEngine.spdx.json",
+        "format": "SPDX-2.3",
+        "packages": 122
+      },
+      "migrate": {
+        "digest": "sha256:fa870ea79b60bffadd3d35cbda1c66735f05705340f2ab340a820de79717cfd6",
+        "file": "palcert-migrate.spdx.json",
+        "format": "SPDX-2.3",
+        "packages": 264
+      },
+      "web": {
+        "digest": "sha256:69e0b0663d109864ba3e4986ec5803ab340ea284fb657471331f5b357393719a",
+        "file": "palcert-web.spdx.json",
+        "format": "SPDX-2.3",
+        "packages": 216
+      },
+      "worker": {
+        "digest": "sha256:b1b2c97fcf8ad10b9a8e91b56288f7d8e969aa1dc2a015cb199e3cc5b863c167",
+        "file": "palcert-worker.spdx.json",
+        "format": "SPDX-2.3",
+        "packages": 333
+      }
+    },
+    "vulnerabilityScan": {
+      "findings": 156,
+      "fixableHighOrCritical": 0,
+      "reports": {
+        "palcert-api": {
+          "digest": "sha256:4fc590ef279ae609ecc647b6cbd6116fb6136b3c29b4f7612c80491276cd6371",
+          "findings": 0,
+          "fixableHighOrCritical": 0
+        },
+        "palcert-document-engine": {
+          "digest": "sha256:9eeca5674adeef3ccc9ab3c8d01ed4bf321682b8a40b4f497f58f453d9fffe5a",
+          "findings": 156,
+          "fixableHighOrCritical": 0
+        },
+        "palcert-migrate": {
+          "digest": "sha256:c2ba29547c39b30dfbbfe7f51595696f59ae17777aea6f61c06a3db30841ade2",
+          "findings": 0,
+          "fixableHighOrCritical": 0
+        },
+        "palcert-web": {
+          "digest": "sha256:c89c084f9a8fff28d83e3da850edd0901f70d6869cee2f6052103c01bc81aad9",
+          "findings": 0,
+          "fixableHighOrCritical": 0
+        },
+        "palcert-worker": {
+          "digest": "sha256:df08d49c2ac5c8eb1e44f872965a1446db6819f47f8085233368638be7d6029c",
+          "findings": 0,
+          "fixableHighOrCritical": 0
+        }
+      }
+    }
+  }
+}

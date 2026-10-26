@@ -1,0 +1,98 @@
+{
+  "analysisSchemaVersion": 1,
+  "analyzer": {
+    "name": "palcert-docx",
+    "version": "1"
+  },
+  "factSchemaVersion": 2,
+  "source": {
+    "documentId": "fixture-document",
+    "sha256": "c685a32058524aa6c1aaebb0912527648abc0aa8fa67db800c73c6a2c8e67007"
+  },
+  "structuralModel": {
+    "analysisSchemaVersion": 1,
+    "paragraphs": [
+      {
+        "effective": {
+          "outlineLevel": {
+            "source": "PARAGRAPH_STYLE",
+            "styleId": "Heading1",
+            "value": 0
+          }
+        },
+        "headingLevel": 1,
+        "inTable": false,
+        "locator": {
+          "nodeId": "main/body/p:1",
+          "path": ["main", "body", "p:1"],
+          "story": "MAIN_DOCUMENT"
+        },
+        "revision": "UNCHANGED",
+        "runs": [
+          {
+            "effective": {
+              "b": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Heading1",
+                "value": true
+              },
+              "font.ascii": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Normal",
+                "value": "Calibri"
+              },
+              "font.cs": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Normal",
+                "value": "Arial"
+              },
+              "font.hAnsi": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Normal",
+                "value": "Calibri"
+              },
+              "fontSize": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Heading1",
+                "value": "16"
+              },
+              "fontSizeComplexScript": {
+                "source": "PARAGRAPH_STYLE",
+                "styleId": "Normal",
+                "value": "13"
+              }
+            },
+            "hidden": false,
+            "length": 11,
+            "locator": {
+              "nodeId": "main/body/p:1/r:1",
+              "path": ["main", "body", "p:1", "r:1"],
+              "story": "MAIN_DOCUMENT"
+            },
+            "revision": "UNCHANGED",
+            "segments": [
+              {
+                "channel": "LATIN",
+                "fontFamily": "Calibri",
+                "fontSizePoints": "16",
+                "length": 11,
+                "slot": "ascii"
+              }
+            ]
+          }
+        ],
+        "sectionIndex": 0,
+        "story": "MAIN_DOCUMENT",
+        "styleId": "Heading1",
+        "text": "Chapter One"
+      }
+    ],
+    "profile": "TRANSITIONAL"
+  },
+  "warnings": [
+    {
+      "code": "METADATA_PART_MISSING",
+      "detail": {}
+    }
+  ]
+}

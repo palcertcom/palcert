@@ -1,0 +1,9 @@
+{
+  "contract": "FixValue",
+  "why": "A point measurement travels as an exact decimal string.",
+  "value": {
+    "kind": "NUMBER",
+    "number": "12.5",
+    "unit": "POINT"
+  }
+}

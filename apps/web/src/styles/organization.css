@@ -1,0 +1,1125 @@
+/* The organization workspace and its shared pieces (Stage 6).
+ *
+ * Logical properties throughout, so the Arabic workspace mirrors by itself.
+ */
+
+/* --- Whose workspace ------------------------------------------------------- */
+
+.pc-org-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+  margin: 0 0 0.25rem;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-org-identity .pc-icon {
+  color: var(--pc-gold-text);
+}
+
+.pc-org-identity-name {
+  color: var(--pc-text-strong);
+  font-weight: 600;
+}
+
+.pc-org-identity-type::before {
+  content: '·';
+  margin-inline-end: 0.625rem;
+}
+
+/* --- Overview: the sections this member can open ---------------------------- */
+
+.pc-org-sections ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-org-sections a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.25rem;
+  border-block-end: 1px solid var(--pc-border);
+  color: var(--pc-text);
+  text-decoration: none;
+}
+
+.pc-org-sections li:last-child a {
+  border-block-end: 0;
+}
+
+.pc-org-sections a:hover {
+  color: var(--pc-gold-text);
+}
+
+.pc-org-sections a .pc-icon:first-child {
+  color: var(--pc-gold-text);
+}
+
+.pc-org-sections a .pc-icon:last-child {
+  margin-inline-start: auto;
+  color: var(--pc-text-muted);
+}
+
+/* --- Organizations list ----------------------------------------------------- */
+
+.pc-org-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-org-card {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  margin: 0;
+  border-block-start: 3px solid var(--pc-gold);
+}
+
+.pc-org-card .pc-card-title {
+  margin: 0;
+}
+
+.pc-org-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+/* --- Static labels (roles, categories) -------------------------------------- */
+/* Not .pc-chip: a chip is a control; these are words. */
+
+.pc-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+}
+
+.pc-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface-muted);
+  color: var(--pc-text);
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* --- Forms and lists --------------------------------------------------------- */
+
+.pc-form-card {
+  max-inline-size: 44rem;
+}
+
+.pc-fieldset-plain {
+  display: grid;
+  gap: inherit;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pc-fieldset-plain:disabled :is(input, select, textarea) {
+  background: var(--pc-surface-muted);
+  color: var(--pc-text);
+  cursor: default;
+}
+
+.pc-search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 0.75rem;
+  margin-block: 1rem;
+}
+
+.pc-search-bar .pc-field {
+  flex: 1 1 18rem;
+  margin: 0;
+}
+
+.pc-select-sm {
+  inline-size: auto;
+  min-block-size: 2.25rem;
+  max-inline-size: 100%;
+  padding-block: 0.25rem;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-list-footer {
+  display: flex;
+  justify-content: center;
+  margin-block-start: 1rem;
+}
+
+.pc-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-block-end: 0.75rem;
+}
+
+.pc-section-heading h2 {
+  margin: 0;
+}
+
+/* --- Standards ---------------------------------------------------------------- */
+
+.pc-title-code {
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+/* Draft and published must never be mistaken for each other. */
+.pc-version-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-block: 0 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--pc-border);
+  border-inline-start-width: 4px;
+  border-radius: var(--pc-radius);
+  font-weight: 500;
+}
+
+.pc-version-banner[data-state='published'] {
+  border-inline-start-color: var(--pc-success);
+  background: var(--pc-success-bg);
+  color: var(--pc-success);
+}
+
+.pc-version-banner[data-state='draft'] {
+  border-inline-start-color: var(--pc-gold);
+  background: var(--pc-gold-tint);
+  color: var(--pc-gold-text-strong);
+}
+
+/* History, not a warning: a superseded or archived version is kept on purpose. */
+.pc-version-banner[data-state='superseded'],
+.pc-version-banner[data-state='archived'] {
+  border-inline-start-color: var(--pc-text-muted);
+  background: var(--pc-surface-muted);
+  color: var(--pc-text);
+}
+
+.pc-version-history {
+  color: var(--pc-text-muted);
+  font-size: 0.875rem;
+}
+
+.pc-card-subtitle {
+  margin-block: 1rem 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.pc-hash-block {
+  margin-block-start: 1rem;
+  padding-block-start: 0.875rem;
+  border-block-start: 1px solid var(--pc-border);
+}
+
+.pc-hash-label {
+  margin: 0 0 0.25rem;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-stat-list-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.pc-stat-list-compact > div {
+  padding: 0.5rem 0.75rem;
+}
+
+.pc-stat-list-compact dd {
+  font-size: var(--pc-text-lg);
+}
+
+/* Guidelines, sources and proposals read as cards in the version's column. */
+.standard-sources,
+.rule-proposals {
+  margin-block-start: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+  box-shadow: var(--pc-shadow-card);
+}
+
+.standard-sources > h2,
+.rule-proposals > h3 {
+  margin-block-start: 0;
+}
+
+/* A source card carries a 64-character SHA-256 digest and a filename, both
+   unbroken strings. As grid items the cards would otherwise refuse to shrink
+   below them and push the page sideways on a phone. */
+.standard-sources,
+.rule-proposals {
+  min-inline-size: 0;
+}
+
+.source-list h4,
+.source-list dd,
+.source-list code,
+.extraction-provenance dd,
+.extraction-provenance code {
+  overflow-wrap: anywhere;
+}
+
+/* The reading digest is 64 unbroken characters; a phone must wrap it rather
+   than widen the whole page around it. */
+.extraction-provenance code {
+  word-break: break-all;
+}
+
+/* --- Review ------------------------------------------------------------------- */
+
+.pc-decision-card {
+  border-block-start: 3px solid var(--pc-charcoal);
+}
+
+.pc-decision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pc-comment-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-comment-list li {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--pc-border);
+  border-inline-start: 3px solid var(--pc-gold);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-muted);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 40rem) {
+  .standard-sources,
+  .rule-proposals {
+    padding: 1rem;
+  }
+
+  .pc-stat-list-compact {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* === Integrations (Stage 7) =============================================== */
+
+.pc-integration-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-integration-card {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.pc-integration-card[data-status='REVOKED'] {
+  background: var(--pc-surface-muted);
+}
+
+.pc-integration-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.pc-integration-head .pc-card-title {
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.pc-integration-destination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+  overflow-wrap: anywhere;
+}
+
+.pc-integration-destination .pc-icon {
+  flex: none;
+  color: var(--pc-gold-text);
+}
+
+/* Scope and event choices: each box with what it grants beside it. */
+.pc-scope-list {
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pc-scope-list legend {
+  margin-block-end: 0.25rem;
+  padding: 0;
+  font-weight: 600;
+}
+
+.pc-scope {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+  cursor: pointer;
+}
+
+.pc-scope:has(input:checked) {
+  border-color: var(--pc-gold);
+  background: var(--pc-gold-tint);
+}
+
+.pc-scope input {
+  flex: none;
+  margin-block-start: 0.2rem;
+}
+
+.pc-scope > span {
+  display: grid;
+  gap: 0.125rem;
+  min-inline-size: 0;
+}
+
+.pc-scope small {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-xs);
+}
+
+/* Muted grey is 4.39 : 1 on the gold tint — below AA for this size. A
+   selected row's description takes the body colour instead. */
+.pc-scope:has(input:checked) small {
+  color: var(--pc-text);
+}
+
+.pc-card-divider {
+  margin-block-start: 1rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--pc-border);
+}
+
+.pc-pending-card,
+.pc-rotation-card {
+  border-block-start: 3px solid var(--pc-warning);
+}
+
+/* The one-time secret. Unmissable, in the page's own direction; only the
+   value itself is set left to right, monospaced and breakable. */
+.pc-secret-panel {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  margin-block-end: 1.25rem;
+  border: 2px solid var(--pc-gold);
+  background: var(--pc-gold-tint);
+}
+
+.pc-secret-panel > * {
+  margin: 0;
+}
+
+.pc-secret-panel .pc-secret {
+  display: block;
+  justify-self: stretch;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--pc-gold-text);
+  background: var(--pc-white);
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-sm);
+  user-select: all;
+}
+
+/* === Proposal review console ============================================== */
+/* A dense table on a desk, stacked compact rows on a phone. The header and its
+   counts stay in view while the table scrolls under them; the bulk bar sticks
+   to the bottom edge while anything is selected. */
+
+.review-console {
+  position: relative;
+}
+
+.review-console-title h3 {
+  margin-block: 0 0.25rem;
+}
+
+.review-console-title p {
+  margin-block: 0;
+}
+
+.review-console-head {
+  position: sticky;
+  inset-block-start: var(--pc-topbar-height);
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin: 0.75rem -1.5rem 0;
+  padding: 0.5rem 1.5rem;
+  background: var(--pc-surface);
+  border-block: 1px solid var(--pc-border);
+}
+
+.review-chips {
+  margin-block: 0;
+}
+
+.review-chip-count {
+  margin-inline-start: 0.5rem;
+  padding-inline: 0.4rem;
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface-muted);
+  color: var(--pc-text-strong);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.review-bulk-all {
+  margin-block: 0;
+}
+
+.review-outcome p {
+  margin: 0;
+}
+
+.review-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  align-items: end;
+  gap: 0.5rem 0.75rem;
+  margin-block: 1rem 0.25rem;
+}
+
+.review-filters .pc-field {
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.review-filters select,
+.review-filters input {
+  inline-size: 100%;
+}
+
+.review-selection-tools {
+  margin-block: 0.25rem 0;
+}
+
+.review-table-scroll {
+  margin-block-start: 0.5rem;
+}
+
+.review-table th,
+.review-table td {
+  padding: 0.5rem;
+  vertical-align: top;
+}
+
+/* Headers may wrap: "Evidence / consistency" on one line costs the actions
+   column its room. */
+.review-table thead th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+.review-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.review-sort-mark {
+  font-size: 0.65rem;
+  color: var(--pc-text-muted);
+}
+
+.review-select-cell {
+  inline-size: 2.25rem;
+}
+
+.review-row {
+  cursor: pointer;
+}
+
+.review-row[data-selected='true'] {
+  background: color-mix(in srgb, var(--pc-gold-tint) 60%, white);
+}
+
+.review-row[data-expanded='true'] > td {
+  border-block-end-color: transparent;
+}
+
+.review-code-cell {
+  min-inline-size: 10rem;
+}
+
+.review-table .pc-row-actions {
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
+}
+
+.review-table .pc-row-actions .pc-btn-sm {
+  white-space: nowrap;
+}
+
+.review-code-cell code,
+.review-category {
+  overflow-wrap: anywhere;
+  font-size: var(--pc-text-xs);
+}
+
+.review-title,
+.review-kind,
+.review-value {
+  display: block;
+}
+
+.review-title {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-xs);
+  margin-block-start: 0.15rem;
+}
+
+.review-source-cell bdi {
+  display: block;
+  max-inline-size: 9rem;
+  overflow-wrap: anywhere;
+}
+
+.review-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.review-detail-row > td {
+  background: var(--pc-surface-muted);
+  padding: 1rem;
+}
+
+.review-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(14rem, 1fr);
+  gap: 1rem 1.5rem;
+  cursor: auto;
+}
+
+.review-detail h4,
+.review-detail h5 {
+  margin-block: 0 0.35rem;
+}
+
+.review-detail-main {
+  display: grid;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+.review-detail-main blockquote {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-inline-start: 3px solid var(--pc-gold);
+  background: var(--pc-surface);
+  overflow-wrap: anywhere;
+}
+
+.review-detail-side {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-inline-size: 0;
+}
+
+.review-facts {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.review-facts dt {
+  font-size: var(--pc-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pc-text-muted);
+}
+
+.review-facts dd {
+  margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+.review-fact-line {
+  display: block;
+}
+
+.review-issues {
+  margin: 0.25rem 0 0;
+  padding-inline-start: 1.1rem;
+}
+
+.review-detail .proposal-actions,
+.review-detail .proposal-rejection {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+
+.review-detail .proposal-rejection .pc-field,
+.review-detail .proposal-rejection select,
+.review-detail .proposal-rejection textarea {
+  inline-size: 100%;
+}
+
+.review-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-block-start: 0.75rem;
+}
+
+.review-page-size {
+  margin: 0;
+}
+
+.review-page-range {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.review-page-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.review-bulk-bar {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 1rem -1.5rem -1.25rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--pc-charcoal, #2e2e2e);
+  color: var(--pc-white, #fff);
+  border-radius: 0 0 var(--pc-radius-lg) var(--pc-radius-lg);
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 12%);
+}
+
+.review-bulk-bar .pc-button-quiet {
+  color: inherit;
+}
+
+.extraction-progress {
+  display: grid;
+  gap: 0.75rem;
+  margin-block: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+}
+
+.extraction-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.extraction-progress-head h4 {
+  margin: 0;
+}
+
+.extraction-progress .pc-steps {
+  margin: 0;
+}
+
+/* Seven steps in a column: a label breaks between words, never inside one. */
+.extraction-progress .pc-step-label {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: auto;
+  font-size: var(--pc-text-xs);
+}
+
+.extraction-progress-bar progress {
+  appearance: none;
+  inline-size: 100%;
+  block-size: 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--pc-surface-muted);
+  color: var(--pc-gold);
+  accent-color: var(--pc-gold);
+}
+
+.extraction-progress-bar progress::-webkit-progress-bar {
+  background: var(--pc-surface-muted);
+  border-radius: 999px;
+}
+
+.extraction-progress-bar progress::-webkit-progress-value {
+  background: var(--pc-gold);
+  border-radius: 999px;
+}
+
+.extraction-progress-bar progress::-moz-progress-bar {
+  background: var(--pc-gold);
+  border-radius: 999px;
+}
+
+.extraction-progress-counts dd {
+  font-size: var(--pc-text-base, 1rem);
+  white-space: nowrap;
+}
+
+.extraction-progress-counts dd .hint {
+  white-space: normal;
+  font-weight: 400;
+  font-size: var(--pc-text-sm);
+}
+
+.extraction-progress-bar p {
+  margin: 0.25rem 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.extraction-progress-counts {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.extraction-progress-cancel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.extraction-progress-cancel p {
+  margin: 0;
+}
+
+@media (max-width: 64rem) {
+  .review-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* On a phone every row is a compact card: its cells stack, each introduced by
+   its column name, and nothing scrolls sideways. */
+@media (max-width: 47.99rem) {
+  .review-console-head {
+    position: static;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+  .review-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .review-search {
+    grid-column: 1 / -1;
+  }
+
+  .review-code-cell {
+    min-inline-size: 0;
+  }
+
+  .review-table-scroll {
+    overflow-x: visible;
+    border: 0;
+    background: none;
+  }
+
+  .review-table,
+  .review-table tbody,
+  .review-table tr,
+  .review-table td {
+    display: block;
+    inline-size: 100%;
+  }
+
+  .review-table thead {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .review-table thead tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .review-table thead th {
+    position: static;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--pc-border);
+    border-radius: var(--pc-radius-sm);
+  }
+
+  /* The actions column has no sort; on a phone its header says nothing. */
+  .review-table thead th:last-child {
+    display: none;
+  }
+
+  .review-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.25rem 0.75rem;
+    margin-block-start: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--pc-border);
+    border-radius: var(--pc-radius);
+    background: var(--pc-surface);
+  }
+
+  .review-row > td {
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+  }
+
+  .review-row > td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: var(--pc-text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--pc-text-muted);
+  }
+
+  .review-row > td.review-select-cell::before {
+    display: none;
+  }
+
+  .review-row > td.review-code-cell,
+  .review-row > td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .review-row .pc-row-actions {
+    justify-content: flex-start;
+  }
+
+  .review-detail-row > td {
+    padding: 0.75rem;
+    border: 1px solid var(--pc-border);
+    border-block-start: 0;
+    border-radius: 0 0 var(--pc-radius) var(--pc-radius);
+  }
+
+  .review-pagination {
+    align-items: stretch;
+  }
+
+  .review-bulk-bar {
+    margin-inline: -1rem;
+    margin-block-end: -1rem;
+    padding-inline: 1rem;
+  }
+
+  .extraction-progress-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Portable standard packages ------------------------------------------------ */
+
+.transfer-import {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.transfer-summary dd {
+  overflow-wrap: anywhere;
+}
+
+.transfer-note {
+  display: block;
+  margin: 0.125rem 0 0;
+}
+
+.transfer-ok {
+  color: var(--pc-success);
+  font-weight: 600;
+}
+
+.transfer-bad {
+  color: var(--pc-danger);
+  font-weight: 600;
+}
+
+.transfer-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
+}
+
+.transfer-filters .pc-field {
+  flex: 1 1 14rem;
+  margin: 0;
+}
+
+.transfer-rules {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.transfer-rules th,
+.transfer-rules td {
+  padding: 0.5rem 0.625rem;
+  border-block-end: 1px solid var(--pc-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.transfer-rules th {
+  color: var(--pc-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.transfer-rule[data-valid='false'] {
+  background: var(--pc-danger-bg, rgba(185, 28, 28, 0.06));
+}
+
+.transfer-rule-title {
+  display: block;
+  color: var(--pc-text-muted);
+  font-size: 0.875rem;
+}
+
+.transfer-rule-details td {
+  background: var(--pc-surface-muted);
+}
+
+.transfer-issues {
+  margin: 0.25rem 0 0;
+  padding-inline-start: 1.25rem;
+}
+
+.transfer-modes {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+}
+
+.transfer-collision {
+  margin-block: 0.5rem 1rem;
+}
+
+.transfer-provenance {
+  margin-block: 0 1.25rem;
+  border-inline-start: 4px solid var(--pc-gold);
+}
+
+/* A phone gets one rule per block, each value under its own label. */
+@media (max-width: 640px) {
+  .transfer-rules thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .transfer-rules,
+  .transfer-rules tbody,
+  .transfer-rules tr,
+  .transfer-rules td {
+    display: block;
+    width: 100%;
+  }
+
+  .transfer-rules tr.transfer-rule {
+    padding-block: 0.5rem;
+    border-block-end: 1px solid var(--pc-border);
+  }
+
+  .transfer-rules td {
+    padding: 0.125rem 0;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .transfer-rules td[data-label]::before {
+    content: attr(data-label) ': ';
+    color: var(--pc-text-muted);
+    font-size: 0.8125rem;
+  }
+}

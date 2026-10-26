@@ -1,0 +1,273 @@
+{
+  "$comment": "The SmartFix capability registry (Phase 12 §13). This file is the single source of truth for what SmartFix is able to change. The TypeScript constant in packages/contracts/src/smartfix/registry.generated.ts is generated from it and the Python engine reads it directly, so the two cannot disagree about what the user approved. A rule's autofix: SAFE is a CEILING set by whoever wrote the standard — it says the change would be safe if PalCert could make it. This table says whether PalCert can. A property absent from it is never edited, however the rule is labelled.",
+  "registryVersion": 2,
+  "engine": {
+    "name": "palcert-docx-fixer",
+    "version": "1.0.0"
+  },
+  "planSchemaVersion": 1,
+  "manifestSchemaVersion": 1,
+  "operatorPolicy": {
+    "$comment": "Which operators name exactly one correct value. EQUALS names a value and the inclusive bounds name a boundary reachable without overshooting. GREATER_THAN and LESS_THAN are excluded even though they look numeric: the nearest satisfying value depends on a step size nobody declared. IN and MATCHES_PATTERN name a set and a language; choosing a member of either would be PalCert deciding what the author's document should say. EXISTS and NOT_EXISTS can only be satisfied by writing or deleting content, which is where academic meaning lives.",
+    "deterministic": ["EQUALS", "GREATER_THAN_OR_EQUAL", "LESS_THAN_OR_EQUAL", "BETWEEN"],
+    "ambiguous": [
+      "NOT_EQUALS",
+      "GREATER_THAN",
+      "LESS_THAN",
+      "IN",
+      "NOT_IN",
+      "CONTAINS",
+      "NOT_CONTAINS",
+      "MATCHES_PATTERN"
+    ],
+    "contentChange": ["EXISTS", "NOT_EXISTS"]
+  },
+  "elementTypePolicy": {
+    "$comment": "Introduced at registryVersion 2, which is why that number moved: this narrows what SmartFix may change, and a plan approved under version 1 described an engine that had never heard of the restriction. The mutation path refuses a plan whose stamped registry version is not the current one, so the bump is what makes the narrowing retroactively safe rather than merely forward-looking. Element types SmartFix must never edit, whatever a rule says. Capability matching is (scope kind, property) and is deliberately blind to element type, so a formatting capability such as lineSpacing would otherwise apply to any element a rule names. That is correct for a paragraph and wrong for a citation: Phase 18 will emit ELEMENT/CITATION and ELEMENT/REFERENCE_ENTRY facts, and re-indenting a reference entry is a change to how somebody's scholarship is presented, which PalCert has not earned the right to make. This is a separate axis from the capability table rather than a gap in it, and it is checked before any capability lookup so that no property can reach an element type named here. An ELEMENT-scoped rule naming no element type is refused for the same reason: an unnamed element type is not a permission.",
+    "forbidden": ["CITATION", "REFERENCE_ENTRY"],
+    "reasonCode": "SMARTFIX_ELEMENT_TYPE_NOT_EDITABLE"
+  },
+  "reasonCodes": {
+    "$comment": "Why a failing rule was not planned, or was planned only in part. These reach the user through the UI's translation tables, so they are a closed vocabulary both runtimes agree on rather than free text either side can invent.",
+    "values": [
+      "SMARTFIX_PROPERTY_NOT_SUPPORTED",
+      "SMARTFIX_SCOPE_NOT_SUPPORTED",
+      "SMARTFIX_OPERATOR_AMBIGUOUS",
+      "SMARTFIX_CONTENT_CHANGE_REQUIRED",
+      "SMARTFIX_RULE_NOT_DETERMINISTIC",
+      "SMARTFIX_AUTOFIX_NOT_SAFE",
+      "SMARTFIX_COUNT_NOT_EDITABLE",
+      "SMARTFIX_PAGINATION_NOT_EDITABLE",
+      "SMARTFIX_LOCATION_EVIDENCE_MISSING",
+      "SMARTFIX_EXPECTED_VALUE_UNUSABLE",
+      "SMARTFIX_TARGET_NOT_REPRESENTABLE",
+      "SMARTFIX_METADATA_NOT_SUPPORTED",
+      "SMARTFIX_ELEMENT_TYPE_NOT_EDITABLE"
+    ]
+  },
+  "capabilities": [
+    {
+      "property": "fontFamily",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_FONT_FAMILY",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "LATIN",
+      "valueKind": "STRING"
+    },
+    {
+      "property": "fontFamilyComplexScript",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_FONT_FAMILY",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "COMPLEX_SCRIPT",
+      "valueKind": "STRING"
+    },
+    {
+      "property": "fontFamilyEastAsian",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_FONT_FAMILY",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "EAST_ASIAN",
+      "valueKind": "STRING"
+    },
+    {
+      "property": "fontSize",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_FONT_SIZE",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "LATIN",
+      "valueKind": "NUMBER",
+      "unit": "POINT"
+    },
+    {
+      "property": "fontSizeComplexScript",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_FONT_SIZE",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "COMPLEX_SCRIPT",
+      "valueKind": "NUMBER",
+      "unit": "POINT"
+    },
+    {
+      "property": "bold",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_BOLD",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "LATIN",
+      "valueKind": "BOOLEAN"
+    },
+    {
+      "property": "boldComplexScript",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_BOLD",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "COMPLEX_SCRIPT",
+      "valueKind": "BOOLEAN"
+    },
+    {
+      "property": "italic",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_ITALIC",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "LATIN",
+      "valueKind": "BOOLEAN"
+    },
+    {
+      "property": "italicComplexScript",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_ITALIC",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "COMPLEX_SCRIPT",
+      "valueKind": "BOOLEAN"
+    },
+    {
+      "property": "underline",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_RUN_UNDERLINE",
+      "targetScope": "RUN_PROPERTIES",
+      "scriptChannel": "LATIN",
+      "valueKind": "STRING"
+    },
+    {
+      "property": "paragraphAlignment",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_PARAGRAPH_ALIGNMENT",
+      "targetScope": "PARAGRAPH_PROPERTIES",
+      "valueKind": "STRING"
+    },
+    {
+      "property": "lineSpacing",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_PARAGRAPH_LINE_SPACING",
+      "targetScope": "PARAGRAPH_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "LINES"
+    },
+    {
+      "property": "spacingBefore",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_PARAGRAPH_SPACING_BEFORE",
+      "targetScope": "PARAGRAPH_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "POINT"
+    },
+    {
+      "property": "spacingAfter",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_PARAGRAPH_SPACING_AFTER",
+      "targetScope": "PARAGRAPH_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "POINT"
+    },
+    {
+      "property": "indentStart",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_PARAGRAPH_INDENT_START",
+      "targetScope": "PARAGRAPH_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "POINT"
+    },
+    {
+      "property": "indentEnd",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_PARAGRAPH_INDENT_END",
+      "targetScope": "PARAGRAPH_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "POINT"
+    },
+    {
+      "property": "firstLineIndent",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_PARAGRAPH_FIRST_LINE_INDENT",
+      "targetScope": "PARAGRAPH_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "POINT"
+    },
+    {
+      "property": "hangingIndent",
+      "scopes": ["ELEMENT"],
+      "actionType": "SET_PARAGRAPH_HANGING_INDENT",
+      "targetScope": "PARAGRAPH_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "POINT"
+    },
+    {
+      "property": "marginTop",
+      "scopes": ["DOCUMENT"],
+      "actionType": "SET_SECTION_MARGIN_TOP",
+      "targetScope": "SECTION_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "MILLIMETRE"
+    },
+    {
+      "property": "marginBottom",
+      "scopes": ["DOCUMENT"],
+      "actionType": "SET_SECTION_MARGIN_BOTTOM",
+      "targetScope": "SECTION_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "MILLIMETRE"
+    },
+    {
+      "property": "marginLeft",
+      "scopes": ["DOCUMENT"],
+      "actionType": "SET_SECTION_MARGIN_LEFT",
+      "targetScope": "SECTION_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "MILLIMETRE"
+    },
+    {
+      "property": "marginRight",
+      "scopes": ["DOCUMENT"],
+      "actionType": "SET_SECTION_MARGIN_RIGHT",
+      "targetScope": "SECTION_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "MILLIMETRE"
+    },
+    {
+      "property": "headerDistance",
+      "scopes": ["DOCUMENT"],
+      "actionType": "SET_SECTION_HEADER_DISTANCE",
+      "targetScope": "SECTION_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "MILLIMETRE"
+    },
+    {
+      "property": "footerDistance",
+      "scopes": ["DOCUMENT"],
+      "actionType": "SET_SECTION_FOOTER_DISTANCE",
+      "targetScope": "SECTION_PROPERTIES",
+      "valueKind": "NUMBER",
+      "unit": "MILLIMETRE"
+    }
+  ],
+  "refusedProperties": {
+    "wordCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "bodyWordCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "footnoteWordCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "endnoteWordCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "totalVisibleWordCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "characterCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "characterCountNoWhitespace": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "paragraphCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "tableCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "figureCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "equationCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "footnoteCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "endnoteCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "commentCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "rowCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "columnCount": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "listStartValue": "SMARTFIX_COUNT_NOT_EDITABLE",
+    "sectionCount": "SMARTFIX_PAGINATION_NOT_EDITABLE",
+    "pageBreakBefore": "SMARTFIX_PAGINATION_NOT_EDITABLE",
+    "sectionBreakType": "SMARTFIX_PAGINATION_NOT_EDITABLE",
+    "keepNext": "SMARTFIX_PAGINATION_NOT_EDITABLE",
+    "title": "SMARTFIX_METADATA_NOT_SUPPORTED",
+    "subject": "SMARTFIX_METADATA_NOT_SUPPORTED",
+    "creator": "SMARTFIX_METADATA_NOT_SUPPORTED",
+    "keywords": "SMARTFIX_METADATA_NOT_SUPPORTED",
+    "description": "SMARTFIX_METADATA_NOT_SUPPORTED",
+    "created": "SMARTFIX_METADATA_NOT_SUPPORTED",
+    "modified": "SMARTFIX_METADATA_NOT_SUPPORTED"
+  }
+}

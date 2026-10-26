@@ -1,0 +1,287 @@
+/* Base layer: reset, typography, links, focus.
+ *
+ * Logical properties throughout (inline-start/end, block-start/end), so one
+ * stylesheet serves left-to-right and right-to-left without mirrored overrides.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  background: var(--pc-background);
+  color: var(--pc-text);
+  font-family: var(--pc-font-latin);
+  font-size: var(--pc-text-base);
+  line-height: var(--pc-leading);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--pc-text-strong);
+  line-height: var(--pc-leading-tight);
+  font-weight: 600;
+  margin-block: 0 0.5rem;
+}
+
+h1 {
+  font-size: var(--pc-text-xl);
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: var(--pc-text-lg);
+}
+
+h3 {
+  font-size: var(--pc-text-md);
+}
+
+h4 {
+  font-size: var(--pc-text-base);
+}
+
+p {
+  margin-block: 0 0.75rem;
+}
+
+a {
+  color: var(--pc-gold-text);
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, var(--pc-gold-text) 35%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-color: currentcolor;
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--pc-font-mono);
+  font-size: 0.92em;
+}
+
+/* Technical strings — hashes, identifiers, keys, certificate numbers, email
+   addresses, URLs — are left-to-right and monospaced in every locale. In an
+   Arabic sentence they are isolated, so the bidirectional algorithm cannot
+   reorder their characters ("abc-123" never becomes "123-abc") or pull
+   neighbouring Arabic punctuation into them. */
+code,
+kbd,
+samp,
+.pc-hash,
+.pc-rule-code,
+.pc-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.pc-ltr {
+  font-family: var(--pc-font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+}
+
+img,
+svg {
+  max-inline-size: 100%;
+}
+
+/* One visible focus treatment everywhere, gold-text so it reads on white and
+   on cream alike. */
+:focus-visible {
+  outline: 2px solid var(--pc-focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--pc-gold-tint);
+  color: var(--pc-text-strong);
+}
+
+/* Visible to screen readers, not on screen. */
+.pc-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pc-skip-link {
+  position: absolute;
+  inset-inline-start: 1rem;
+  inset-block-start: -3rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  border-radius: var(--pc-radius);
+  background: var(--pc-text-strong);
+  color: var(--pc-white);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pc-skip-link:focus {
+  inset-block-start: 0.75rem;
+}
+
+/* --- Page containers ------------------------------------------------------ */
+/* Pages still render their own `main` with one of these classes. Inside the
+   application shell they fill the workspace rather than sitting in a narrow
+   column; the shell sets the gutters. */
+
+.pc-page,
+.page {
+  inline-size: 100%;
+  max-inline-size: var(--pc-content-max);
+  margin-inline: auto;
+  padding-block: 1.75rem 3rem;
+  padding-inline: 2rem;
+}
+
+@media (max-width: 47.99rem) {
+  .pc-page,
+  .page {
+    padding-inline: 1rem;
+    padding-block-start: 1.25rem;
+  }
+}
+
+.pc-title {
+  font-size: var(--pc-text-xl);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.pc-tagline,
+.pc-subtitle {
+  color: var(--pc-text-muted);
+  margin-block: 0.35rem 1rem;
+  max-inline-size: 72ch;
+}
+
+.pc-secondary,
+.secondary-text {
+  color: var(--pc-text-muted);
+}
+
+.pc-hint,
+.hint {
+  margin: 0;
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text-muted);
+}
+
+.pc-hash,
+.pc-secret,
+.pc-rule-code {
+  font-family: var(--pc-font-mono);
+}
+
+.pc-hash {
+  /* A hash must be selectable and readable in full; wrapping beats truncating,
+     because a partially shown hash cannot be verified. */
+  word-break: break-all;
+  font-size: var(--pc-text-sm);
+}
+
+/* --- Arabic ---------------------------------------------------------------- */
+/* Arabic is set in its own face and weights, with more room between lines —
+   not the Latin rules applied to Arabic letters. */
+
+html[lang='ar'] body {
+  font-family: var(--pc-font-arabic);
+  font-weight: var(--pc-ar-weight-body);
+  line-height: var(--pc-leading-arabic);
+}
+
+/* Arabic letters join. Tracking pulls them apart and breaks the words, so no
+   rule anywhere may space Arabic out — including ones written for Latin. */
+html[lang='ar'] *,
+html[lang='ar'] *::before,
+html[lang='ar'] *::after {
+  letter-spacing: 0 !important;
+}
+
+html[lang='ar'] :is(h1, h2, h3, h4, h5, h6) {
+  line-height: var(--pc-leading-arabic-tight);
+  font-weight: var(--pc-ar-weight-heading);
+}
+
+html[lang='ar'] :is(h1, .pc-title) {
+  font-weight: var(--pc-ar-weight-title);
+}
+
+html[lang='ar'] :is(strong, b, dt, th, label, legend) {
+  font-weight: var(--pc-ar-weight-label);
+}
+
+/* Form controls do not inherit the page's face by default. */
+html[lang='ar'] :is(button, input, select, textarea) {
+  font-family: var(--pc-font-arabic);
+}
+
+/* Technical strings keep their own face inside Arabic text. */
+html[lang='ar'] :is(code, kbd, samp, .pc-hash, .pc-rule-code, .pc-ltr) {
+  font-family: var(--pc-font-mono);
+  line-height: var(--pc-leading);
+}
+
+/* Fields that take an address or a code are written left to right in every
+   locale; in an Arabic form they still sit against the form's start edge. */
+:is(
+  input[type='email'],
+  input[type='url'],
+  input[inputmode='email'],
+  input[inputmode='url'],
+  input.pc-input-ltr
+) {
+  direction: ltr;
+}
+
+html[dir='rtl']
+  :is(
+    input[type='email'],
+    input[type='url'],
+    input[inputmode='email'],
+    input[inputmode='url'],
+    input.pc-input-ltr
+  ) {
+  text-align: right;
+}
+
+html[dir='rtl'] :is(input[type='email'], input[type='url'], input.pc-input-ltr)::placeholder {
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

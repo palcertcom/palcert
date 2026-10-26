@@ -1,0 +1,7 @@
+{
+  "contract": "FixValue",
+  "why": "A kind with no value is not a value.",
+  "value": {
+    "kind": "BOOLEAN"
+  }
+}

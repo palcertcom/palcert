@@ -1,0 +1,1941 @@
+/* Feature styles, one section per product area.
+ *
+ * These were written phase by phase; they are kept because they carry real
+ * decisions (a report survives a printer, an "indeterminate" verdict is not
+ * red), now organised by what they style and drawn from the shared tokens.
+ */
+
+/* === Standards authoring ================================================== */
+
+.pc-rule-builder fieldset {
+  margin-block: 1rem;
+}
+
+.pc-rule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pc-rule-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+  margin-block-end: 0.5rem;
+}
+
+/* The rows are focusable so they can be reordered from the keyboard; the focus
+   ring is what makes that discoverable. */
+.pc-rule-row:focus-visible {
+  outline: 2px solid var(--pc-focus);
+  outline-offset: 2px;
+}
+
+.pc-rule-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1 1 18rem;
+  min-inline-size: 0;
+}
+
+.pc-rule-code {
+  font-size: var(--pc-text-sm);
+}
+
+.pc-rule-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text-muted);
+}
+
+.pc-rule-actions {
+  display: flex;
+  gap: 0.25rem;
+  margin-inline-start: auto;
+}
+
+.pc-validation {
+  margin-block: 1rem;
+}
+
+.pc-validation ul {
+  padding-inline-start: 1.25rem;
+}
+
+/* A published version is fixed; an editable draft is not. The difference is
+   visible before anyone reads the status. */
+.pc-version-published {
+  border-inline-start: 4px solid var(--pc-success);
+}
+
+.pc-version-draft {
+  border-inline-start: 4px dashed var(--pc-gold);
+}
+
+/* === Organization workspace ============================================== */
+
+.pc-org-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding-block-end: 1rem;
+  margin-block-end: 1.5rem;
+  border-block-end: 1px solid var(--pc-gold-line);
+}
+
+.pc-org-header .pc-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+}
+
+/* === Documents ============================================================ */
+
+.pc-uploader {
+  border: 1px dashed var(--pc-border-strong);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-muted);
+  padding: 1.25rem;
+}
+
+.pc-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-stages li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--pc-text-muted);
+}
+
+.pc-stages li::before {
+  content: '';
+  inline-size: 0.55rem;
+  block-size: 0.55rem;
+  border-radius: 50%;
+  background: var(--pc-gold-line);
+}
+
+.pc-stages .pc-stage-reached::before {
+  background: var(--pc-gold);
+}
+
+.pc-stages [aria-current='step'] {
+  color: var(--pc-text-strong);
+  font-weight: 600;
+}
+
+.pc-file-name {
+  overflow-wrap: anywhere;
+}
+
+.pc-version-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pc-version {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--pc-border);
+  border-inline-start: 4px solid var(--pc-border-strong);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+}
+
+.pc-version-ready {
+  border-inline-start-color: var(--pc-success);
+}
+
+.pc-version-rejected {
+  border-inline-start-color: var(--pc-danger);
+}
+
+.pc-version-failed {
+  border-inline-start-color: var(--pc-warning);
+}
+
+.pc-version-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-block-end: 0.5rem;
+}
+
+.pc-version-filename {
+  margin: 0.25rem 0 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+  overflow-wrap: anywhere;
+}
+
+.pc-version .pc-actions {
+  margin-block-start: 0.75rem;
+}
+
+.pc-version .pc-actions:empty {
+  display: none;
+}
+
+.pc-live-status {
+  margin: 0.5rem 0 0;
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text-muted);
+}
+
+.pc-live-status:empty {
+  display: none;
+}
+
+.pc-uploader progress {
+  inline-size: 100%;
+  accent-color: var(--pc-gold);
+}
+
+/* === Start a check: the stepped flow ====================================== */
+
+.pc-wizard-step {
+  display: grid;
+  gap: 1.1rem;
+  max-inline-size: 44rem;
+  margin: 0;
+}
+
+.pc-wizard-step h2:focus {
+  outline: none;
+}
+
+.pc-wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block-start: 0.5rem;
+  border-block-start: 1px solid var(--pc-border);
+}
+
+.pc-wizard-nav button[type='submit'] {
+  min-inline-size: 8rem;
+}
+
+/* Label and value share a baseline even though the value's row also holds
+   a button, which is taller than the text. */
+.pc-wizard-review {
+  align-items: baseline;
+}
+
+.pc-wizard-review dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+
+.pc-wizard .pc-card + .pc-card,
+.pc-wizard .pc-wizard-step + * {
+  margin-block-start: 1.25rem;
+  max-inline-size: 44rem;
+}
+
+/* === Checks, findings and the report ====================================== */
+/* Every state that colour distinguishes also carries its own words and a
+   leading rule, because a reader who cannot tell red from green still has to
+   be able to read the result. */
+
+.determination {
+  border: 1px solid var(--pc-border);
+  border-inline-start: 4px solid var(--pc-border-strong);
+  padding: var(--pc-space) 1.25rem;
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+  margin-block: var(--pc-space);
+}
+
+.determination-label {
+  font-size: var(--pc-text-lg);
+  font-weight: 600;
+  margin: 0;
+  color: var(--pc-text-strong);
+}
+
+.determination-compliant {
+  border-inline-start-color: var(--pc-success);
+}
+
+.determination-non_compliant {
+  border-inline-start-color: var(--pc-danger);
+}
+
+.determination-review_required {
+  border-inline-start-color: var(--pc-warning);
+}
+
+/* Deliberately not red. "We could not decide" is not a failing grade. */
+.determination-indeterminate {
+  border-inline-start-color: var(--pc-text-muted);
+}
+
+.score-value {
+  font-size: var(--pc-text-2xl);
+  font-weight: 700;
+  margin: 0;
+  color: var(--pc-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.counts dl,
+.report-identity dl,
+.integrity dl {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.counts dt,
+.report-identity dt,
+.integrity dt {
+  color: var(--pc-text-muted);
+}
+
+.counts dd,
+.report-identity dd,
+.integrity dd {
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.integrity code {
+  font-size: var(--pc-text-xs);
+  overflow-wrap: anywhere;
+}
+
+.finding-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--pc-space);
+}
+
+.finding {
+  border: 1px solid var(--pc-border);
+  border-inline-start-width: 4px;
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+  padding: var(--pc-space) 1.25rem;
+}
+
+.finding h3 {
+  margin-block: 0 0.25rem;
+  font-size: var(--pc-text-base);
+}
+
+.finding-fail {
+  border-inline-start-color: var(--pc-danger);
+}
+
+.finding-pass {
+  border-inline-start-color: var(--pc-success);
+}
+
+.finding-indeterminate,
+.finding-error,
+.finding-not_applicable {
+  border-inline-start-color: var(--pc-text-muted);
+}
+
+.finding-status {
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text-muted);
+  margin-block: 0 0.5rem;
+}
+
+.violation-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+  font-size: var(--pc-text-sm);
+}
+
+.violation-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-block: 0.25rem;
+  border-block-start: 1px solid var(--pc-border);
+}
+
+/* --- Check page layout ---------------------------------------------------- */
+
+.pc-check-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  gap: 1.25rem;
+  margin-block: 1.25rem;
+}
+
+.pc-check-summary > .pc-card {
+  margin: 0;
+}
+
+.pc-check-summary .report-identity dl {
+  gap: 0.5rem 1.25rem;
+}
+
+.check-report > .progress,
+.check-report > .pc-check-failure {
+  margin-block: 1.25rem;
+}
+
+.check-report > .progress > p {
+  margin: 0.5rem 0;
+}
+
+.pc-check-failure {
+  border-inline-start: 4px solid var(--pc-warning);
+}
+
+.pc-result-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
+  gap: 1.25rem;
+  align-items: stretch;
+  margin-block: 1.25rem;
+}
+
+.pc-result-band > .determination,
+.pc-result-band > .pc-card {
+  margin: 0;
+}
+
+.pc-result-band .score h2 {
+  margin: 0 0 0.25rem;
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text-muted);
+}
+
+/* The rule counts as a row of figures; each carries its own word, and the
+   colour of its rule is only a second signal. */
+.pc-stat-list,
+.counts .pc-stat-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+}
+
+.pc-stat-list > div {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--pc-border);
+  border-block-start: 3px solid var(--pc-border-strong);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+}
+
+.pc-stat-list > div[data-tone='success'] {
+  border-block-start-color: var(--pc-success);
+}
+
+.pc-stat-list > div[data-tone='danger'] {
+  border-block-start-color: var(--pc-danger);
+}
+
+.pc-stat-list > div[data-tone='warning'] {
+  border-block-start-color: var(--pc-warning);
+}
+
+.pc-stat-list dt {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-stat-list dd {
+  margin: 0.25rem 0 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 64rem) {
+  .pc-check-summary,
+  .pc-result-band {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* === AI review ============================================================ */
+/* Deliberately quieter than the deterministic report above it. The technical
+   result is the product; this is a second opinion, and the styling says so. */
+
+.ai-review {
+  margin-block-start: calc(var(--pc-space) * 2);
+  padding-block-start: var(--pc-space);
+  border-block-start: 1px solid var(--pc-border);
+}
+
+.ai-review h2 {
+  font-size: var(--pc-text-md);
+  margin-block: 0 0.25rem;
+}
+
+.ai-review h3 {
+  font-size: var(--pc-text-base);
+  margin-block: var(--pc-space) 0.25rem;
+}
+
+.ai-consent {
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-muted);
+  padding: var(--pc-space);
+  margin-block: var(--pc-space);
+  max-inline-size: 60ch;
+}
+
+.ai-consent h3 {
+  margin-block-start: 0;
+}
+
+.ai-assessment-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--pc-space);
+}
+
+.ai-assessment {
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+  padding: var(--pc-space);
+}
+
+.ai-assessment h4 {
+  margin-block: 0 0.5rem;
+  font-size: 0.9375rem;
+  font-family: var(--pc-font-mono);
+}
+
+/* The three lines the section exists to keep apart: what was measured, what
+   the AI thinks, and what the status therefore still is. */
+.ai-assessment dl {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  margin-block: 0 0.5rem;
+  font-size: var(--pc-text-sm);
+}
+
+.ai-assessment dt {
+  color: var(--pc-text-muted);
+}
+
+.ai-assessment dd {
+  margin: 0;
+}
+
+/* A leading rule rather than a filled background: enough to distinguish the
+   three verdicts, not enough to be mistaken for a determination. */
+.ai-verdict {
+  border-inline-start: 3px solid var(--pc-border);
+  padding-inline-start: 0.5rem;
+}
+
+.ai-verdict-satisfied {
+  border-inline-start-color: var(--pc-success);
+}
+
+.ai-verdict-not_satisfied {
+  border-inline-start-color: var(--pc-warning);
+}
+
+/* Not red, and not muted into invisibility. "I could not tell" is a correct
+   answer here, not a fault. */
+.ai-verdict-insufficient_evidence {
+  border-inline-start-color: var(--pc-text-muted);
+}
+
+.ai-summary {
+  max-inline-size: 70ch;
+}
+
+.ai-recommendations {
+  display: grid;
+  gap: 0.5rem;
+  padding-inline-start: 1.25rem;
+  max-inline-size: 70ch;
+}
+
+.ai-recommendations .priority {
+  display: inline-block;
+  margin-inline-end: 0.5rem;
+  font-size: var(--pc-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pc-text-muted);
+}
+
+.ai-provenance {
+  margin-block-start: var(--pc-space);
+  padding-block-start: 0.5rem;
+  border-block-start: 1px solid var(--pc-border);
+  font-size: var(--pc-text-sm);
+}
+
+.ai-provenance dl {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.ai-provenance dt {
+  color: var(--pc-text-muted);
+}
+
+.ai-provenance dd {
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.ai-provenance code {
+  font-size: var(--pc-text-xs);
+  overflow-wrap: anywhere;
+}
+
+/* === Print ================================================================ */
+/* A report is something people print and hand to a supervisor, so it has to
+   survive the printer: no navigation, no controls, no backgrounds, findings
+   unbroken — and the AI review keeps its disclaimer. */
+
+@media print {
+  .no-print,
+  .pc-app-rail,
+  .pc-app-sidebar,
+  .pc-app-topbar,
+  .pc-app-context,
+  .pc-skip-link,
+  .ai-consent {
+    display: none !important;
+  }
+
+  body {
+    display: block !important;
+  }
+
+  .check-report {
+    max-inline-size: none;
+    padding: 0;
+  }
+
+  .finding,
+  .determination,
+  .report-identity,
+  .integrity,
+  .ai-assessment,
+  .ai-provenance {
+    background: none;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .integrity code,
+  .ai-provenance code {
+    font-size: 0.65rem;
+  }
+}
+
+/* === Home: dashboard and front door ======================================= */
+
+.pc-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1.25rem;
+  margin-block-start: 1.5rem;
+}
+
+.pc-dashboard-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.pc-dashboard-panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block-end: 0.625rem;
+  border-block-end: 1px solid var(--pc-gold-line);
+}
+
+.pc-dashboard-panel-header h2 {
+  margin: 0;
+  font-size: var(--pc-text-md);
+}
+
+.pc-dashboard-panel-header a {
+  font-size: var(--pc-text-sm);
+  white-space: nowrap;
+}
+
+.pc-dashboard-panel .pc-empty-state {
+  margin: 0;
+  padding: 1.5rem 1rem;
+  border: 0;
+  background: var(--pc-surface-muted);
+}
+
+.pc-dashboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pc-dashboard-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-block: 0.75rem;
+  border-block-end: 1px solid var(--pc-border);
+}
+
+.pc-dashboard-list li:last-child {
+  border-block-end: 0;
+}
+
+.pc-dashboard-list a {
+  color: var(--pc-text-strong);
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.pc-dashboard-list a:hover {
+  color: var(--pc-gold-text);
+  text-decoration: underline;
+}
+
+.pc-dashboard-item {
+  display: grid;
+  gap: 0.125rem;
+  min-inline-size: 0;
+}
+
+/* The balance as one plain line: the figure the ledger states, and the way
+   to the page that explains it. */
+.pc-dashboard-balance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-block: 1.25rem 0;
+  padding-block: 1rem;
+}
+
+.pc-dashboard-balance > .pc-icon {
+  color: var(--pc-gold-text);
+}
+
+.pc-dashboard-balance-figure {
+  flex: 1;
+  min-inline-size: 12rem;
+}
+
+.pc-dashboard-balance-figure h2 {
+  margin: 0;
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text-muted);
+}
+
+.pc-dashboard-balance-figure p {
+  margin: 0;
+}
+
+.pc-dashboard-balance-figure strong {
+  font-size: var(--pc-text-lg);
+  color: var(--pc-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-dashboard-attestation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-block: 1.25rem 0;
+  padding-block: 1rem;
+  border-color: var(--pc-gold-line);
+}
+
+.pc-dashboard-attestation > .pc-icon {
+  color: var(--pc-gold-text);
+}
+
+.pc-dashboard-attestation-text {
+  flex: 1;
+  min-inline-size: 14rem;
+}
+
+.pc-dashboard-attestation-text h2 {
+  margin: 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+}
+
+.pc-dashboard-attestation-text p {
+  margin: 0.15rem 0 0;
+  color: var(--pc-text);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-dashboard-attestation .pc-actions {
+  align-items: center;
+}
+
+.pc-dashboard-attestation-more {
+  font-size: var(--pc-text-sm);
+}
+
+.pc-dashboard-panel-footer {
+  margin: auto 0 0;
+  padding-block-start: 0.75rem;
+  border-block-start: 1px solid var(--pc-border);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-dashboard-attention {
+  margin-block-start: 1.25rem;
+}
+
+/* === Notifications ======================================================== */
+
+.pc-inbox {
+  list-style: none;
+  margin: 1.25rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pc-inbox-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--pc-border);
+  border-inline-start: 4px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+}
+
+/* Unread is said in words by the badge; the gold rule only repeats it. */
+.pc-inbox-item[data-unread='true'] {
+  border-inline-start-color: var(--pc-gold);
+  background: color-mix(in srgb, var(--pc-gold-tint) 35%, var(--pc-surface));
+}
+
+.pc-inbox-text {
+  flex: 1 1 22rem;
+  min-inline-size: 0;
+}
+
+.pc-inbox-text h2 {
+  margin: 0 0 0.25rem;
+  font-size: var(--pc-text-md);
+}
+
+.pc-inbox-text p {
+  margin: 0 0 0.35rem;
+}
+
+.pc-inbox-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-inbox-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pc-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: 2.5rem;
+  cursor: pointer;
+}
+
+.pc-check input {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+}
+
+/* Platform email administration (ADR-0146). */
+.pc-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--space-3, 0.75rem);
+  align-items: end;
+}
+
+.pc-filter-grid > .pc-actions {
+  grid-column: 1 / -1;
+}
+
+.pc-check-hint {
+  display: block;
+  margin-block-start: 0.125rem;
+}
+
+/* --- Manual top-ups: balance hero, transfer wizard, review --------------------
+   Built from the existing tokens only. Figures and identifiers that people copy
+   into a bank app (amounts, IBANs, phone numbers, references) stay left to
+   right in both locales via .pc-ltr. Everything stacks on a phone. */
+
+.pc-balance-hero {
+  display: grid;
+  gap: 1rem;
+}
+
+.pc-balance-hero-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+
+.pc-balance-hero-label {
+  margin: 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-balance-hero-amount {
+  margin: 0.15rem 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-2xl);
+  font-weight: 700;
+  line-height: var(--pc-leading-tight);
+  overflow-wrap: anywhere;
+}
+
+.pc-balance-hero-action {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+  max-inline-size: 22rem;
+}
+
+.pc-balance-hero-action .pc-hint {
+  margin: 0;
+}
+
+.pc-balance-hero-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2rem;
+  margin: 0;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--pc-border);
+}
+
+.pc-balance-hero-figures > div {
+  flex: 1 1 10rem;
+  min-inline-size: 0;
+}
+
+.pc-balance-hero-figures dt {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-balance-hero-figures dd {
+  margin: 0.1rem 0 0;
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+  font-weight: 600;
+}
+
+.pc-balance-hero-figures dd.pc-hint {
+  margin: 0.15rem 0 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+  font-weight: 400;
+}
+
+.pc-topup-pending-list,
+.pc-topup-methods,
+.pc-topup-admin-methods {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-topup-pending-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  color: inherit;
+  text-decoration: none;
+}
+
+.pc-topup-pending-item:hover,
+.pc-topup-pending-item:focus-visible {
+  border-color: var(--pc-border-strong);
+  background: var(--pc-surface-muted);
+}
+
+.pc-topup-pending-name {
+  display: grid;
+  flex: 1 1 10rem;
+  min-inline-size: 0;
+}
+
+.pc-topup-mark {
+  flex: none;
+  border-radius: var(--pc-radius-sm);
+  object-fit: contain;
+  background: var(--pc-white);
+}
+
+.pc-topup-mark-initials {
+  display: inline-grid;
+  place-items: center;
+  background: var(--pc-gold-tint);
+  color: var(--pc-gold-text-strong);
+  font-weight: 700;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-topup-method {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  inline-size: 100%;
+  padding: 1rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.pc-topup-method:hover,
+.pc-topup-method[data-selected='true'] {
+  border-color: var(--pc-gold-line);
+  background: var(--pc-gold-tint);
+}
+
+.pc-topup-method:focus-visible {
+  outline: 2px solid var(--pc-focus);
+  outline-offset: 2px;
+}
+
+.pc-topup-method-text {
+  display: grid;
+  flex: 1 1 12rem;
+  gap: 0.15rem;
+  min-inline-size: 0;
+}
+
+.pc-topup-method-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block-end: 0.75rem;
+}
+
+.pc-topup-method-head h2 {
+  margin: 0;
+}
+
+.pc-topup-method-head > div {
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+}
+
+.pc-topup-method-head .pc-hint {
+  margin: 0.15rem 0 0;
+}
+
+.pc-topup-fields {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.pc-topup-field dt {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-topup-field dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.15rem 0 0;
+}
+
+.pc-topup-value {
+  color: var(--pc-text-strong);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pc-topup-instructions {
+  margin-block-start: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-muted);
+}
+
+.pc-topup-instructions h3 {
+  margin: 0 0 0.25rem;
+  font-size: var(--pc-text-base);
+}
+
+.pc-topup-instructions p {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.pc-topup-summary {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 0.5rem 1.25rem;
+  margin: 0 0 1rem;
+}
+
+.pc-topup-summary > div {
+  display: contents;
+}
+
+.pc-topup-summary dt {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-topup-summary dd {
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  color: var(--pc-text-strong);
+}
+
+.pc-topup-amount-strong {
+  font-size: var(--pc-text-lg);
+  font-weight: 700;
+}
+
+.pc-topup-status {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.pc-topup-status > p {
+  margin: 0;
+}
+
+.pc-topup-timeline {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-topup-timeline li {
+  display: grid;
+  gap: 0.1rem;
+  padding-inline-start: 0.85rem;
+  border-inline-start: 2px solid var(--pc-border-strong);
+}
+
+.pc-topup-timeline li[data-event='APPROVED'] {
+  border-inline-start-color: var(--pc-success);
+}
+
+.pc-topup-timeline li[data-event='REJECTED'] {
+  border-inline-start-color: var(--pc-danger);
+}
+
+.pc-topup-receipt {
+  margin: 0.25rem 0;
+  overflow-wrap: anywhere;
+}
+
+.pc-topup-method-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.75rem 1.25rem;
+}
+
+.pc-topup-method-form > .pc-actions {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 40rem) {
+  .pc-topup-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pc-topup-summary dd {
+    margin-block-end: 0.35rem;
+  }
+
+  .pc-balance-hero-action {
+    inline-size: 100%;
+    max-inline-size: none;
+  }
+
+  .pc-balance-hero-action .pc-btn {
+    inline-size: 100%;
+  }
+}
+
+/* --- Manual top-up reviewers (ADR-0148) ------------------------------------ */
+
+.pc-topup-reviewers {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.pc-topup-reviewers-line {
+  margin: 0;
+  font-size: var(--pc-text-sm);
+  overflow-wrap: anywhere;
+}
+
+.pc-topup-reviewer-flag {
+  color: var(--pc-danger);
+  font-weight: 600;
+}
+
+.pc-topup-reviewer-picker {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-muted);
+}
+
+.pc-topup-reviewer-picker legend {
+  padding-inline: 0.375rem;
+  color: var(--pc-text-strong);
+  font-weight: 700;
+}
+
+.pc-topup-reviewer-picker p {
+  margin: 0;
+}
+
+.pc-topup-reviewer-assign {
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-sm);
+  font-weight: 600;
+}
+
+.pc-topup-reviewer-options {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-topup-reviewer-options li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface);
+}
+
+.pc-topup-reviewer-options li[data-lapsed] {
+  border-color: var(--pc-danger);
+}
+
+.pc-topup-reviewer-options input[type='checkbox'] {
+  flex: none;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  margin-block-start: 0.15rem;
+  accent-color: var(--pc-gold);
+}
+
+.pc-topup-reviewer-options label {
+  display: grid;
+  gap: 0.125rem;
+  min-inline-size: 0;
+  cursor: pointer;
+}
+
+.pc-topup-reviewer-name {
+  color: var(--pc-text-strong);
+  font-weight: 600;
+  /* A name can be an unbroken address; let it wrap rather than widen the page. */
+  overflow-wrap: anywhere;
+}
+
+.pc-topup-reviewer-meta {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+  overflow-wrap: anywhere;
+}
+
+.pc-topup-delivery-code {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-xs);
+}
+
+.pc-topup-not-notified h3 {
+  margin: 1rem 0 0.375rem;
+  font-size: var(--pc-text-md);
+}
+
+.pc-topup-not-notified ul {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Public attestation verification (ADR-0145: the attested file is never shown)
+   Two independent answers: validity above, file comparison below. Every colour
+   is paired with an icon and words.
+   --------------------------------------------------------------------------- */
+
+.pc-verify {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.pc-verify-question {
+  margin: 0;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-sm);
+  font-weight: 600;
+}
+
+.pc-verify-validity {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border: 2px solid var(--pc-border-strong);
+  border-inline-start-width: 8px;
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+}
+
+.pc-verify-validity[data-tone='success'] {
+  border-color: var(--pc-success);
+  background: var(--pc-success-bg);
+}
+
+.pc-verify-validity[data-tone='danger'] {
+  border-color: var(--pc-danger);
+  background: var(--pc-danger-bg);
+}
+
+.pc-verify-validity-icon {
+  flex: none;
+  display: inline-flex;
+}
+
+.pc-verify-validity[data-tone='success'] .pc-verify-validity-icon,
+.pc-verify-validity[data-tone='success'] .pc-verify-validity-title {
+  color: var(--pc-success);
+}
+
+.pc-verify-validity[data-tone='danger'] .pc-verify-validity-icon,
+.pc-verify-validity[data-tone='danger'] .pc-verify-validity-title {
+  color: var(--pc-danger);
+}
+
+.pc-verify-validity-body {
+  display: grid;
+  gap: 0.375rem;
+  min-inline-size: 0;
+}
+
+.pc-verify-validity-body > p {
+  margin: 0;
+}
+
+.pc-verify-validity-title {
+  margin: 0;
+  font-size: var(--pc-text-xl);
+  line-height: 1.25;
+}
+
+.pc-verify-validity-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0.25rem 0 0;
+}
+
+.pc-verify-validity-dates > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.pc-verify-validity-dates dt {
+  color: var(--pc-text-muted);
+}
+
+.pc-verify-validity-dates dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.pc-verify-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: var(--pc-text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pc-verify-badge[data-tone='success'] {
+  color: var(--pc-success);
+  background: var(--pc-success-bg);
+}
+
+.pc-verify-badge[data-tone='danger'] {
+  color: var(--pc-danger);
+  background: var(--pc-danger-bg);
+}
+
+.pc-verify-compare > .pc-verify-question {
+  margin-block-end: 0.25rem;
+}
+
+/* Two panels side by side on a wide screen, stacked on a phone. */
+.pc-verify-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-block: 1rem;
+}
+
+@media (min-width: 52rem) {
+  .pc-verify-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pc-verify-panel {
+  display: grid;
+  align-content: start;
+  gap: 0.875rem;
+  min-inline-size: 0;
+  padding: 1rem;
+  border: 2px solid var(--pc-border-strong);
+  border-radius: var(--pc-radius-lg);
+  background: var(--pc-surface);
+}
+
+.pc-verify-panel[data-frame='success'] {
+  border-color: var(--pc-success);
+  box-shadow: 0 0 0 3px var(--pc-success-bg);
+}
+
+.pc-verify-panel[data-frame='danger'] {
+  border-color: var(--pc-danger);
+  box-shadow: 0 0 0 3px var(--pc-danger-bg);
+}
+
+.pc-verify-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pc-verify-panel-title {
+  margin: 0;
+  font-size: var(--pc-text-md);
+}
+
+/* The attested file as a protected sheet: paper, a folded corner, a faint
+   security pattern — a card of facts about the file, never the file. */
+.pc-verify-sheet {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--pc-gold-line);
+  border-radius: var(--pc-radius);
+  background:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0 14px,
+      color-mix(in srgb, var(--pc-gold-line) 35%, transparent) 14px 15px
+    ),
+    var(--pc-surface-muted);
+  overflow: hidden;
+}
+
+.pc-verify-document .pc-verify-sheet::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  background: linear-gradient(to bottom left, var(--pc-surface) 50%, var(--pc-gold-line) 50%);
+}
+
+html[dir='rtl'] .pc-verify-document .pc-verify-sheet::after {
+  background: linear-gradient(to bottom right, var(--pc-surface) 50%, var(--pc-gold-line) 50%);
+}
+
+.pc-verify-sheet-glyph {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 4rem;
+  block-size: 5rem;
+  border: 1px solid var(--pc-border-strong);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface);
+  color: var(--pc-gold-text);
+}
+
+.pc-verify-sheet-format {
+  position: absolute;
+  inset-block-end: 0.375rem;
+  padding: 0 0.25rem;
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-gold-text);
+  color: var(--pc-white);
+  font-family: var(--pc-font-latin);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.pc-verify-sheet-body {
+  display: grid;
+  align-content: start;
+  gap: 0.375rem;
+  min-inline-size: 0;
+}
+
+.pc-verify-sheet-body > p {
+  margin: 0;
+}
+
+.pc-verify-protected {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--pc-gold-text-strong);
+  font-size: var(--pc-text-sm);
+  font-weight: 700;
+}
+
+.pc-verify-sheet-title {
+  color: var(--pc-text-strong);
+  font-size: var(--pc-text-md);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.pc-verify-sheet-facts {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 0.25rem 0.875rem;
+  margin: 0;
+  font-size: var(--pc-text-sm);
+}
+
+.pc-verify-sheet-facts > div {
+  display: contents;
+}
+
+.pc-verify-sheet-facts dt {
+  color: var(--pc-text-muted);
+}
+
+.pc-verify-sheet-facts dd {
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.pc-verify-code {
+  font-family: var(--pc-font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+}
+
+.pc-verify-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--pc-radius);
+  background: var(--pc-info-bg);
+  font-size: var(--pc-text-sm);
+}
+
+.pc-verify-privacy > .pc-icon {
+  flex: none;
+  margin-block-start: 0.1rem;
+  color: var(--pc-gold-text);
+}
+
+.pc-verify-picker {
+  margin: 0;
+}
+
+.pc-verify-picker input[type='file'] {
+  max-inline-size: 100%;
+}
+
+.pc-verify-local {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+}
+
+.pc-verify-empty {
+  display: grid;
+  place-items: center;
+  gap: 0.5rem;
+  min-block-size: 10rem;
+  padding: 1.25rem;
+  border: 2px dashed var(--pc-border-strong);
+  border-radius: var(--pc-radius);
+  color: var(--pc-text-muted);
+  text-align: center;
+}
+
+.pc-verify-empty > p {
+  margin: 0;
+}
+
+.pc-verify-preview {
+  display: grid;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+.pc-verify-preview-image {
+  display: block;
+  inline-size: 100%;
+  max-block-size: 22rem;
+  object-fit: contain;
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-sunken);
+}
+
+.pc-verify-filename {
+  overflow-wrap: anywhere;
+}
+
+.pc-verify-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid currentColor;
+  border-radius: var(--pc-radius-lg);
+}
+
+.pc-verify-result[data-tone='success'] {
+  color: var(--pc-success);
+  background: var(--pc-success-bg);
+}
+
+.pc-verify-result[data-tone='danger'] {
+  color: var(--pc-danger);
+  background: var(--pc-danger-bg);
+}
+
+.pc-verify-result > div {
+  display: grid;
+  gap: 0.375rem;
+  min-inline-size: 0;
+  color: var(--pc-text);
+}
+
+.pc-verify-result p {
+  margin: 0;
+}
+
+.pc-verify-result-icon {
+  flex: none;
+  display: inline-flex;
+}
+
+.pc-verify-result-title {
+  font-size: var(--pc-text-md);
+}
+
+.pc-verify-result[data-tone='success'] .pc-verify-result-title {
+  color: var(--pc-success);
+}
+
+.pc-verify-result[data-tone='danger'] .pc-verify-result-title {
+  color: var(--pc-danger);
+}
+
+.pc-verify-technical-title {
+  margin: 0 0 0.75rem;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-text-md);
+}
+
+.pc-verify-technical .pc-hash {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 40rem) {
+  .pc-verify-validity {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .pc-verify-validity-title {
+    font-size: var(--pc-text-lg);
+  }
+
+  .pc-verify-sheet {
+    flex-direction: column;
+    padding: 0.875rem;
+  }
+
+  .pc-verify-panel {
+    padding: 0.875rem;
+  }
+
+  /* On a phone each fact takes the full width, its label above it, so names
+     and references wrap at their own spaces rather than mid-word. */
+  .pc-verify-sheet-facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .pc-verify-sheet-facts dt {
+    margin-block-start: 0.5rem;
+  }
+
+  .pc-verify-sheet-facts > div:first-child dt {
+    margin-block-start: 0;
+  }
+}
+
+/* AI service fee (ADR-0149): shown before every AI start, never after. */
+.pc-ai-fee {
+  display: grid;
+  gap: 0.25rem;
+  margin-block: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--pc-border);
+  border-inline-start: 3px solid var(--pc-gold);
+  border-radius: var(--pc-radius);
+  background: var(--pc-surface-muted);
+  max-inline-size: 40rem;
+}
+
+.pc-ai-fee p {
+  margin: 0;
+}
+
+.pc-ai-fee-amount bdi {
+  font-weight: 600;
+  color: var(--pc-text-strong);
+}
+
+.pc-ai-fee-org {
+  font-size: var(--pc-text-sm);
+  color: var(--pc-text);
+}
+
+.pc-ai-fee-short {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-start: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-warning-bg);
+  color: var(--pc-warning);
+}
+
+.pc-ai-fee[data-state='short'] {
+  border-inline-start-color: var(--pc-warning);
+}
+
+.pc-product-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Withdrawals and payouts (ADR-0150)                                        */
+/* ------------------------------------------------------------------------ */
+
+.pc-withdrawal-breakdown {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.pc-withdrawal-breakdown > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding-block: 0.35rem;
+  border-block-end: 1px solid var(--pc-border);
+}
+
+.pc-withdrawal-breakdown dt {
+  display: grid;
+  gap: 0.1rem;
+  min-inline-size: 0;
+  color: var(--pc-text);
+}
+
+.pc-withdrawal-breakdown dd {
+  margin: 0;
+  color: var(--pc-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-withdrawal-breakdown-total {
+  border-block-end: 0 !important;
+  font-weight: 700;
+  font-size: var(--pc-text-lg);
+}
+
+.pc-withdrawal-destinations {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-withdrawal-destination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 0;
+  border-block-end: 1px solid var(--pc-border);
+  overflow-wrap: anywhere;
+}
+
+.pc-withdrawal-destination-form {
+  margin-block: 0.75rem 1rem;
+}
+
+.pc-withdrawal-timeline li[data-event='PAID'] {
+  border-inline-start-color: var(--pc-success);
+}
+
+.pc-withdrawal-timeline li[data-event='REJECTED'],
+.pc-withdrawal-timeline li[data-event='FAILED'] {
+  border-inline-start-color: var(--pc-danger);
+}
+
+.pc-withdrawal-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.pc-withdrawal-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.pc-withdrawal-reveal {
+  margin-block-start: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--pc-border-strong);
+  border-radius: var(--pc-radius);
+}

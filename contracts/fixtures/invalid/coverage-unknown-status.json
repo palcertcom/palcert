@@ -1,0 +1,8 @@
+{
+  "contract": "CoverageEntry",
+  "description": "Coverage is COMPLETE, PARTIAL or UNAVAILABLE.",
+  "payload": {
+    "kind": "ELEMENT",
+    "status": "MAYBE"
+  }
+}

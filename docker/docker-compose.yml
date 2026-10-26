@@ -1,0 +1,86 @@
+# Local development infrastructure for PalCert.
+#
+# Application processes run on the host (fast reload); stateful dependencies run
+# here. Kubernetes is deliberately out of scope for the MVP (§32, ADR-0006).
+name: palcert
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: palcert-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-palcert}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-palcert_local_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-palcert}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-palcert} -d ${POSTGRES_DB:-palcert}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: palcert-redis
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # S3-compatible object storage for uploaded documents (Phase 5).
+  #
+  # From quay.io, not Docker Hub: `docker.io/minio/minio` stopped serving
+  # anonymous pulls, and every request — even with a valid anonymous pull
+  # token — now answers 401. quay.io is MinIO's other published registry and
+  # carries the identical image.
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: palcert-minio
+    restart: unless-stopped
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY_ID:-palcert_local_dev}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_ACCESS_KEY:-palcert_local_dev_secret}
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Malware scanner for uploaded documents (Phase 5). Pulls signatures on
+  # first start; the API's readiness probe stays amber until clamd answers.
+  clamav:
+    image: clamav/clamav:1.4
+    container_name: palcert-clamav
+    restart: unless-stopped
+    ports:
+      - '3310:3310'
+    volumes:
+      - clamav-data:/var/lib/clamav
+    healthcheck:
+      test: ['CMD', 'clamdcheck.sh']
+      interval: 30s
+      timeout: 10s
+      retries: 20
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  clamav-data:

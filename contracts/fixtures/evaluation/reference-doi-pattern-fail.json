@@ -1,0 +1,115 @@
+{
+  "description": "A DOI pattern over two reference entries, one malformed. Patterns are named PalCert matchers, never caller-supplied regular expressions.",
+  "rule": {
+    "ruleCode": "REF.DOI.FORMAT",
+    "scope": {
+      "kind": "ELEMENT",
+      "elementType": "REFERENCE_ENTRY",
+      "property": "doi"
+    },
+    "operator": "MATCHES_PATTERN",
+    "expected": {
+      "type": "PATTERN",
+      "pattern": "DOI"
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 2
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "ELEMENT",
+        "elementType": "REFERENCE_ENTRY",
+        "property": "doi",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "REFERENCE_ENTRY",
+          "property": "doi"
+        },
+        "value": {
+          "type": "STRING",
+          "text": "10.1234/abc.def"
+        },
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "ref-1",
+          "page": 20,
+          "ordinal": 1
+        }
+      },
+      {
+        "scope": {
+          "kind": "ELEMENT",
+          "elementType": "REFERENCE_ENTRY",
+          "property": "doi"
+        },
+        "value": {
+          "type": "STRING",
+          "text": "not-a-doi"
+        },
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "ref-2",
+          "page": 20,
+          "ordinal": 2
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "REF.DOI.FORMAT",
+    "outcome": "FAIL",
+    "reasonCode": "PATTERN_MISMATCH",
+    "evidenceLevel": "DETERMINISTIC",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "MATCHES_PATTERN",
+    "counts": {
+      "matchedFacts": 2,
+      "evaluatedFacts": 2,
+      "passedFacts": 1,
+      "failedFacts": 1,
+      "indeterminateFacts": 0
+    },
+    "violations": [
+      {
+        "reasonCode": "PATTERN_MISMATCH",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "ref-2",
+          "page": 20,
+          "ordinal": 2
+        },
+        "expected": {
+          "value": "DOI"
+        },
+        "actual": {
+          "value": "not-a-doi"
+        }
+      }
+    ],
+    "totalViolationCount": 1,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 2,
+      "factSchemaVersion": 1
+    }
+  }
+}

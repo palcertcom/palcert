@@ -1,0 +1,79 @@
+{
+  "description": "A rule stamped with a schema version this engine does not implement. Refused explicitly rather than evaluated on a guess.",
+  "rule": {
+    "ruleCode": "FUTURE.RULE",
+    "scope": {
+      "kind": "DOCUMENT",
+      "property": "pageCount"
+    },
+    "operator": "EQUALS",
+    "expected": {
+      "type": "NUMBER",
+      "number": 1
+    },
+    "evaluationMode": "DETERMINISTIC",
+    "severity": "MAJOR",
+    "blocking": false,
+    "ruleSchemaVersion": 99,
+    "unit": "PAGES"
+  },
+  "factSet": {
+    "factSchemaVersion": 1,
+    "documentId": "synthetic-test-document",
+    "extractor": {
+      "name": "synthetic",
+      "version": "1"
+    },
+    "coverage": [
+      {
+        "kind": "DOCUMENT",
+        "property": "pageCount",
+        "status": "COMPLETE"
+      }
+    ],
+    "facts": [
+      {
+        "scope": {
+          "kind": "DOCUMENT",
+          "property": "pageCount"
+        },
+        "value": {
+          "type": "NUMBER",
+          "number": "1"
+        },
+        "unit": "PAGES",
+        "location": {
+          "locationSchemaVersion": 1,
+          "nodeId": "doc"
+        }
+      }
+    ]
+  },
+  "expectedResult": {
+    "ruleCode": "FUTURE.RULE",
+    "outcome": "INDETERMINATE",
+    "reasonCode": "RULE_SCHEMA_UNSUPPORTED",
+    "evidenceLevel": "NONE",
+    "requiresReview": false,
+    "blocking": false,
+    "severity": "MAJOR",
+    "evaluationMode": "DETERMINISTIC",
+    "operator": "EQUALS",
+    "counts": {
+      "matchedFacts": 0,
+      "evaluatedFacts": 0,
+      "passedFacts": 0,
+      "failedFacts": 0,
+      "indeterminateFacts": 0
+    },
+    "violations": [],
+    "totalViolationCount": 0,
+    "truncated": false,
+    "engine": {
+      "engineName": "palcert-deterministic",
+      "engineVersion": "1.0.0",
+      "ruleSchemaVersion": 99,
+      "factSchemaVersion": 1
+    }
+  }
+}
