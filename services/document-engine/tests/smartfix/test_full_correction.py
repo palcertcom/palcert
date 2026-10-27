@@ -14,10 +14,10 @@ from app.engine.evaluation.engine import DeterministicRuleEngine
 from app.engine.rules.outcomes import Outcome
 from app.smartfix.capability import Fixability
 from app.smartfix.model import SmartFixPlan
-from app.smartfix.mutate import FixError, apply_docx_fix_plan
+from app.smartfix.mutate import FixError, FixErrorCode, apply_docx_fix_plan
 from app.smartfix.service import PlanRequest, parse_rules, plan_for_document
 from tests.docx.builder import DocxBuilder, W, section_properties, styles_part
-from tests.smartfix.support import LIMITS, analyze, document, element, plan_source, rule
+from tests.smartfix.support import LIMITS, analyze, document, element, make_plan, plan_source, rule
 
 
 def preview(content: bytes, rules: list[dict[str, Any]]) -> SmartFixPlan:
@@ -223,3 +223,45 @@ def test_missing_target_style_is_refused_during_free_preview() -> None:
             content,
             [rule("STYLE", element("styleId"), "EQUALS", {"type": "STRING", "text": "Missing"})],
         )
+
+
+@pytest.mark.parametrize("property_name", ["vanish", "webHidden"])
+@pytest.mark.parametrize("inherited", [False, True])
+def test_style_change_cannot_hide_visible_content(property_name: str, inherited: bool) -> None:
+    hidden_properties = f"<w:rPr><w:{property_name}/></w:rPr>"
+    target = '<w:basedOn w:val="HiddenBase"/>' if inherited else hidden_properties
+    content = DocxBuilder(
+        body='<w:p><w:pPr><w:pStyle w:val="Old"/></w:pPr><w:r><w:t>Visible thesis text</w:t></w:r></w:p>',
+        styles=styles_part(
+            '<w:style w:type="paragraph" w:styleId="Old"/>'
+            f'<w:style w:type="paragraph" w:styleId="HiddenBase">{hidden_properties}</w:style>'
+            f'<w:style w:type="paragraph" w:styleId="Target">{target}</w:style>'
+        ),
+    ).build()
+    rules = [rule("STYLE", element("styleId"), "EQUALS", {"type": "STRING", "text": "Target"})]
+    plan, original = make_plan(content, tuple(rules))
+    assert original.model.paragraphs[0].visible_text == "Visible thesis text"
+    assert plan.actions
+    # Both the preview and an already-approved/AI plan use the same mutator.
+    with pytest.raises(FixError) as execution:
+        apply_docx_fix_plan(content, original.sha256, plan)
+    assert execution.value.code is FixErrorCode.INTEGRITY_PROOF_FAILED
+    with pytest.raises(FixError) as planning:
+        preview(content, rules)
+    assert planning.value.code is FixErrorCode.INTEGRITY_PROOF_FAILED
+
+
+@pytest.mark.parametrize("property_name", ["vanish", "webHidden"])
+def test_style_change_preserves_direct_visibility_override(property_name: str) -> None:
+    content = DocxBuilder(
+        body=f'<w:p><w:pPr><w:pStyle w:val="Old"/></w:pPr><w:r><w:rPr><w:{property_name} w:val="0"/></w:rPr><w:t>Still visible</w:t></w:r></w:p>',
+        styles=styles_part(
+            '<w:style w:type="paragraph" w:styleId="Old"/>'
+            f'<w:style w:type="paragraph" w:styleId="Target"><w:rPr><w:{property_name}/></w:rPr></w:style>'
+        ),
+    ).build()
+    output, _ = correct(
+        content,
+        [rule("STYLE", element("styleId"), "EQUALS", {"type": "STRING", "text": "Target"})],
+    )
+    assert analyze(output).model.paragraphs[0].visible_text == "Still visible"
