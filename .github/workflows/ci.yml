@@ -2,14 +2,15 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    # Release calls every CI gate on main; do not start a duplicate CI run.
+    branches: ['**', '!main']
   pull_request:
   # Called by the release workflow, so a release candidate passes exactly the
   # gates every commit passes -- one definition, not a copy that can drift.
   workflow_call:
 
 concurrency:
-  group: ci-${{ github.head_ref || github.ref_name }}
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 env:
@@ -95,6 +96,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Automatic deployment boundary regressions
+        run: |
+          node --test scripts/release/automatic/*.test.mjs
+          python3 -m unittest discover -s scripts/release/automatic -p 'test_*.py'
 
       # MinIO from source, node_modules, the pnpm store, the database and the
       # application builds share the runner's 14 GB guarantee; this job needs
