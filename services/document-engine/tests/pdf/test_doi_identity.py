@@ -543,7 +543,7 @@ def test_the_docx_analyzer_emits_no_citation_identifiers() -> None:
     from app.docx.artifact import ANALYZER_VERSION as DOCX_ANALYZER_VERSION
     from tests.docx.builder import DocxBuilder, paragraph, style, styles_part
 
-    assert DOCX_ANALYZER_VERSION == "5"
+    assert DOCX_ANALYZER_VERSION == "6"
     normal = '<w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Arial"/><w:sz w:val="24"/>'
     styles = styles_part(style("Normal", name="Normal", default=True, run_properties=normal))
     content = DocxBuilder(

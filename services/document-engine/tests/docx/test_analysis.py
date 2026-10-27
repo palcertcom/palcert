@@ -245,7 +245,7 @@ def test_artifact_hash_covers_exactly_the_stored_bytes() -> None:
 def test_analyzer_identity_is_semantic_not_a_commit() -> None:
     identity = analyzer_identity()
     assert identity["analyzerName"] == "palcert-docx"
-    assert identity["analyzerVersion"] == "5"
+    assert identity["analyzerVersion"] == "6"
     assert identity["factSchemaVersion"] == FACT_SCHEMA_VERSION
 
 

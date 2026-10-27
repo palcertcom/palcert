@@ -78,7 +78,12 @@ const VERSION_PINS = [
   ['attestations', 'artifact_clean_object_key', 'artifact_clean_object_version_id', 'clean'],
   ['manual_topup_receipts', 'quarantine_object_key', 'quarantine_object_version_id', 'quarantine'],
   ['manual_topup_receipts', 'clean_object_key', 'clean_object_version_id', 'clean'],
-  ['manual_payment_method_logos', 'quarantine_object_key', 'quarantine_object_version_id', 'quarantine'],
+  [
+    'manual_payment_method_logos',
+    'quarantine_object_key',
+    'quarantine_object_version_id',
+    'quarantine',
+  ],
   ['manual_payment_method_logos', 'clean_object_key', 'clean_object_version_id', 'clean'],
 ];
 

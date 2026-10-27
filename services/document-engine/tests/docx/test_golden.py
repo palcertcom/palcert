@@ -46,7 +46,7 @@ def _coverage_status(coverage: list[dict[str, Any]], kind: str, selector: str | 
         if selector is None:
             if element_type is not None or property_name is not None:
                 continue
-        elif element_type == selector or property_name == selector:
+        elif (element_type == selector and property_name is None) or property_name == selector:
             specificity = 1
         else:
             continue
@@ -97,6 +97,15 @@ def test_golden_fixture(fixture: Fixture) -> None:
             f"{fixture.identifier}: coverage {kind}/{selector or '-'} "
             f"expected {status}, got {actual}"
         )
+
+    for element_type, property_name, status in fixture.expected_property_coverage:
+        assert any(
+            entry.get("kind") == "ELEMENT"
+            and entry.get("elementType") == element_type
+            and entry.get("property") == property_name
+            and entry.get("status") == status
+            for entry in fact_set["coverage"]
+        ), f"{fixture.identifier}: coverage {element_type}/{property_name} expected {status}"
 
 
 @pytest.mark.parametrize("fixture", CORPUS, ids=lambda item: item.identifier)

@@ -80,6 +80,58 @@ def test_planning_returns_a_hashed_plan(client: TestClient) -> None:
     assert response.headers["x-palcert-action-count"] == "1"
 
 
+def test_ai_preview_and_proposal_compile_use_the_same_source_and_hash(client: TestClient) -> None:
+    content, digest = _document()
+    payload = {
+        "rules": [SIZE_RULE],
+        "source": plan_source(digest).to_json(),
+        "includeAIContext": True,
+    }
+    initial = client.post(
+        "/smartfix/plan", content=encode(payload, content), headers={DOCUMENT_ID_HEADER: "d"}
+    )
+    assert initial.status_code == 200
+    context, plan_bytes = decode(initial.content)
+    assert context["rules"][0]["outcome"] == "FAIL"
+    assert context["complete"] is False
+    assert b"Body text" not in initial.content
+    assert initial.headers[PLAN_SHA_HEADER] == sha256_hex(plan_bytes)
+    assert json.loads(plan_bytes)["actions"] == []
+    payload["aiTargets"] = [{"ruleCode": "SIZE", "kind": "NUMBER", "value": "12"}]
+    proposed = client.post(
+        "/smartfix/plan", content=encode(payload, content), headers={DOCUMENT_ID_HEADER: "d"}
+    )
+    assert proposed.status_code == 200
+    after, final_bytes = decode(proposed.content)
+    assert after["complete"] is True
+    plan = json.loads(final_bytes)
+    assert plan["source"]["documentSha256"] == digest
+    assert proposed.headers[PLAN_SHA_HEADER] == sha256_hex(final_bytes)
+    applied = client.post(
+        "/smartfix/apply",
+        content=encode(
+            {"plan": plan, "planHash": sha256_hex(final_bytes), "expectedSourceSha256": digest},
+            content,
+        ),
+    )
+    assert applied.status_code == 200
+
+
+def test_ai_cannot_submit_xml_or_override_rule_scopes(client: TestClient) -> None:
+    content, digest = _document()
+    payload = {
+        "rules": [SIZE_RULE],
+        "source": plan_source(digest).to_json(),
+        "aiTargets": [
+            {"ruleCode": "SIZE", "kind": "NUMBER", "value": "12", "xml": "<w:t>rewrite</w:t>"}
+        ],
+    }
+    response = client.post(
+        "/smartfix/plan", content=encode(payload, content), headers={DOCUMENT_ID_HEADER: "d"}
+    )
+    assert response.status_code == 400
+
+
 def test_a_plan_response_is_canonical(client: TestClient) -> None:
     content, digest = _document()
     first = client.post(
@@ -235,3 +287,18 @@ def test_no_response_carries_a_storage_location(client: TestClient) -> None:
     rendered = json.dumps(response.json()) + json.dumps(dict(response.headers))
     for forbidden in ("s3://", "http://", "https://", "bucket", "objectKey"):
         assert forbidden not in rendered
+
+
+def test_preflight_failure_is_reported_as_a_document_refusal(client: TestClient) -> None:
+    content, digest = _document()
+    rules = [
+        SIZE_RULE,
+        {**SIZE_RULE, "ruleCode": "CONFLICT", "expected": {"type": "NUMBER", "number": 14}},
+    ]
+    response = client.post(
+        "/smartfix/plan",
+        content=_plan_body(content, digest, rules),
+        headers={DOCUMENT_ID_HEADER: "doc"},
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["details"]["fixError"].startswith("SMARTFIX_")

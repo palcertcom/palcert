@@ -169,7 +169,7 @@ def test_engine_identity_is_stamped_and_semantic() -> None:
     assert CAPABILITY_REGISTRY_VERSION >= 1
 
 
-def test_the_capability_registry_version_is_two_and_comes_from_the_registry() -> None:
+def test_the_capability_registry_version_is_three_and_comes_from_the_registry() -> None:
     """Pinned to the exact number, and to its one source.
 
     The mutation path refuses a plan whose stamped registry version is not
@@ -178,16 +178,15 @@ def test_the_capability_registry_version_is_two_and_comes_from_the_registry() ->
     citation or a reference entry. A literal typed anywhere else would be a
     second answer to a question that must have one.
     """
-    assert CAPABILITY_REGISTRY_VERSION == 2
+    assert CAPABILITY_REGISTRY_VERSION == 3
     assert load_registry()["registryVersion"] == CAPABILITY_REGISTRY_VERSION
 
 
-def test_narrowing_the_policy_did_not_disturb_the_unrelated_versions() -> None:
-    # The mutation bytes and the plan shape did not change; only what SmartFix
-    # is permitted to touch did. Bumping those too would invalidate stored
-    # manifests and plans for no reason anybody could point at.
+def test_extended_mutations_bump_engine_without_breaking_historical_artifact_shapes() -> None:
+    # Mutation behavior changes in 1.1.0, but historic plan/manifest JSON still
+    # validates. Execution rejects old engine and capability versions.
     registry = load_registry()
-    assert registry["engine"]["version"] == "1.0.0"
+    assert registry["engine"]["version"] == "1.2.0"
     assert registry["planSchemaVersion"] == 1
     assert registry["manifestSchemaVersion"] == 1
 

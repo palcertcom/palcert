@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+from pathlib import Path
 from typing import Any
 
 from app.docx.analyzer import AnalysisRequest, analyzer_identity
@@ -63,20 +65,25 @@ def test_the_docx_analyzer_emits_a_v2_envelope_carrying_citation_evidence() -> N
 
 
 def test_the_docx_analyzer_version_moved_with_it() -> None:
-    """Version 4: the analyzer that declares what DOCX cannot answer.
+    """Changed evidence and coverage require a fresh analysis identity.
 
-    Version 2 read the evidence and projected none of it; version 3 projected
-    four properties; version 4 adds the coverage entry saying DOCX cannot
-    answer `citationTargetResolved` at all. That last one is the strongest
-    reason of the three to refuse reuse: without the entry, a rule about the
-    new property would be read under this format's COMPLETE citation coverage
-    rather than being refused. Only this number stops that analysis being
-    reused.
+    Version 6 resolves supplemental theme fonts and scopes font coverage to
+    used properties. Reusing v5 would preserve incorrect INDETERMINATE results
+    after SmartFix. The envelope and structural schemas themselves are unchanged.
     """
     artifact = _docx_artifact()
-    assert artifact["analyzer"]["version"] == "5"
-    assert DOCX_ANALYZER_VERSION == "5"
+    assert artifact["analyzer"]["version"] == "6"
+    assert DOCX_ANALYZER_VERSION == "6"
     assert analyzer_identity()["analysisSchemaVersion"] == ENVELOPE_SCHEMA_VERSION
+
+
+def test_api_analysis_cache_identity_matches_the_docx_engine() -> None:
+    """A new extractor must not reuse a v5 analysis with global partial coverage."""
+    root = Path(__file__).resolve().parents[4]
+    service = root / "apps/api/src/modules/analysis/services/document-analysis.service.ts"
+    match = re.search(r"export const DOCX_ANALYZER_VERSION = '([^']+)';", service.read_text())
+    assert match is not None
+    assert match.group(1) == DOCX_ANALYZER_VERSION
 
 
 def test_the_structural_model_version_did_not_move() -> None:

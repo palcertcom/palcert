@@ -164,7 +164,9 @@ describe('release manifest', () => {
  * Executed rather than imported: the failure being guarded against is a
  * command that exits 0 when it should not, and only running it proves that.
  */
-describe('release tooling', () => {
+// These tests start real Node processes while other workspaces run in CI.
+// Allow process scheduling/startup time without relaxing pure manifest tests.
+describe('release tooling', { timeout: 30_000 }, () => {
   let work: string;
 
   const run = (
@@ -182,6 +184,7 @@ describe('release tooling', () => {
       stdout = execFileSync(process.execPath, [path.join(RELEASE, script), ...args], {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', handle],
+        timeout: 10_000,
       });
     } catch (error) {
       const details = error as { status?: number; stdout?: string };

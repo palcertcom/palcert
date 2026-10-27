@@ -9,7 +9,7 @@ parity — something structural analysis does not know (§30).
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element
 
 from app.docx.namespaces import Namespaces
@@ -25,6 +25,8 @@ class DocumentSettings:
     track_changes_enabled: bool = False
     rtl_gutter: bool = False
     present: bool = False
+    #: w:themeFontLang selects supplemental theme fonts, independently of w:lang.
+    theme_font_languages: dict[str, str] = field(default_factory=dict)
 
     @staticmethod
     def absent() -> DocumentSettings:
@@ -44,6 +46,13 @@ def _flag(root: Element, namespaces: Namespaces, tag: str) -> bool:
 def parse_settings(root: Element | None, namespaces: Namespaces) -> DocumentSettings:
     if root is None:
         return DocumentSettings.absent()
+    theme_language = root.find(namespaces.qn("w:themeFontLang"))
+    languages: dict[str, str] = {}
+    if theme_language is not None:
+        for region, attribute in (("latin", "val"), ("ea", "eastAsia"), ("cs", "bidi")):
+            value = theme_language.get(namespaces.qn(f"w:{attribute}"))
+            if value is not None:
+                languages[region] = value.strip()
     return DocumentSettings(
         even_and_odd_headers=_flag(root, namespaces, "w:evenAndOddHeaders"),
         mirror_margins=_flag(root, namespaces, "w:mirrorMargins"),
@@ -51,4 +60,5 @@ def parse_settings(root: Element | None, namespaces: Namespaces) -> DocumentSett
         track_changes_enabled=_flag(root, namespaces, "w:trackChanges"),
         rtl_gutter=_flag(root, namespaces, "w:rtlGutter"),
         present=True,
+        theme_font_languages=languages,
     )

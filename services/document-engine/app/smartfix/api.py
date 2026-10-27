@@ -27,6 +27,7 @@ from app.config import Settings
 from app.docx.errors import DocxAnalysisError, DocxErrorCode
 from app.docx.limits import AnalyzerLimits
 from app.errors import AppError, ErrorCode
+from app.smartfix.ai import attach_targets, formatting_context, initial_ai_plan
 from app.smartfix.capability import (
     CAPABILITY_REGISTRY_VERSION,
     SMARTFIX_ENGINE_NAME,
@@ -94,7 +95,9 @@ def build_router(settings: Settings) -> APIRouter:
             raise AppError(ErrorCode.VALIDATION_FAILED, "a document id header is required")
 
         try:
-            rules = parse_rules(list(payload.get("rules", [])))
+            rules = attach_targets(
+                parse_rules(list(payload.get("rules", []))), payload.get("aiTargets", [])
+            )
             source = PlanSource.from_json(dict(payload["source"]))
         except (KeyError, TypeError, ValueError) as error:
             raise AppError(
@@ -102,16 +105,26 @@ def build_router(settings: Settings) -> APIRouter:
             ) from error
 
         try:
-            built = plan_for_document(
-                PlanRequest(
-                    document_id=document_id,
-                    content=document,
-                    expected_sha256=source.document_sha256,
-                    rules=rules,
-                    source=source,
-                    limits=limits,
-                )
+            plan_request = PlanRequest(
+                document_id=document_id,
+                content=document,
+                expected_sha256=source.document_sha256,
+                rules=rules,
+                source=source,
+                limits=limits,
             )
+            built = (
+                initial_ai_plan(plan_request)
+                if payload.get("includeAIContext") is True and "aiTargets" not in payload
+                else plan_for_document(plan_request)
+            )
+            context = (
+                formatting_context(plan_request, built, payload["rules"])
+                if payload.get("includeAIContext") is True
+                else None
+            )
+        except FixError as error:
+            raise _as_fix_error(error) from error
         except DocxAnalysisError as error:
             raise _as_app_error(error) from error
         except SmartFixContractError as error:
@@ -123,8 +136,8 @@ def build_router(settings: Settings) -> APIRouter:
 
         body = canonical_json(built.to_json())
         return Response(
-            content=body,
-            media_type="application/json",
+            content=encode(context, body) if context is not None else body,
+            media_type="application/octet-stream" if context is not None else "application/json",
             headers={
                 PLAN_SHA_HEADER: sha256_hex(body),
                 "x-palcert-action-count": str(len(built.actions)),

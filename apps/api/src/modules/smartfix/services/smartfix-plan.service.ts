@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { AppError, PalCertErrorCode, SMARTFIX_PLAN_TTL_MINUTES } from '@palcert/contracts';
+import {
+  AppError,
+  PalCertErrorCode,
+  SMARTFIX_PLAN_TTL_MINUTES,
+  SMARTFIX_AI_CONSENT_VERSION,
+  canCompleteSmartFixPlan,
+} from '@palcert/contracts';
+import { SmartFixAIPlannerService } from './smartfix-ai-planner.service';
+import { SmartFixPlanningBillingService } from './smartfix-planning-billing.service';
 import type { SmartFixPlan } from '@palcert/database';
 import { createHash, randomUUID } from 'node:crypto';
 import { PinoLogger } from 'nestjs-pino';
@@ -15,10 +23,9 @@ import type { RequestContext } from '../../documents/services/document.service';
 /**
  * Planning a correction (Phase 12 §3, §72).
  *
- * **Planning is free.** PalCert reads a completed check, works out exactly
- * what it would change, and shows the user the whole list before any money
- * moves. That is not a courtesy: a correction changes somebody's thesis, and
- * agreeing to it without seeing it would not be agreement.
+ * Deterministic planning is free. Optional AI planning first reserves the
+ * existing SMARTFIX price, reused on approval and charged only on delivery.
+ * Both paths show the immutable plan before the user approves execution.
  *
  * A plan is bound to everything it was computed from — the document's bytes,
  * the analysis artifact, the standard's rules, the report — and hashed. What
@@ -30,10 +37,12 @@ export class SmartFixPlanService {
     private readonly tenant: TenantPrismaService,
     private readonly catalogue: CatalogueService,
     private readonly engine: DocumentEnginePort,
+    private readonly aiPlanner: SmartFixAIPlannerService,
     private readonly storage: ObjectStoragePort,
     private readonly events: SecurityEventService,
     private readonly clock: ClockPort,
     private readonly logger: PinoLogger,
+    private readonly planningBilling: SmartFixPlanningBillingService,
   ) {
     this.logger.setContext(SmartFixPlanService.name);
   }
@@ -41,10 +50,15 @@ export class SmartFixPlanService {
   /**
    * Compute what SmartFix would change in the document one check examined.
    *
-   * Writes a plan row and its artifact, and nothing else. No purchase, no
-   * reservation, no job — the user has agreed to nothing yet.
+   * AI consent also confirms a price quote; its reservation survives until
+   * approval, cancellation or expiry. No correction executes during planning.
    */
-  async plan(userId: string, checkId: string, request: RequestContext): Promise<SmartFixPlan> {
+  async plan(
+    userId: string,
+    checkId: string,
+    request: RequestContext,
+    options: { useAI?: boolean; formattingAIConsentVersion?: string; priceQuoteId?: string } = {},
+  ): Promise<SmartFixPlan> {
     const check = await this.loadCorrectableCheck(userId, checkId);
     const snapshot = await this.catalogue.snapshotForVersion(check.standardVersionId);
     if (snapshot === null || snapshot.contentHash !== check.standardContentHash) {
@@ -75,7 +89,7 @@ export class SmartFixPlanService {
       });
     }
 
-    const planId = randomUUID();
+    let planId: string = randomUUID();
     const source = {
       checkId: check.id,
       checkRunId: check.currentRunId,
@@ -89,7 +103,35 @@ export class SmartFixPlanService {
       factSchemaVersion: check.factSchemaVersion,
     };
 
-    const planned = await this.engine.planSmartFix({
+    if (options.useAI && options.formattingAIConsentVersion !== SMARTFIX_AI_CONSENT_VERSION) {
+      throw new AppError(PalCertErrorCode.AI_CONSENT_REQUIRED, {
+        message:
+          'Agree to sharing formatting measurements and standard rules with the AI provider.',
+      });
+    }
+    if (options.useAI) {
+      // Refusals first: the audit below records that measurements are about to
+      // be shared with the provider, which is untrue for a refused request.
+      this.aiPlanner.assertEnabled();
+      if (!options.priceQuoteId)
+        throw new AppError(PalCertErrorCode.VALIDATION_FAILED, {
+          message: 'Confirm a SMARTFIX price quote before AI planning.',
+        });
+      await this.events.audit({
+        action: 'SMARTFIX_AI_PLANNING_REQUESTED',
+        actorUserId: userId,
+        targetType: 'Check',
+        targetId: check.id,
+        requestId: request.requestId,
+        ipAddress: request.ipAddress,
+        afterState: {
+          consentVersion: SMARTFIX_AI_CONSENT_VERSION,
+          documentSha256: digest,
+          standardContentHash: check.standardContentHash,
+        },
+      });
+    }
+    const planningInput = {
       documentId: check.documentVersionId,
       content,
       expectedSha256: check.documentSha256,
@@ -99,76 +141,112 @@ export class SmartFixPlanService {
       })),
       source,
       ...(request.requestId !== null ? { requestId: request.requestId } : {}),
-    });
+    };
+    const reserved = options.useAI
+      ? await this.planningBilling.reserve(userId, check.id, options.priceQuoteId!)
+      : null;
+    if (reserved?.reused) return this.byId(userId, reserved.reservation.planId!);
+    if (reserved) planId = reserved.reservation.id;
+    let usable = true;
+    try {
+      const planned = options.useAI
+        ? await this.aiPlanner.plan(planningInput, {
+            ownerUserId: userId,
+            planId,
+            requestId: request.requestId,
+            ipAddress: request.ipAddress,
+          })
+        : await this.engine.planSmartFix(planningInput);
 
-    const artifactKey = smartFixPlanArtifactKey({
-      ownerUserId: userId,
-      checkId: check.id,
-      planId,
-    });
-    const stored = await this.storage.putObject({
-      zone: 'derived',
-      key: artifactKey,
-      content: planned.planBytes,
-      contentType: 'application/json',
-    });
-
-    const now = this.clock.now();
-    const row = await this.tenant.withUser(userId, (tx) =>
-      tx.smartFixPlan.create({
-        data: {
-          id: planId,
-          ownerUserId: userId,
-          checkId: check.id,
-          checkRunId: check.currentRunId,
-          documentId: check.documentId,
-          documentVersionId: check.documentVersionId,
-          standardVersionId: check.standardVersionId,
-          documentSha256: check.documentSha256,
-          analysisArtifactSha256: check.analysisArtifactSha256,
-          standardContentHash: check.standardContentHash,
-          reportHash: check.reportHash,
-          planSchemaVersion: readNumber(planned.plan, 'planSchemaVersion', 1),
-          fixEngineName: planned.fixEngineName,
-          fixEngineVersion: planned.fixEngineVersion,
-          capabilityRegistryVersion: planned.capabilityRegistryVersion,
-          planHash: planned.planSha256,
-          refusalCode: planned.refusal,
-          ruleCount: planned.ruleCount,
-          fixableRuleCount: countFixable(planned.plan),
-          actionCount: planned.actionCount,
-          artifactObjectKey: artifactKey,
-          artifactObjectVersionId: stored.versionId ?? null,
-          artifactSizeBytes: planned.planBytes.byteLength,
-          // Both stamped from PalCert's own clock rather than one from the
-          // clock and one from the database: expiry is measured against
-          // creation, and two different notions of "now" would make the
-          // window a few milliseconds of luck.
-          createdAt: now,
-          // A plan is a snapshot of one document against one set of rules, and
-          // both move on.
-          expiresAt: new Date(now.getTime() + SMARTFIX_PLAN_TTL_MINUTES * 60_000),
-        },
-      }),
-    );
-
-    await this.events.audit({
-      action: 'SMARTFIX_PLANNED',
-      actorUserId: userId,
-      targetType: 'SmartFixPlan',
-      targetId: planId,
-      requestId: request.requestId,
-      ipAddress: request.ipAddress,
-      // Counts and codes. Never a rule's guidance, never a node id's text.
-      afterState: {
+      const artifactKey = smartFixPlanArtifactKey({
+        ownerUserId: userId,
         checkId: check.id,
-        actionCount: planned.actionCount,
-        ruleCount: planned.ruleCount,
-        refusalCode: planned.refusal,
-      },
-    });
+        planId,
+      });
+      const stored = await this.storage.putObject({
+        zone: 'derived',
+        key: artifactKey,
+        content: planned.planBytes,
+        contentType: 'application/json',
+      });
 
-    return row;
+      const now = this.clock.now();
+      const row = await this.tenant.withUser(userId, async (tx) => {
+        const created = await tx.smartFixPlan.create({
+          data: {
+            id: planId,
+            ownerUserId: userId,
+            checkId: check.id,
+            checkRunId: check.currentRunId,
+            documentId: check.documentId,
+            documentVersionId: check.documentVersionId,
+            standardVersionId: check.standardVersionId,
+            documentSha256: check.documentSha256,
+            analysisArtifactSha256: check.analysisArtifactSha256,
+            standardContentHash: check.standardContentHash,
+            reportHash: check.reportHash,
+            planSchemaVersion: readNumber(planned.plan, 'planSchemaVersion', 1),
+            fixEngineName: planned.fixEngineName,
+            fixEngineVersion: planned.fixEngineVersion,
+            capabilityRegistryVersion: planned.capabilityRegistryVersion,
+            planHash: planned.planSha256,
+            refusalCode: planned.refusal,
+            ruleCount: planned.ruleCount,
+            fixableRuleCount: countFixable(planned.plan),
+            actionCount: planned.actionCount,
+            artifactObjectKey: artifactKey,
+            artifactObjectVersionId: stored.versionId ?? null,
+            artifactSizeBytes: planned.planBytes.byteLength,
+            // Both stamped from PalCert's own clock rather than one from the
+            // clock and one from the database: expiry is measured against
+            // creation, and two different notions of "now" would make the
+            // window a few milliseconds of luck.
+            createdAt: now,
+            // A plan is a snapshot of one document against one set of rules, and
+            // both move on.
+            expiresAt:
+              reserved?.reservation.expiresAt ??
+              new Date(now.getTime() + SMARTFIX_PLAN_TTL_MINUTES * 60_000),
+          },
+        });
+        if (reserved) {
+          usable = canCompleteSmartFixPlan({
+            fixEngineVersion: planned.fixEngineVersion,
+            refusalCode: planned.refusal,
+            actionCount: planned.actionCount,
+            rules: planned.plan.rules,
+            aiPlanning: planned.plan.aiPlanning,
+          });
+          await this.planningBilling.finish(tx, userId, planId, usable);
+        }
+        return created;
+      });
+      if (reserved && !usable)
+        await this.planningBilling.recordPlanningRelease(userId, reserved.reservation);
+
+      await this.events.audit({
+        action: 'SMARTFIX_PLANNED',
+        actorUserId: userId,
+        targetType: 'SmartFixPlan',
+        targetId: planId,
+        requestId: request.requestId,
+        ipAddress: request.ipAddress,
+        // Counts and codes. Never a rule's guidance, never a node id's text.
+        afterState: {
+          checkId: check.id,
+          ...(reserved ? { purchaseId: reserved.reservation.servicePurchaseId } : {}),
+          actionCount: planned.actionCount,
+          ruleCount: planned.ruleCount,
+          refusalCode: planned.refusal,
+          ...(planned.plan.aiPlanning ? { aiPlanning: planned.plan.aiPlanning } : {}),
+        },
+      });
+
+      return row;
+    } catch (error) {
+      if (reserved) await this.planningBilling.release(userId, planId);
+      throw error;
+    }
   }
 
   /** The plan document itself, read back from storage. */

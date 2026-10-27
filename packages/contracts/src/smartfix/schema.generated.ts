@@ -46,7 +46,7 @@ export const SMARTFIX_JSON_SCHEMA = {
     FixTargetScope: {
       title: 'FixTargetScope',
       description: 'Which layer of the document an action edits.',
-      enum: ['SECTION_PROPERTIES', 'PARAGRAPH_PROPERTIES', 'RUN_PROPERTIES'],
+      enum: ['SECTION_PROPERTIES', 'PARAGRAPH_PROPERTIES', 'RUN_PROPERTIES', 'DRAWING_PROPERTIES'],
     },
     ScriptChannel: {
       title: 'ScriptChannel',
@@ -78,6 +78,11 @@ export const SMARTFIX_JSON_SCHEMA = {
         'SET_SECTION_MARGIN_RIGHT',
         'SET_SECTION_HEADER_DISTANCE',
         'SET_SECTION_FOOTER_DISTANCE',
+        'SET_RUN_LANGUAGE',
+        'SET_RUN_COLOR',
+        'SET_PARAGRAPH_STYLE',
+        'SET_LIST_START',
+        'SET_DRAWING_PLACEMENT',
       ],
     },
     FixValue: {
@@ -256,6 +261,38 @@ export const SMARTFIX_JSON_SCHEMA = {
       additionalProperties: false,
       required: ['planSchemaVersion', 'source', 'engine', 'rules', 'actions'],
       properties: {
+        aiPlanning: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['provider', 'model', 'rounds', 'stopReason', 'inputTokens', 'outputTokens'],
+          properties: {
+            provider: {
+              type: 'string',
+              maxLength: 80,
+            },
+            model: {
+              type: 'string',
+              maxLength: 160,
+            },
+            rounds: {
+              type: 'integer',
+              minimum: 0,
+              maximum: 3,
+            },
+            stopReason: {
+              type: 'string',
+              enum: ['VERIFIED', 'NO_PROGRESS', 'ROUND_LIMIT'],
+            },
+            inputTokens: {
+              type: 'integer',
+              minimum: 0,
+            },
+            outputTokens: {
+              type: 'integer',
+              minimum: 0,
+            },
+          },
+        },
         planSchemaVersion: {
           type: 'integer',
           minimum: 1,

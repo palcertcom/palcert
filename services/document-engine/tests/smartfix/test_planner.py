@@ -159,21 +159,21 @@ def test_a_metadata_rule_is_not_corrected_in_this_phase() -> None:
 
 def test_a_property_the_engine_cannot_write_is_named_as_such() -> None:
     content = _document(
-        '<w:p><w:r><w:rPr><w:color w:val="FF0000"/></w:rPr>'
+        '<w:p><w:r><w:rPr><w:highlight w:val="yellow"/></w:rPr>'
         '<w:t xml:space="preserve">Body text</w:t></w:r></w:p>' + SECTION
     )
     plan, _ = make_plan(
         content,
         (
             rule(
-                "COLOUR",
-                element("textColor"),
+                "HIGHLIGHT",
+                element("highlight"),
                 "EQUALS",
-                {"type": "STRING", "text": "000000"},
+                {"type": "STRING", "text": "green"},
             ),
         ),
     )
-    assert reason(plan, "COLOUR") == "SMARTFIX_PROPERTY_NOT_SUPPORTED"
+    assert reason(plan, "HIGHLIGHT") == "SMARTFIX_PROPERTY_NOT_SUPPORTED"
 
 
 def test_a_rule_that_already_passes_is_not_planned() -> None:

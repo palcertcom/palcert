@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Req } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Permission } from '@palcert/contracts';
+import { Throttle } from '@nestjs/throttler';
+import { Permission, AppError, PalCertErrorCode } from '@palcert/contracts';
 import {
   requestIdOf,
   type AuthenticatedRequest,
@@ -9,6 +10,7 @@ import {
 import { CurrentUser, RequirePermissions } from '../../auth/decorators/auth.decorators';
 import {
   CheckParamDto,
+  PlanSmartFixDto,
   PlanParamDto,
   SmartFixRequestParamDto,
   StartSmartFixDto,
@@ -21,6 +23,7 @@ import {
   type SmartFixRequestView,
 } from '../services/smartfix-read.service';
 import { SmartFixRequestService } from '../services/smartfix-request.service';
+import { SmartFixPlanningBillingService } from '../services/smartfix-planning-billing.service';
 
 /**
  * SmartFix (Phase 12).
@@ -30,9 +33,9 @@ import { SmartFixRequestService } from '../services/smartfix-request.service';
  * were corrected against it, and no ability to correct one.
  *
  * The shape of the API is the shape of the promise. `POST /plan` is free and
- * returns the complete list of changes. `POST /requests` is the only route
- * that costs anything, and it executes the plan the user just read — not a
- * fresh one computed at that moment.
+ * returns the complete list of changes. `POST /ai-plan` reserves the existing
+ * correction price before external AI work. `POST /requests` executes the
+ * approved plan and reuses that reservation; charging still follows delivery.
  */
 @ApiTags('smartfix')
 @ApiCookieAuth()
@@ -42,6 +45,7 @@ export class SmartFixController {
     private readonly plans: SmartFixPlanService,
     private readonly requests: SmartFixRequestService,
     private readonly reads: SmartFixReadService,
+    private readonly planningBilling: SmartFixPlanningBillingService,
   ) {}
 
   @Post('checks/:checkId/plan')
@@ -62,11 +66,36 @@ export class SmartFixController {
     description: 'SMARTFIX_NOT_AVAILABLE — not finished, not a Word document, or no report',
   })
   async plan(
+    @Body() body: PlanSmartFixDto,
     @Param() params: CheckParamDto,
     @CurrentUser() principal: RequestPrincipal,
     @Req() request: AuthenticatedRequest,
   ): Promise<SmartFixPlanView> {
-    const plan = await this.plans.plan(principal.userId, params.checkId, contextOf(request));
+    if (body.useAI) {
+      throw new AppError(PalCertErrorCode.VALIDATION_FAILED, {
+        message: 'Use the AI formatting plan endpoint for AI planning.',
+      });
+    }
+    const plan = await this.plans.plan(principal.userId, params.checkId, contextOf(request), body);
+    const artifact = await this.plans.artifact(principal.userId, plan.id);
+    return this.reads.plan(principal.userId, plan.id, artifact.plan);
+  }
+
+  @Post('checks/:checkId/ai-plan')
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @RequirePermissions(Permission.SMARTFIX_CREATE_SELF)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Plan formatting with AI and independent whole-standard verification' })
+  async aiPlan(
+    @Body() body: PlanSmartFixDto,
+    @Param() params: CheckParamDto,
+    @CurrentUser() principal: RequestPrincipal,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<SmartFixPlanView> {
+    const plan = await this.plans.plan(principal.userId, params.checkId, contextOf(request), {
+      ...body,
+      useAI: true,
+    });
     const artifact = await this.plans.artifact(principal.userId, plan.id);
     return this.reads.plan(principal.userId, plan.id, artifact.plan);
   }
@@ -86,6 +115,18 @@ export class SmartFixController {
   ): Promise<SmartFixPlanView> {
     const artifact = await this.plans.artifact(principal.userId, params.planId);
     return this.reads.plan(principal.userId, params.planId, artifact.plan);
+  }
+
+  @Post('plans/:planId/cancel')
+  @RequirePermissions(Permission.SMARTFIX_CREATE_SELF)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Release an unapproved AI plan reservation without charging' })
+  async cancelPlan(
+    @Param() params: PlanParamDto,
+    @CurrentUser() principal: RequestPrincipal,
+  ): Promise<{ cancelled: true }> {
+    await this.planningBilling.release(principal.userId, params.planId, true);
+    return { cancelled: true };
   }
 
   @Post('requests')

@@ -54,6 +54,7 @@ import { FakeEmailProvider } from '../../src/infrastructure/notifications/fake-e
 import { FakeDocumentEngine } from './fake-document-engine';
 import { FaultInjectingObjectStorage } from './fault-injecting-storage';
 import { applyTestEnvironment, type TestEnvironmentOverrides } from './test-environment';
+import { assertPhaseLive, outsidePhase, waitForAbandonedWork } from './lifecycle';
 
 export interface TestContext {
   readonly app: INestApplication;
@@ -115,6 +116,28 @@ export async function createTestContext(
 ): Promise<TestContext> {
   const restoreEnv = applyTestEnvironment(envOverrides);
 
+  // Whatever has been opened so far, newest last. A boot that fails, or whose
+  // `beforeAll` Jest abandoned at its deadline, closes it all again rather than
+  // leaving a live queue consumer behind for the next suite to compete with.
+  const opened: Array<() => Promise<unknown>> = [];
+  try {
+    return await bootTestContext(options, restoreEnv, opened);
+  } catch (error) {
+    await outsidePhase(async () => {
+      for (const close of opened.reverse()) {
+        await close().catch(() => undefined);
+      }
+    });
+    restoreEnv();
+    throw error;
+  }
+}
+
+async function bootTestContext(
+  options: { readonly realMailDelivery?: boolean },
+  restoreEnv: () => void,
+  opened: Array<() => Promise<unknown>>,
+): Promise<TestContext> {
   // One clock, one scanner, one storage for both processes, so a test that
   // advances time or injects an outage affects the API and the worker alike.
   const clock = new FakeClock(new Date('2026-06-01T12:00:00.000Z'));
@@ -195,6 +218,7 @@ export async function createTestContext(
     // production (Phase 10 §48).
     rawBody: true,
   });
+  opened.push(() => app.close());
   app.useLogger(app.get(Logger));
 
   const config = app.get(ApiConfigService);
@@ -237,12 +261,15 @@ export async function createTestContext(
   );
 
   await app.init();
+  assertPhaseLive('booting the test API');
 
   const adminDb = new PrismaClient({
     datasources: { db: { url: process.env.DATABASE_ADMIN_URL! } },
     log: ['warn', 'error'],
   });
+  opened.push(() => adminDb.$disconnect());
   await adminDb.$connect();
+  assertPhaseLive('connecting the owner database client');
 
   // The worker, exactly as deployed: its own Nest application on the same
   // queue, with only the test doubles the API also has.
@@ -263,8 +290,10 @@ export async function createTestContext(
     .useValue(emailProvider)
     .compile();
   const workerApp = workerRef.createNestApplication({ bufferLogs: true });
+  opened.push(() => workerApp.close());
   workerApp.useLogger(workerApp.get(Logger));
   await workerApp.init();
+  assertPhaseLive('booting the test worker');
 
   return {
     app,
@@ -318,6 +347,12 @@ function buildStorageFromEnvironment(): S3ObjectStorage {
  * migration and is reference data, not test state.
  */
 export async function resetState(context: TestContext): Promise<void> {
+  // A hook or test Jest abandoned at its deadline is refused any new request
+  // or query, but one it had already started may still be running. Let it
+  // finish before the tables it writes are truncated, instead of letting it
+  // land in the next test's fixtures as a foreign-key violation.
+  await waitForAbandonedWork(15_000);
+
   // Drain the queue *before* truncating. The context runs a real worker, so a
   // job still in flight holds row locks on the very tables the TRUNCATE wants
   // an exclusive lock on, and the two deadlock. Emptying the queue first means
@@ -369,7 +404,14 @@ export async function resetState(context: TestContext): Promise<void> {
     `INSERT INTO "withdrawal_policy" ("id") VALUES (1) ON CONFLICT ("id") DO NOTHING`,
   );
 
-  const throttleKeys = await context.redis.client.keys('palcert:throttle:*');
+  // Auth counters and the shared HTTP throttler have separate namespaces.
+  // Each test gets a fresh budget; limits remain enforced within the test.
+  const throttleKeys = (
+    await Promise.all([
+      context.redis.client.keys('palcert:throttle:*'),
+      context.redis.client.keys('throttle:http:*'),
+    ])
+  ).flat();
   if (throttleKeys.length > 0) {
     await context.redis.client.del(...throttleKeys);
   }
@@ -388,11 +430,36 @@ export async function resetState(context: TestContext): Promise<void> {
   context.clock.set(new Date('2026-06-01T12:00:00.000Z'));
 }
 
-export async function destroyTestContext(context: TestContext): Promise<void> {
-  await context.adminDb.$disconnect();
-  await context.workerApp.close();
-  await context.app.close();
+/**
+ * Tear a context down in dependency order: stop consuming jobs, then stop
+ * serving requests, and only then close the owner connection the worker and
+ * fixtures were sharing the database with.
+ *
+ * Every step runs even if an earlier one fails, so one stuck close cannot leave
+ * the rest open as handles that keep Jest alive. A `beforeAll` that never
+ * produced a context passes `undefined`; there is nothing to close, and its own
+ * failure is the one worth reading.
+ */
+export async function destroyTestContext(context: TestContext | undefined): Promise<void> {
+  if (context === undefined) return;
+
+  const failures: unknown[] = [];
+  const attempt = async (step: () => Promise<unknown>) => {
+    try {
+      await step();
+    } catch (error) {
+      failures.push(error);
+    }
+  };
+
+  await attempt(() => waitForAbandonedWork(15_000));
+  await attempt(() => context.workerApp.close());
+  await attempt(() => context.app.close());
+  await attempt(() => context.adminDb.$disconnect());
   context.restoreEnv();
+
+  if (failures.length === 1) throw failures[0];
+  if (failures.length > 1) throw new AggregateError(failures, 'test context teardown failed');
 }
 
 /**

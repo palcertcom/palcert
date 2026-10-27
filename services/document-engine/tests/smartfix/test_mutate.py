@@ -148,11 +148,11 @@ def test_a_plan_stamped_with_the_current_registry_version_still_executes() -> No
     """The gate rejects the old policy without rejecting the new one.
 
     An ordinary paragraph font-size correction — nothing to do with citations —
-    planned under registry 2 and applied normally. Without this the bump could
+    planned under the current registry and applied normally. Without this the bump could
     have been "refuse everything", which would pass the rejection test above
     and break SmartFix entirely.
     """
-    assert CAPABILITY_REGISTRY_VERSION == 2
+    assert CAPABILITY_REGISTRY_VERSION == 3
     source = source_bytes()
     digest = hashlib.sha256(source).hexdigest()
     plan = build_plan(
@@ -353,3 +353,12 @@ def test_analysis_of_the_corrected_document_still_works() -> None:
     after = analyze(outcome.content)
     assert after.model.paragraphs
     assert after.refusal is None
+
+
+def test_a_registry_two_plan_requires_a_new_preview() -> None:
+    source = source_bytes()
+    digest = hashlib.sha256(source).hexdigest()
+    plan = build_plan(size_action(), sha256=digest, capability_registry_version=2)
+    with pytest.raises(FixError) as raised:
+        apply_docx_fix_plan(source, digest, plan, LIMITS)
+    assert raised.value.code is FixErrorCode.PLAN_ENGINE_MISMATCH

@@ -799,7 +799,7 @@ def test_docx_gains_no_heuristic_discovery_and_does_not_move() -> None:
     from app.docx.analyzer import analyze as analyze_docx
     from app.docx.artifact import ANALYZER_VERSION as DOCX_ANALYZER_VERSION
 
-    assert DOCX_ANALYZER_VERSION == "5"
+    assert DOCX_ANALYZER_VERSION == "6"
 
     from tests.docx.builder import DocxBuilder, paragraph, style, styles_part
 

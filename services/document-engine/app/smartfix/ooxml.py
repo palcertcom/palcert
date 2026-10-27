@@ -301,6 +301,19 @@ def apply_run_action(run: Element, action: FixAction, namespaces: Namespaces) ->
         _set_val(element, namespaces, _text_of(value))
         return
 
+    if action.action_type is ActionType.SET_RUN_LANGUAGE:
+        language = ensure_child(rpr, "lang", namespaces, RUN_PROPERTY_ORDER)
+        attribute = "bidi" if channel is ScriptChannel.COMPLEX_SCRIPT else "val"
+        language.set(namespaces.qn(f"w:{attribute}"), _text_of(value))
+        return
+
+    if action.action_type is ActionType.SET_RUN_COLOR:
+        color = ensure_child(rpr, "color", namespaces, RUN_PROPERTY_ORDER)
+        _set_val(color, namespaces, _text_of(value))
+        for attribute in ("themeColor", "themeTint", "themeShade"):
+            color.attrib.pop(namespaces.qn(f"w:{attribute}"), None)
+        return
+
     raise UnwritableValueError(f"{action.action_type} is not a run-level action")
 
 
@@ -311,6 +324,11 @@ def apply_paragraph_action(
     ppr = ensure_paragraph_properties(paragraph, namespaces)
     value = action.after
     kind = action.action_type
+
+    if kind is ActionType.SET_PARAGRAPH_STYLE:
+        style = ensure_child(ppr, "pStyle", namespaces, PARAGRAPH_PROPERTY_ORDER)
+        _set_val(style, namespaces, _text_of(value))
+        return
 
     if kind is ActionType.SET_PARAGRAPH_ALIGNMENT:
         element = ensure_child(ppr, "jc", namespaces, PARAGRAPH_PROPERTY_ORDER)

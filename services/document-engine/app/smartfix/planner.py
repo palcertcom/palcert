@@ -9,13 +9,14 @@ Three rules govern every decision in this module.
 **A rule must be deterministic, SAFE, and supported.** `autofix: SAFE` is a
 ceiling set by the standard's author — it says the change *would* be safe if
 PalCert could make it. The capability registry says whether PalCert can. Both
-have to agree, and an AI-assisted or manual rule is never touched at all: no
-model is consulted here, and none ever will be.
+have to agree. AI-assisted or manual evaluation rules remain unresolved.
+An external planner may supply a formatting value for a deterministic rule;
+this compiler validates it against the unchanged published requirement.
 
-**A target must be a single known value.** `EQUALS` names one. An inclusive
+**A target must be a single validated value.** `EQUALS` names one. An inclusive
 bound names a boundary reachable without overshooting. `IN` names a set and
 `MATCHES_PATTERN` names a language, and choosing a member of either would be
-PalCert deciding what the author's document should say. `EXISTS` and
+an explicit choice by the AI formatting planner. `EXISTS` and
 `NOT_EXISTS` can only be satisfied by writing or deleting content, which is
 where academic meaning lives. Those become manual work and are shown as such.
 
@@ -37,7 +38,8 @@ fact was standing for (§27).
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, replace
 from decimal import Decimal
 from fractions import Fraction
 
@@ -59,6 +61,7 @@ from app.smartfix.capability import (
     CAPABILITY_REGISTRY_VERSION,
     CONTENT_CHANGE_OPERATORS,
     DETERMINISTIC_TARGET_OPERATORS,
+    ActionType,
     Fixability,
     FixCapability,
     ReasonCode,
@@ -90,6 +93,8 @@ class PlannerRule:
     definition: RuleDefinition
     #: The standard author's ceiling: NONE, SAFE or ADVANCED.
     autofix: str
+    #: A provider suggestion, validated against the unchanged published rule.
+    ai_target: FixValue | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,7 +114,7 @@ def plan_corrections(
 ) -> SmartFixPlan:
     """Build the plan for one completed check.
 
-    Only *failing* rules appear in the plan. A rule the document already
+    Failing and unresolved rules appear in the plan. A rule the document already
     satisfies has nothing to do with a correction, and listing it would put
     work in front of the user that does not exist.
 
@@ -138,6 +143,11 @@ def plan_corrections(
 
     for rule in ordered:
         result = verdicts.get(rule.definition.rule_code)
+        if result is None or result.outcome in {Outcome.INDETERMINATE, Outcome.ERROR}:
+            planned.append(
+                _refused(rule, Fixability.NOT_SUPPORTED, ReasonCode.LOCATION_EVIDENCE_MISSING)
+            )
+            continue
         if result is None or result.outcome is not Outcome.FAIL:
             # Only failing rules belong in a list of intended changes.
             continue
@@ -186,9 +196,9 @@ def _plan_rule(
         return _refused(rule, Fixability.NOT_SUPPORTED, ReasonCode.AUTOFIX_NOT_SAFE)
     if definition.operator in CONTENT_CHANGE_OPERATORS:
         return _refused(rule, Fixability.MANUAL_ACTION_REQUIRED, ReasonCode.CONTENT_CHANGE_REQUIRED)
-    if definition.operator in AMBIGUOUS_TARGET_OPERATORS:
+    if definition.operator in AMBIGUOUS_TARGET_OPERATORS and rule.ai_target is None:
         return _refused(rule, Fixability.AMBIGUOUS_TARGET, ReasonCode.OPERATOR_AMBIGUOUS)
-    if definition.operator not in DETERMINISTIC_TARGET_OPERATORS:
+    if definition.operator not in DETERMINISTIC_TARGET_OPERATORS | AMBIGUOUS_TARGET_OPERATORS:
         return _refused(rule, Fixability.NOT_SUPPORTED, ReasonCode.OPERATOR_AMBIGUOUS)
 
     scope = definition.scope
@@ -333,6 +343,11 @@ def _expand(
         probe = _probe(location.node_id, capability)
         return ((location.node_id, None, observe(lookup, probe, model)),)
 
+    if capability.target_scope is TargetScope.DRAWING_PROPERTIES:
+        probe = _probe(location.node_id, capability)
+        before = observe(lookup, probe, model)
+        return () if before is None else ((location.node_id, None, before),)
+
     paragraph = lookup.paragraph_of_run(location.node_id)
     if paragraph is None or location.node_id not in lookup.runs:
         return ()
@@ -378,6 +393,26 @@ def _target_value(
     as a document property value at all — which is a refusal to guess, not a
     gap to fill in later.
     """
+    if rule.ai_target is not None:
+        target = rule.ai_target
+        if target.kind != capability.value_kind:
+            return ReasonCode.EXPECTED_VALUE_UNUSABLE
+        expected = ExpectedValue(
+            type=ExpectedValueType(target.kind),
+            number=target.number,
+            text=target.text,
+            boolean=target.flag,
+        )
+        # Reuse the exact conversion and OOXML validation path, then the caller
+        # tests the resulting value against the ORIGINAL operator/expected value.
+        suggested = replace(
+            rule.definition,
+            operator="EQUALS",
+            expected=expected,
+            unit=Unit(capability.unit) if capability.unit else None,
+        )
+        return _target_value(replace(rule, definition=suggested, ai_target=None), fact, capability)
+
     expected = rule.definition.expected
     operator = rule.definition.operator
 
@@ -389,6 +424,16 @@ def _target_value(
     if capability.value_kind == "STRING":
         if expected.type is not ExpectedValueType.STRING or not expected.text:
             return ReasonCode.EXPECTED_VALUE_UNUSABLE
+        if capability.action_type is ActionType.SET_RUN_COLOR and not re.fullmatch(
+            r"(?:[0-9A-Fa-f]{6}|auto)", expected.text
+        ):
+            return ReasonCode.EXPECTED_VALUE_UNUSABLE
+        if capability.action_type is ActionType.SET_RUN_LANGUAGE and not re.fullmatch(
+            r"[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*", expected.text
+        ):
+            return ReasonCode.EXPECTED_VALUE_UNUSABLE
+        if capability.action_type is ActionType.SET_DRAWING_PLACEMENT and expected.text != "INLINE":
+            return ReasonCode.EXPECTED_VALUE_UNUSABLE
         return FixValue.of_text(expected.text)
 
     number = _numeric_target(expected, operator, fact)
@@ -398,6 +443,10 @@ def _target_value(
     unit = capability.unit or "POINT"
     converted = _to_capability_unit(number, rule.definition.unit, fact, unit)
     if converted is None:
+        return ReasonCode.EXPECTED_VALUE_UNUSABLE
+    if capability.action_type is ActionType.SET_LIST_START and (
+        converted.denominator != 1 or not 0 <= converted <= 2147483647
+    ):
         return ReasonCode.EXPECTED_VALUE_UNUSABLE
 
     if unit in _TWIP_UNITS:

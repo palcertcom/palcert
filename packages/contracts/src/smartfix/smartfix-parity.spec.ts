@@ -283,21 +283,19 @@ describe('versions', () => {
     expect(REGISTRY_VERSION).toBe(CAPABILITY_REGISTRY_VERSION);
   });
 
-  it('is at registry version 2, which is what the element-type policy cost', () => {
+  it('is at registry version 3 after extending formatting capabilities', () => {
     // The mutation path refuses a plan stamped with a different registry
     // version, so this number is the boundary between two capability
     // policies: version 1 could edit any element a rule named, version 2
     // cannot touch a citation or a reference entry. Python pins the same
     // number against the same file.
-    expect(CAPABILITY_REGISTRY_VERSION).toBe(2);
+    expect(CAPABILITY_REGISTRY_VERSION).toBe(3);
     expect(SMARTFIX_CAPABILITY_REGISTRY.registryVersion).toBe(CAPABILITY_REGISTRY_VERSION);
   });
 
-  it('left the engine, plan and manifest versions alone', () => {
-    // Narrowing what SmartFix may touch changed no mutation byte and no plan
-    // shape. Bumping these too would invalidate stored plans and manifests
-    // for a change that does not affect them.
-    expect(SMARTFIX_ENGINE_VERSION).toBe('1.0.0');
+  it('bumps the mutation engine and retains historical artifact shapes', () => {
+    // Old artifacts remain readable; old execution plans must be regenerated.
+    expect(SMARTFIX_ENGINE_VERSION).toBe('1.2.0');
     expect(SMARTFIX_CAPABILITY_REGISTRY.planSchemaVersion).toBe(1);
     expect(SMARTFIX_CAPABILITY_REGISTRY.manifestSchemaVersion).toBe(1);
   });

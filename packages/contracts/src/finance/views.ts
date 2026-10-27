@@ -279,7 +279,11 @@ export interface AdminPurchaseReportRowView {
   readonly resourceId: string;
   readonly status: ServicePurchaseStatus;
   readonly amount: MoneyView;
-  readonly payer: { readonly userId: string; readonly email: string; readonly displayName: string | null };
+  readonly payer: {
+    readonly userId: string;
+    readonly email: string;
+    readonly displayName: string | null;
+  };
   /** The organization an organization-scoped AI run belonged to; it did not pay. */
   readonly organization: { readonly id: string; readonly name: string } | null;
   readonly failureCode: string | null;

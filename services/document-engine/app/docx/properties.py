@@ -186,9 +186,11 @@ def resolve_fonts(
                         theme_token=token,
                     )
                     continue
-                # An unresolvable theme reference leaves the slot as it was:
-                # the document pointed somewhere empty, so PalCert knows less,
-                # it does not know something different.
+                else:
+                    # This layer overrides the slot even when its theme cannot
+                    # be resolved. Reusing a lower-priority font would invent
+                    # evidence; a later explicit declaration may still resolve it.
+                    resolved.pop(slot, None)
                 continue
             face = fonts.face_for(slot)
             if face and face.strip():

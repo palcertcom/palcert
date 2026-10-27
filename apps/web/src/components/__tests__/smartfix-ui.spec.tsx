@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { SMARTFIX_ENGINE_VERSION, SMARTFIX_AI_CONSENT_VERSION } from '@palcert/contracts';
 import { describe, expect, it, vi } from 'vitest';
 import {
   SmartFixManifestPanel,
@@ -35,7 +36,7 @@ function plan(overrides: Partial<SmartFixPlanResponse> = {}): SmartFixPlanRespon
     documentVersionId: 'version-1',
     createdAt: '2026-09-14T10:00:00.000Z',
     expiresAt: '2026-09-14T11:00:00.000Z',
-    fixEngineVersion: '1.0.0',
+    fixEngineVersion: SMARTFIX_ENGINE_VERSION,
     refusalCode: null,
     ruleCount: 3,
     fixableRuleCount: 1,
@@ -65,6 +66,11 @@ function plan(overrides: Partial<SmartFixPlanResponse> = {}): SmartFixPlanRespon
     ],
     ...overrides,
   };
+}
+
+function completePlan(): SmartFixPlanResponse {
+  const partial = plan();
+  return { ...partial, rules: [partial.rules[0]!], ruleCount: 1 };
 }
 
 function request(overrides: Partial<SmartFixRequestResponse> = {}): SmartFixRequestResponse {
@@ -124,6 +130,7 @@ function balanceOf(minorUnits: string) {
 function api(overrides: Partial<SmartFixApi> = {}): SmartFixApi {
   return {
     plan: vi.fn(async () => plan()),
+    cancelPlan: vi.fn(async () => ({ cancelled: true })),
     start: vi.fn(async () => request({ status: 'RESERVED' })),
     cancel: vi.fn(async () =>
       request({ status: 'CANCELLED', failureCode: 'CANCELLED_BY_CUSTOMER' }),
@@ -146,6 +153,42 @@ function api(overrides: Partial<SmartFixApi> = {}): SmartFixApi {
 // ---------------------------------------------------------------------------
 
 describe('SmartFixPlanPanel', () => {
+  it('requests AI only after the formatting data notice is explicitly selected', async () => {
+    const client = api();
+    render(<SmartFixPlanPanel checkId="check-1" locale="ar" api={client} />);
+    const consent = screen.getByRole('checkbox', { name: ar.aiConsent });
+    expect(consent).not.toBeChecked();
+    fireEvent.click(consent);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: ar.aiReserveAndPlan })).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole('button', { name: ar.aiReserveAndPlan }));
+    await waitFor(() =>
+      expect(client.plan).toHaveBeenCalledWith('check-1', {
+        useAI: true,
+        formattingAIConsentVersion: SMARTFIX_AI_CONSENT_VERSION,
+        priceQuoteId: 'quote-1',
+      }),
+    );
+  });
+
+  it('shows a bounded incomplete AI result and does not offer it for purchase', async () => {
+    const generated = completePlan();
+    generated.aiPlanning = {
+      provider: 'anthropic',
+      model: 'configured',
+      rounds: 3,
+      stopReason: 'ROUND_LIMIT',
+      inputTokens: 100,
+      outputTokens: 40,
+    };
+    const client = api({ plan: vi.fn(async () => generated) });
+    render(<SmartFixPlanPanel checkId="check-1" locale="en" api={client} />);
+    fireEvent.click(screen.getByRole('button', { name: en.planTitle }));
+    await waitFor(() => expect(screen.getByText(en.fullCorrectionUnavailable)).toBeInTheDocument());
+    expect(screen.getByText(/AI planning rounds: 3/)).toBeInTheDocument();
+    expect(client.quote).not.toHaveBeenCalled();
+  });
   it('promises the original is untouched before anything else', async () => {
     render(<SmartFixPlanPanel checkId="check-1" locale="en" api={api()} />);
     expect(screen.getByText(en.originalSafe)).toBeInTheDocument();
@@ -212,8 +255,22 @@ describe('SmartFixPlanPanel', () => {
 // ---------------------------------------------------------------------------
 
 describe('SmartFixPurchasePanel', () => {
+  it.each(['NOT_SUPPORTED', 'PARTIALLY_FIXABLE'])(
+    'blocks purchase for %s rules without asking for a quote',
+    (fixability) => {
+      const client = api();
+      const blocked = completePlan();
+      blocked.rules[0]!.fixability = fixability;
+      render(<SmartFixPurchasePanel plan={blocked} locale="en" api={client} />);
+      expect(screen.getByText(en.fullCorrectionUnavailable)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: en.start })).not.toBeInTheDocument();
+      expect(client.quote).not.toHaveBeenCalled();
+      expect(client.start).not.toHaveBeenCalled();
+    },
+  );
+
   it('says what is reserved, when it is charged, and what happens if it fails', async () => {
-    render(<SmartFixPurchasePanel plan={plan()} locale="en" api={api()} />);
+    render(<SmartFixPurchasePanel plan={completePlan()} locale="en" api={api()} />);
     const price = formatMoney({ currency: 'USD', minorUnits: '700' }, 'en');
     // All three sentences, always together: a price without them is an honest
     // number in a misleading place.
@@ -227,7 +284,7 @@ describe('SmartFixPurchasePanel', () => {
     const onStarted = vi.fn();
     render(
       <SmartFixPurchasePanel
-        plan={plan()}
+        plan={completePlan()}
         locale="en"
         api={api({ start })}
         onStarted={onStarted}
@@ -245,7 +302,7 @@ describe('SmartFixPurchasePanel', () => {
     const poor = api({
       balance: vi.fn(async () => balanceOf('100')),
     });
-    render(<SmartFixPurchasePanel plan={plan()} locale="en" api={poor} />);
+    render(<SmartFixPurchasePanel plan={completePlan()} locale="en" api={poor} />);
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: en.start })).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent(
@@ -380,5 +437,44 @@ describe('SmartFixManifestPanel', () => {
       <SmartFixManifestPanel manifest={manifest({ entries: [], entryCount: 0 })} locale="en" />,
     );
     expect(screen.getByText(en.manifestEmpty)).toBeInTheDocument();
+  });
+});
+
+describe('AI bundled price', () => {
+  function reservedPlan(): SmartFixPlanResponse {
+    return {
+      ...completePlan(),
+      reservation: {
+        status: 'READY',
+        priceQuoteId: 'reserved-quote',
+        amount: { currency: 'USD', minorUnits: '700' },
+      },
+    };
+  }
+  it('approves the existing quote without asking for more available balance', async () => {
+    const client = api();
+    render(<SmartFixPurchasePanel plan={reservedPlan()} locale="ar" api={client} />);
+    fireEvent.click(screen.getByRole('button', { name: ar.aiApprove }));
+    await waitFor(() => expect(client.start).toHaveBeenCalledWith('plan-1', 'reserved-quote'));
+    expect(client.quote).not.toHaveBeenCalled();
+    expect(client.balance).not.toHaveBeenCalled();
+  });
+  it('lets the user release an unapproved reservation', async () => {
+    const client = api();
+    render(<SmartFixPurchasePanel plan={reservedPlan()} locale="en" api={client} />);
+    fireEvent.click(screen.getByRole('button', { name: en.aiCancelReservation }));
+    await waitFor(() => expect(screen.getByText(en.aiReservationEnded)).toBeInTheDocument());
+    expect(client.cancelPlan).toHaveBeenCalledWith('plan-1');
+    expect(client.start).not.toHaveBeenCalled();
+  });
+  it('does not call AI when the displayed balance cannot fund the quote', async () => {
+    const client = api({ balance: vi.fn(async () => balanceOf('0')) });
+    render(<SmartFixPlanPanel checkId="check-1" locale="en" api={client} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: en.aiConsent }));
+    await waitFor(() =>
+      expect(screen.getByText(en.errors.INSUFFICIENT_BALANCE!)).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: en.aiReserveAndPlan })).toBeDisabled();
+    expect(client.plan).not.toHaveBeenCalled();
   });
 });

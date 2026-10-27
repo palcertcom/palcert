@@ -6,7 +6,7 @@ import {
   resetState,
   type TestContext,
 } from './support/test-app';
-import { generateTotp } from './auth-security.e2e-spec';
+import { generateTotp } from './support/totp';
 
 const PASSWORD = 'a-correct-horse-battery-staple';
 

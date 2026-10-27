@@ -15,6 +15,11 @@
       "require": "./dist/auth/roles.js",
       "default": "./dist/auth/roles.js"
     },
+    "./smartfix/client": {
+      "types": "./dist/smartfix/client.d.ts",
+      "require": "./dist/smartfix/client.js",
+      "default": "./dist/smartfix/client.js"
+    },
     "./email": {
       "types": "./dist/email/index.d.ts",
       "require": "./dist/email/index.js",

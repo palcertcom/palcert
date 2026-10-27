@@ -35,7 +35,9 @@ const SCHEMA_SOURCE = readFileSync(
 
 /** Fields declared with the strict parser, and the default each one carries. */
 const booleanFields: ReadonlyArray<{ name: string; fallback: boolean }> = [
-  ...SCHEMA_SOURCE.matchAll(/^\s*([A-Z][A-Z0-9_]+):\s*booleanFromEnv\.default\('(true|false)'\)/gm),
+  ...SCHEMA_SOURCE.matchAll(
+    /^\s*([A-Z][A-Z0-9_]+):\s*booleanFromEnv\.prefault\('(true|false)'\)/gm,
+  ),
 ].map((match) => ({ name: match[1], fallback: match[2] === 'true' }));
 
 /** Anything boolean-shaped that is *not* declared with the strict parser. */

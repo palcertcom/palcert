@@ -17,7 +17,8 @@ from fractions import Fraction
 
 from app.docx.model import ParagraphNode, RunNode, StructuralModel
 from app.docx.properties import LineSpacingMode
-from app.smartfix.capability import ActionType, ScriptChannel
+from app.engine.units.registry import format_exact
+from app.smartfix.capability import ActionType, ScriptChannel, TargetScope
 from app.smartfix.model import FixAction, FixValue
 
 #: Which ``w:rFonts`` slot each script channel reads. Latin resolves through
@@ -55,17 +56,14 @@ class NodeLookup:
 
 
 def decimal_of(value: Fraction) -> Decimal:
-    """An exact rational as a decimal, or its nearest 6-place rendering.
+    """Use the same 12-place canonical precision as the analyzer's facts.
 
     Every value that reaches here is a length or a multiple that OOXML stored
     as an integer over a power-of-ten-friendly denominator, so the common case
     is exact. The bounded fallback exists so a pathological document cannot
     produce an unbounded string.
     """
-    if value.denominator == 1:
-        return Decimal(value.numerator)
-    quotient = Decimal(value.numerator) / Decimal(value.denominator)
-    return quotient.quantize(Decimal("0.000001")).normalize()
+    return Decimal(format_exact(value))
 
 
 def observe(lookup: NodeLookup, action: FixAction, model: StructuralModel) -> FixValue | None:
@@ -100,6 +98,15 @@ def observe(lookup: NodeLookup, action: FixAction, model: StructuralModel) -> Fi
         if kind is ActionType.SET_RUN_UNDERLINE:
             underline = effective.underline
             return None if underline is None else FixValue.of_text(underline.value)
+        if kind is ActionType.SET_RUN_LANGUAGE:
+            language = (
+                effective.complex_language
+                if channel is ScriptChannel.COMPLEX_SCRIPT
+                else effective.language
+            )
+            return None if language is None else FixValue.of_text(language.value)
+        if kind is ActionType.SET_RUN_COLOR:
+            return None if effective.color is None else FixValue.of_text(effective.color.value)
         return None
 
     if action.target_scope.value == "PARAGRAPH_PROPERTIES":
@@ -107,6 +114,13 @@ def observe(lookup: NodeLookup, action: FixAction, model: StructuralModel) -> Fi
         if paragraph is None:
             return None
         properties = paragraph.effective
+        if kind is ActionType.SET_PARAGRAPH_STYLE:
+            return None if paragraph.style_id is None else FixValue.of_text(paragraph.style_id)
+        if kind is ActionType.SET_LIST_START:
+            numbering = paragraph.numbering
+            if numbering is None or numbering.start is None:
+                return None
+            return FixValue.of_number(Decimal(numbering.start), "COUNT")
         if kind is ActionType.SET_PARAGRAPH_ALIGNMENT:
             alignment = properties.alignment
             return None if alignment is None else FixValue.of_text(alignment.value.upper())
@@ -126,6 +140,12 @@ def observe(lookup: NodeLookup, action: FixAction, model: StructuralModel) -> Fi
             ActionType.SET_PARAGRAPH_HANGING_INDENT: properties.hanging_indent_points,
         }.get(kind)
         return None if resolved is None else FixValue.of_number(decimal_of(resolved.value), "POINT")
+
+    if action.target_scope is TargetScope.DRAWING_PROPERTIES:
+        for drawing in model.drawings:
+            if drawing.locator.node_id == action.node_id:
+                return FixValue.of_text(drawing.placement.upper())
+        return None
 
     if action.section_index is None:
         return None

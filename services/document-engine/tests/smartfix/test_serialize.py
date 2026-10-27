@@ -94,3 +94,32 @@ def test_rewriting_nothing_produces_the_same_entries() -> None:
         second = rewrite_package(source, {})
     # No wall-clock timestamp reaches the archive, so two runs agree exactly.
     assert first == second
+
+
+def test_nested_qname_namespace_survives_repeated_corrections() -> None:
+    data = b'<w:document xmlns:w="urn:w" xmlns:mc="urn:mc"><mc:Choice xmlns:wps="urn:wps" Requires="wps"><w:p/></mc:Choice></w:document>'
+    first = serialize_part(data, parse_xml_bytes(data))
+    second = serialize_part(first, parse_xml_bytes(first))
+    assert b'xmlns:wps="urn:wps"' in second
+    assert b'Requires="wps"' in second
+    assert first == second
+
+
+def test_reserved_elementtree_prefix_survives_a_second_edit() -> None:
+    data = b'<ns0:document xmlns:ns0="urn:word"><ns0:body><ns0:p/></ns0:body></ns0:document>'
+    first = serialize_part(data, parse_xml_bytes(data))
+    second = serialize_part(first, parse_xml_bytes(first))
+    assert parse_xml_bytes(second).tag == "{urn:word}document"
+    assert b"</ns0:document>" in second
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        b'<w:document xmlns:w="urn:w"><w:p xmlns:w="urn:other"/></w:document>',
+        b'<document><body xmlns="urn:body"><p/></body></document>',
+    ],
+)
+def test_namespace_scope_that_cannot_be_preserved_is_refused(data: bytes) -> None:
+    with pytest.raises(PartSerializationError):
+        serialize_part(data, parse_xml_bytes(data))

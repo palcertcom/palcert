@@ -832,9 +832,9 @@ describe('OpenAPI contract (e2e)', () => {
     expect(aiRoutes.length).toBeGreaterThan(0);
     for (const path of aiRoutes) {
       expect(path).toMatch(
-        // Phase 8: a user's own AI review. Phase 9: an organization's consent
-        // to external processing of its own guidelines. Both name one task.
-        /\/ai\/consent$|\/checks\/\{checkId\}\/ai-reviews|\/organizations\/\{organizationId\}\/ai-consent$/,
+        // Reviews, consent and a formatting plan for one completed check are
+        // task-specific. The SmartFix route never accepts a free-form prompt.
+        /\/ai\/consent$|\/checks\/\{checkId\}\/ai-reviews|\/organizations\/\{organizationId\}\/ai-consent$|\/smartfix\/checks\/\{checkId\}\/ai-plan$/,
       );
     }
     expect(Object.keys(spec.paths)).not.toContain(versioned('/ai/ask'));
@@ -846,9 +846,7 @@ describe('OpenAPI contract (e2e)', () => {
     // The provider contract lives on the server. None of it — not the prompt,
     // not the key, not the untruncated model output — is part of the API a
     // client can see (§12, §94).
-    const aiRoutes = Object.entries(spec.paths).filter(
-      ([path]) => path.includes('/ai/') || path.includes('/ai-reviews'),
-    );
+    const aiRoutes = Object.entries(spec.paths).filter(([path]) => /\/ai(\/|-)/.test(path));
     expect(aiRoutes.length).toBeGreaterThan(0);
 
     // Field names only: the route descriptions legitimately explain what

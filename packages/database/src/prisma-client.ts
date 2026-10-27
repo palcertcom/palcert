@@ -84,6 +84,7 @@ export type {
   RuleProposalDecision,
   StandardRuleProvenance,
   SmartFixPlan,
+  SmartFixPlanningReservation,
   SmartFixRequest,
   SmartFixManifest,
   OfficialSubmission,

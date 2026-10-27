@@ -654,6 +654,35 @@ def _metadata_facts(builder: FactBuilder, model: StructuralModel) -> None:
             builder.add(_metadata_scope(field_name), _string(value))
 
 
+def _missing_font_domains(model: StructuralModel) -> set[tuple[str, str]]:
+    """Missing *used* properties, scoped like the facts they could have emitted.
+
+    A theme warning in an unused channel or an overridden style is diagnostic,
+    not evidence that visible body text is unreadable. Conversely, a run with
+    no declared font/size must not disappear into a confident PASS or N/A.
+    """
+    missing: set[tuple[str, str]] = set()
+    caption_ids = _caption_paragraph_ids(model)
+    for paragraph in model.paragraphs:
+        if not paragraph.revision.visible_in_final:
+            continue
+        element_type = _paragraph_element_type(paragraph, caption_ids)
+        for run in paragraph.runs:
+            if not run.visible or not run.text.strip():
+                continue
+            for piece in run.segments:
+                family = {
+                    "cs": "fontFamilyComplexScript",
+                    "eastAsia": "fontFamilyEastAsian",
+                }.get(piece.slot, "fontFamily")
+                size = "fontSizeComplexScript" if piece.slot == "cs" else "fontSize"
+                if piece.font_family is None:
+                    missing.add((element_type, family))
+                if piece.font_size_points is None:
+                    missing.add((element_type, size))
+    return missing
+
+
 def build_coverage(
     model: StructuralModel,
     warnings: WarningCollector,
@@ -676,9 +705,7 @@ def build_coverage(
         }
     )
 
-    theme_partial = warnings.has(WarningCode.THEME_MISSING) or warnings.has(
-        WarningCode.THEME_REFERENCE_UNRESOLVED
-    )
+    missing_fonts = _missing_font_domains(model)
     style_partial = (
         warnings.has(WarningCode.STYLE_CYCLE)
         or warnings.has(WarningCode.STYLE_PARENT_MISSING)
@@ -694,11 +721,12 @@ def build_coverage(
     table_partial = warnings.has(WarningCode.TABLE_STYLE_CONDITIONAL_IGNORED)
 
     formatting_status = "PARTIAL" if (style_partial or markup_partial) else "COMPLETE"
-    font_status = "PARTIAL" if (theme_partial or style_partial or markup_partial) else "COMPLETE"
 
     for element_type in _FORMATTING_ELEMENT_TYPES:
         base = "PARTIAL" if element_type == "CAPTION" else formatting_status
-        if element_type == "TEXTBOX" and alternate_branch:
+        if element_type == "TEXTBOX" and warnings.has(
+            WarningCode.ALTERNATE_TEXTBOX_CONTENT_UNRESOLVED
+        ):
             base = "PARTIAL"
         entries.append(
             {
@@ -715,6 +743,7 @@ def build_coverage(
         for property_name in (
             "fontFamily",
             "fontFamilyComplexScript",
+            "fontFamilyEastAsian",
             "fontSize",
             "fontSizeComplexScript",
         ):
@@ -723,7 +752,11 @@ def build_coverage(
                     "kind": "ELEMENT",
                     "elementType": element_type,
                     "property": property_name,
-                    "status": "PARTIAL" if element_type == "CAPTION" else font_status,
+                    "status": (
+                        "PARTIAL"
+                        if base == "PARTIAL" or (element_type, property_name) in missing_fonts
+                        else "COMPLETE"
+                    ),
                 }
             )
 
@@ -755,6 +788,19 @@ def build_coverage(
         }
     )
     entries.append({"kind": "ELEMENT", "elementType": "EQUATION", "status": "COMPLETE"})
+    entries.append(
+        {
+            "kind": "ELEMENT",
+            "elementType": "FIGURE",
+            "property": "figurePlacement",
+            "status": (
+                "PARTIAL"
+                if markup_partial
+                or warnings.has(WarningCode.ALTERNATE_DRAWING_PLACEMENT_UNRESOLVED)
+                else "COMPLETE"
+            ),
+        }
+    )
     # Citations, from Phase 18. A Word-native CITATION field is structural, so
     # it is now covered; a rendered reference entry is still identified by
     # classification and is still UNAVAILABLE. The entries are computed from

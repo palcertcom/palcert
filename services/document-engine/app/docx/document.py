@@ -98,8 +98,10 @@ def read_document(
     # content references it, which the numbering resolver reports per reference.
     numbering_root = _related_root(package, main_part, REL_NUMBERING)
     numbering = parse_numbering(numbering_root, namespaces, warnings, limits)
-    theme = parse_theme(_related_root(package, main_part, REL_THEME), namespaces)
     settings = parse_settings(_related_root(package, main_part, REL_SETTINGS), namespaces)
+    theme = parse_theme(
+        _related_root(package, main_part, REL_THEME), namespaces, settings.theme_font_languages
+    )
 
     context = WalkContext(
         namespaces=namespaces,

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   AIFailureKind,
+  type AIFormattingRequest,
+  type AIFormattingProposal,
   AIProviderError,
   AIProviderPort,
   type DiscoveredCitation,
@@ -37,6 +39,24 @@ export const FAKE_PROVIDER = 'fake';
  */
 @Injectable()
 export class FakeAIProvider extends AIProviderPort {
+  readonly formattingCalls: AIFormattingRequest[] = [];
+  formattingOutput: AIFormattingProposal = { targets: [] };
+
+  async proposeFormatting(request: AIFormattingRequest) {
+    this.formattingCalls.push(request);
+    return {
+      output: this.formattingOutput,
+      usage: {
+        providerRequestId: 'fake-formatting',
+        providerReturnedModel: this.configuredModel,
+        inputTokens: 100,
+        outputTokens: 50,
+        cacheReadTokens: null,
+        cacheWriteTokens: null,
+        latencyMs: 1,
+      },
+    };
+  }
   /** How the next call behaves. Tests set this. */
   mode:
     | 'normal'

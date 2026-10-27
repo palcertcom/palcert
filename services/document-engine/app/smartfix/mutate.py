@@ -34,15 +34,18 @@ from enum import StrEnum
 from xml.etree.ElementTree import Element
 
 from app.docx.limits import AnalyzerLimits
+from app.docx.model import StructuralModel
 from app.docx.warnings import WarningCollector
 from app.smartfix import proofs
 from app.smartfix.capability import (
     CAPABILITY_REGISTRY_VERSION,
     SMARTFIX_ENGINE_NAME,
     SMARTFIX_ENGINE_VERSION,
+    ActionType,
     TargetScope,
 )
 from app.smartfix.contracts import SmartFixContract, assert_contract
+from app.smartfix.extended import apply_inline_drawing, apply_list_starts, validate_extended_action
 from app.smartfix.locate import DocumentIndex, build_index
 from app.smartfix.model import (
     ChangeManifest,
@@ -154,7 +157,7 @@ def apply_docx_fix_plan(
             f"the corrected document changed more than formatting: {', '.join(mismatched)}",
         )
 
-    entries = _verify_against_output(plan, resolved, output, effective_limits)
+    entries = _verify_against_output(index.model, resolved, output, effective_limits)
 
     return FixOutcome(
         content=output,
@@ -255,6 +258,10 @@ def _resolve(
             part_name, element = located
 
         current = observe(lookup, action, index.model)
+        try:
+            validate_extended_action(action, element, index, lookup)
+        except UnwritableValueError as error:
+            raise FixError(FixErrorCode.VALUE_UNWRITABLE, str(error)) from error
         if action.before is not None and not action.before.matches(current):
             raise FixError(
                 FixErrorCode.SOURCE_CHANGED,
@@ -273,10 +280,18 @@ def _apply(
 ) -> set[str]:
     """Write every resolved action. Nothing here can fail to find its target."""
     changed: set[str] = set()
+    try:
+        changed.update(apply_list_starts(tuple(e.action for e in resolved), index, lookup))
+    except UnwritableValueError as error:
+        raise FixError(FixErrorCode.VALUE_UNWRITABLE, str(error)) from error
     for entry in resolved:
         action = entry.action
         try:
-            if action.target_scope is TargetScope.SECTION_PROPERTIES:
+            if action.action_type is ActionType.SET_LIST_START:
+                continue
+            if action.target_scope is TargetScope.DRAWING_PROPERTIES:
+                apply_inline_drawing(entry.target)
+            elif action.target_scope is TargetScope.SECTION_PROPERTIES:
                 apply_section_action(entry.target, action, index.namespaces)
             elif action.target_scope is TargetScope.RUN_PROPERTIES:
                 apply_run_action(entry.target, action, index.namespaces)
@@ -294,7 +309,7 @@ def _apply(
 
 
 def _verify_against_output(
-    plan: SmartFixPlan,
+    original: StructuralModel,
     resolved: tuple[_ResolvedAction, ...],
     output: bytes,
     limits: AnalyzerLimits,
@@ -307,9 +322,17 @@ def _verify_against_output(
     did nothing — the wrong script channel, a style that still wins — is
     caught before delivery rather than by the recheck (§110).
     """
-    del plan
     index, package = build_index(io.BytesIO(output), limits, WarningCollector())
     try:
+        # XML text hashes cannot detect a style hiding or revealing a run.
+        # Compare effective visibility after resolving paragraph/character
+        # style inheritance and direct overrides, in every indexed story.
+        # Reuse the source/output models already parsed for target validation.
+        if _run_visibility(original) != _run_visibility(index.model):
+            raise FixError(
+                FixErrorCode.INTEGRITY_PROOF_FAILED,
+                "the corrected document changed effective content visibility",
+            )
         lookup = NodeLookup(index.model)
         entries: list[ChangeManifestEntry] = []
         for entry in resolved:
@@ -336,3 +359,11 @@ def _verify_against_output(
     finally:
         package.close()
     return tuple(entries)
+
+
+def _run_visibility(model: StructuralModel) -> tuple[tuple[str, bool], ...]:
+    return tuple(
+        (run.locator.node_id, paragraph.revision.visible_in_final and run.visible)
+        for paragraph in model.paragraphs
+        for run in paragraph.runs
+    )

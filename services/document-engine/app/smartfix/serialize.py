@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import io
 import re
+import threading
 import zipfile
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Element, tostring
@@ -39,6 +40,7 @@ _ROOT_START = re.compile(rb"<([A-Za-z_][-\w.:]*)((?:[^>\"']|\"[^\"]*\"|'[^']*')*
 _XMLNS = re.compile(rb"""xmlns(?::([A-Za-z_][-\w.]*))?\s*=\s*(?:"([^"]*)"|'([^']*)')""")
 
 XML_DECLARATION = b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+_NAMESPACE_LOCK = threading.RLock()
 
 
 class PartSerializationError(ValueError):
@@ -109,18 +111,34 @@ def serialize_part(original: bytes, root: Element) -> bytes:
     start, _, original_start = _root_start_tag(original)
     declared = _declared_namespaces(original_start)
 
-    # Register the document's own prefixes so the body ElementTree writes uses
-    # them, rather than ns0/ns1.
-    for prefix, uri in declared.items():
-        if prefix:
-            ET.register_namespace(prefix, uri)
-
-    produced: bytes = tostring(root, encoding="utf-8", xml_declaration=False)
+    # QName-valued attributes (Requires, Ignorable) may use declarations from
+    # nested elements too. Hoist unambiguous bindings and preserve their names.
+    bindings = dict(declared)
+    # _root_start_tag above refuses every DOCTYPE; the package parser has also
+    # enforced XML resource limits before this serialization boundary.
+    for _, (prefix, uri) in ET.iterparse(io.BytesIO(original), events=("start-ns",)):  # noqa: S314
+        if prefix == "" and prefix not in declared and uri:
+            raise PartSerializationError("a nested default namespace cannot be hoisted")
+        if prefix in bindings and bindings[prefix] != uri:
+            raise PartSerializationError("a namespace prefix is rebound in this part")
+        bindings[prefix] = uri
+    with _NAMESPACE_LOCK:
+        for prefix, uri in bindings.items():
+            chosen = prefix
+            if re.fullmatch(r"ns\d+", chosen):
+                # ElementTree reserves nsN. Keep its original declaration for
+                # attribute values while writing element names with a fresh one.
+                chosen = "palcert_" + chosen
+                while chosen in bindings:
+                    chosen += "_"
+            if chosen or prefix in declared:
+                ET.register_namespace(chosen, uri)
+        produced: bytes = tostring(root, encoding="utf-8", xml_declaration=False)
     _, produced_end, produced_tag = _root_start_tag(produced)
 
     missing = {
         prefix: uri
-        for prefix, uri in _declared_namespaces(produced_tag).items()
+        for prefix, uri in {**bindings, **_declared_namespaces(produced_tag)}.items()
         if declared.get(prefix) != uri
     }
     replacement = original_start
@@ -135,6 +153,15 @@ def serialize_part(original: bytes, root: Element) -> bytes:
         replacement = replacement[: -len(closing)] + extra + closing
 
     body = produced[produced_end:]
+    original_match, produced_match = (
+        _ROOT_START.match(original_start),
+        _ROOT_START.match(produced_tag),
+    )
+    if original_match is None or produced_match is None:
+        raise PartSerializationError("the root name could not be preserved")
+    original_name, produced_name = original_match.group(1), produced_match.group(1)
+    if produced_name != original_name and body.endswith(b"</" + produced_name + b">"):
+        body = body[: -len(produced_name) - 3] + b"</" + original_name + b">"
     prologue = original[:start]
     if not prologue.strip():
         prologue = XML_DECLARATION

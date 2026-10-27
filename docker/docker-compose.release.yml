@@ -431,10 +431,18 @@ services:
       - ./release-postgres-init.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
     networks: [internal]
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U palcert -d palcert']
+      # Over TCP, the way every client connects. On a fresh volume the image
+      # first runs a temporary server for initdb and the init scripts that
+      # listens only on the Unix socket, then restarts it; a socket probe
+      # passes against that temporary server, so `migrate` was released into
+      # the restart. The TCP probe passes only once the real server is up.
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -p 5432 -U palcert -d palcert']
       interval: 5s
       timeout: 5s
       retries: 20
+      # Initialisation on a fresh volume is not counted against the retries;
+      # the first successful probe still ends the wait immediately.
+      start_period: 300s
 
   redis:
     image: redis:7-alpine

@@ -24,8 +24,9 @@ from app.docx.document import read_document
 from app.docx.limits import AnalyzerLimits
 from app.docx.model import StructuralModel
 from app.docx.namespaces import Namespaces
-from app.docx.package import DocxPackage, resolve_namespaces
+from app.docx.package import REL_NUMBERING, DocxPackage, resolve_namespaces
 from app.docx.sections import collect_sections
+from app.docx.styles import StyleCatalogue
 from app.docx.warnings import WarningCollector
 
 
@@ -51,6 +52,8 @@ class DocumentIndex:
     #: Section properties, in the same order `collect_sections` reports them.
     sections: tuple[SectionTarget, ...]
     main_part: str
+    styles: StyleCatalogue
+    numbering_part: str | None
 
     def element_for(self, node_id: str) -> tuple[str, Element] | None:
         return self.elements.get(node_id)
@@ -151,5 +154,11 @@ def build_index(
         roots=package.roots,
         sections=sections,
         main_part=main_part,
+        styles=result.context.styles,
+        numbering_part=(
+            relation.part_name
+            if (relation := package.relationships_of(main_part).first_of_kind(REL_NUMBERING))
+            else None
+        ),
     )
     return index, package

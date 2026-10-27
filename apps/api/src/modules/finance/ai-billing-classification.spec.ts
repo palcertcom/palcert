@@ -22,7 +22,7 @@ const SRC = join(__dirname, '..', '..');
 
 /** Methods that send content to, or spend quota at, the AI provider. */
 const PROVIDER_CALL =
-  /\bprovider\s*\.\s*(assessRules|generateReportSupplement|countTokens|discoverGuidelineEvidence|extractRuleProposals|checkAvailability)\s*\(/;
+  /\bprovider\s*\.\s*(assessRules|generateReportSupplement|countTokens|discoverGuidelineEvidence|extractRuleProposals|proposeFormatting|checkAvailability)\s*\(/;
 
 /** Every call site, and the operation it belongs to. */
 const CLASSIFIED: Readonly<Record<string, AIOperation>> = {
@@ -31,6 +31,7 @@ const CLASSIFIED: Readonly<Record<string, AIOperation>> = {
   'modules/ai/services/ai-benchmark.service.ts': AIOperation.AI_REVIEW_BENCHMARK,
   'modules/extraction/services/extraction-benchmark.service.ts': AIOperation.EXTRACTION_BENCHMARK,
   'health/health.service.ts': AIOperation.PROVIDER_HEALTH_PROBE,
+  'modules/smartfix/services/smartfix-ai-planner.service.ts': AIOperation.SMARTFIX_FORMATTING,
 };
 
 /** The adapters themselves implement the port; they are not callers of it. */
@@ -76,6 +77,22 @@ describe('AI billing classification (ADR-0149)', () => {
       if (entry.classification !== AIOperationClassification.BILLABLE_AI_SERVICE) continue;
       const source = readFileSync(path, 'utf8');
       expect([rel, source.includes('assertReservationLive')]).toEqual([rel, true]);
+      if (entry.bundled) {
+        expect(operation).toBe(AIOperation.SMARTFIX_FORMATTING);
+        const planning = readFileSync(
+          join(SRC, 'modules/smartfix/services/smartfix-planning-billing.service.ts'),
+          'utf8',
+        );
+        const settlement = readFileSync(
+          join(SRC, 'modules/smartfix/services/smartfix-settlement.service.ts'),
+          'utf8',
+        );
+        expect(planning).toContain('this.billing.reserve(');
+        expect(planning).toContain('this.billing.release(');
+        expect(settlement).toContain('this.purchases.captureOnDelivery(');
+        expect(settlement).toContain('this.purchases.release(');
+        continue;
+      }
       expect([rel, source.includes('billing.capture(')]).toEqual([rel, true]);
       expect([rel, source.includes('billing.release(')]).toEqual([rel, true]);
     }
@@ -94,7 +111,7 @@ describe('AI billing classification (ADR-0149)', () => {
     for (const entry of Object.values(AI_OPERATION_REGISTRY)) {
       if (entry.classification !== AIOperationClassification.BILLABLE_AI_SERVICE) continue;
       expect(ACTIVE_SERVICE_PRODUCT_CODES).toContain(entry.productCode);
-      expect(AI_SERVICE_PRODUCT_CODES).toContain(entry.productCode);
+      if (!entry.bundled) expect(AI_SERVICE_PRODUCT_CODES).toContain(entry.productCode);
     }
   });
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ExtractionProgressPanel } from '../extraction-progress';
 import { formatExpected, isReadyToAccept, RuleProposalList } from '../rule-proposals';
@@ -1225,24 +1225,45 @@ describe('the reading progress panel', () => {
           finishedAt: '2026-09-01T09:05:10.000Z',
         }),
       );
-    renderProgress(runProgress, { onSettled });
+    // Advance polling explicitly: a busy runner must not race past the
+    // intermediate server response while the assertions are still reading it.
+    vi.useFakeTimers();
+    let view: ReturnType<typeof renderProgress> | undefined;
+    try {
+      await act(async () => {
+        view = renderProgress(runProgress, { onSettled });
+      });
+      expect(screen.getByText('4 of 12 batches')).toBeInTheDocument();
+      expect(screen.getByText(console_en.countedWhenSaved)).toBeInTheDocument();
+      expect(screen.getByText('2 min 5 s')).toBeInTheDocument();
+      const bar = screen.getByRole('progressbar', { name: console_en.progressBarLabel });
+      expect(bar).toHaveAttribute('value', '4');
+      expect(bar).toHaveAttribute('max', '12');
+      expect(runProgress).toHaveBeenCalledTimes(1);
 
-    expect(await screen.findByText('4 of 12 batches')).toBeInTheDocument();
-    expect(screen.getByText(console_en.countedWhenSaved)).toBeInTheDocument();
-    expect(screen.getByText('2 min 5 s')).toBeInTheDocument();
-    const bar = screen.getByRole('progressbar', { name: console_en.progressBarLabel });
-    expect(bar).toHaveAttribute('value', '4');
-    expect(bar).toHaveAttribute('max', '12');
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(20);
+      });
+      expect(screen.getByText('9 of 12 batches')).toBeInTheDocument();
+      expect(bar).toHaveAttribute('value', '9');
+      expect(runProgress).toHaveBeenCalledTimes(2);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(20);
+      });
+      expect(screen.getByText('12 of 12 batches')).toBeInTheDocument();
+      expect(screen.getByText('111')).toBeInTheDocument();
+      expect(screen.getAllByText(console_en.progressStates.COMPLETED!).length).toBeGreaterThan(0);
+      expect(onSettled).toHaveBeenCalledTimes(1);
+      expect(runProgress).toHaveBeenCalledTimes(3);
 
-    expect(await screen.findByText('9 of 12 batches')).toBeInTheDocument();
-    expect(await screen.findByText('12 of 12 batches')).toBeInTheDocument();
-    expect(screen.getByText('111')).toBeInTheDocument();
-    expect(screen.getAllByText(console_en.progressStates.COMPLETED!).length).toBeGreaterThan(0);
-    expect(onSettled).toHaveBeenCalledTimes(1);
-
-    const calls = runProgress.mock.calls.length;
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(runProgress.mock.calls.length).toBe(calls);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+      expect(runProgress).toHaveBeenCalledTimes(3);
+    } finally {
+      view?.unmount();
+      vi.useRealTimers();
+    }
   });
 
   it('reads the same after a refresh, because it comes from the server', async () => {
