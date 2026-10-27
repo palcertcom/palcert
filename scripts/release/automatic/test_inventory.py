@@ -39,6 +39,68 @@ def container():
 
 
 class InventoryDiagnosticTests(unittest.TestCase):
+    def test_ai_overlay_reads_both_env_files_without_exposing_secret_values(self):
+        calls = []
+
+        def run(args):
+            calls.append(args)
+            if args[:2] == ["docker", "ps"]:
+                return "a" * 12
+            if args[:2] == ["docker", "inspect"]:
+                return json.dumps([container()])
+            if "config" in args:
+                env_files = [
+                    args[i + 1] for i, arg in enumerate(args) if arg == "--env-file"
+                ]
+                if env_files != ["/etc/palcert/production.env", "/etc/palcert/ai.env"]:
+                    raise inventory.classify_failure(
+                        "required variable ANTHROPIC_API_KEY is missing a value", 1
+                    )
+                self.assertEqual(
+                    [args[i + 1] for i, arg in enumerate(args) if arg == "-f"],
+                    inventory.FILES,
+                )
+                self.assertEqual(args[-3:], ["config", "--format", "json"])
+                return json.dumps(
+                    {
+                        "services": {
+                            "api": {
+                                "image": "palcert/api:b11ea2d",
+                                "environment": {
+                                    "ANTHROPIC_API_KEY": "SECRET_SENTINEL",
+                                    "DATABASE_URL": "SECRET_SENTINEL",
+                                    "AI_PRIMARY_PROVIDER": "anthropic",
+                                    "ANTHROPIC_MODEL": "claude-opus-5",
+                                },
+                            }
+                        }
+                    }
+                )
+            return "read-only version/disk output"
+
+        output = io.StringIO()
+        with (
+            patch.object(inventory.os, "geteuid", return_value=0),
+            patch.object(inventory, "command", side_effect=run),
+            patch.object(
+                inventory, "file_info", return_value={"exists": True, "mode": "0o600"}
+            ),
+            contextlib.redirect_stdout(output),
+        ):
+            self.assertEqual(inventory.main(), 0)
+        report = json.loads(output.getvalue())
+        self.assertTrue(report["complete"])
+        self.assertEqual(report["probes"]["compose-model"]["status"], "ok")
+        self.assertEqual(
+            report["services"]["api"]["ai"]["ANTHROPIC_MODEL"], "claude-opus-5"
+        )
+        self.assertNotIn("SECRET_SENTINEL", output.getvalue())
+        self.assertNotIn("SECRET_SENTINEL", json.dumps(calls))
+        for args in calls:
+            self.assertFalse(
+                set(args) & {"up", "down", "restart", "rm", "run", "exec", "pull"}
+            )
+
     def test_missing_file_does_not_hide_the_report(self):
         with tempfile.TemporaryDirectory() as directory:
             self.assertEqual(

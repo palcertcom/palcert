@@ -12,6 +12,7 @@ FILES = [
     "/etc/palcert/docker-compose.origin-tls.yml",
     "/opt/palcert/docker/docker-compose.ai.yml",
 ]
+ENV_FILES = ["/etc/palcert/production.env", "/etc/palcert/ai.env"]
 
 
 class ProbeError(Exception):
@@ -231,11 +232,8 @@ def runtime_inventory():
 def main():
     if os.geteuid() != 0:
         raise SystemExit("Run this read-only inventory with sudo.")
-    report = {"inventoryVersion": 2, "project": "palcert-prod", "probes": {}}
-    report["protectedFiles"] = {
-        path: file_info(path)
-        for path in FILES + ["/etc/palcert/production.env", "/etc/palcert/ai.env"]
-    }
+    report = {"inventoryVersion": 3, "project": "palcert-prod", "probes": {}}
+    report["protectedFiles"] = {path: file_info(path) for path in FILES + ENV_FILES}
     report["docker"] = probe(
         report, "docker-client", lambda: command(["docker", "--version"]).strip()
     )
@@ -247,14 +245,12 @@ def main():
     # Useful even if Compose cannot currently resolve its saved model (for
     # example because the initial launch used image variables in its shell).
     report["runtime"] = probe(report, "running-project", runtime_inventory)
-    base = [
-        "docker",
-        "compose",
-        "-p",
-        "palcert-prod",
-        "--env-file",
-        "/etc/palcert/production.env",
-    ]
+    base = ["docker", "compose", "-p", "palcert-prod"]
+    # The AI overlay interpolates required variables from its separate root-only
+    # file. Have Compose parse both files; never source them in a shell, copy
+    # their values into command arguments, or print the resolved environment.
+    for file in ENV_FILES:
+        base += ["--env-file", file]
     for file in FILES:
         base += ["-f", file]
     report["services"] = probe(
