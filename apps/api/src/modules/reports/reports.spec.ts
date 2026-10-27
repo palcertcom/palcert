@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { Reflector } from '@nestjs/core';
 import { validate } from 'class-validator';
 import { ReportQuery, validateReportQuery } from './report-query';
-import { reportMoney } from './report-labels';
+import { reportCode, reportMoney } from './report-labels';
 import { ReportPdfRenderer } from './report-pdf.renderer';
 import {
   PersonalReportsController,
@@ -25,6 +25,10 @@ const query = (patch: Partial<ReportQuery> = {}) =>
     ...patch,
   });
 describe('account reports', () => {
+  it('labels the persisted approval-ready status in report rows and exports', () => {
+    expect(reportCode('READY', 'ar')).toBe('الخطة جاهزة');
+    expect(reportCode('READY', 'en')).toBe('PLAN READY');
+  });
   it.each([
     { from: '2026-11-02T00:00:00Z' },
     { to: '2028-01-01T00:00:00Z' },

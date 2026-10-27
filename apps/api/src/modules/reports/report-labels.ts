@@ -88,7 +88,7 @@ const ar: Record<string, string> = {
   GENERATING_PROPOSALS: 'إعداد المقترحات',
   VALIDATING: 'التحقق',
   RECHECKING: 'إعادة الفحص',
-  PLAN_READY: 'الخطة جاهزة',
+  READY: 'الخطة جاهزة',
   DOCUMENT_CHECK: 'فحص التنسيق',
   SMARTFIX: 'الإصلاح الذكي',
   AI_REVIEW: 'مراجعة الذكاء الاصطناعي',
@@ -148,7 +148,11 @@ const ar: Record<string, string> = {
   CHARGEBACK: 'اعتراض دفع',
 };
 export function reportCode(value: string, locale: 'ar' | 'en'): string {
-  return locale === 'ar' ? (ar[value] ?? value) : value.replace(/_/g, ' ');
+  return locale === 'ar'
+    ? (ar[value] ?? value)
+    : value === 'READY'
+      ? 'PLAN READY'
+      : value.replace(/_/g, ' ');
 }
 /** Exact decimal formatting, including amounts larger than Number.MAX_SAFE_INTEGER. */
 export function reportMoney(value: string, currency: string): string {
