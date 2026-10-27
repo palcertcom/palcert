@@ -65,7 +65,7 @@ export function reportStatusOptions(locale: Locale): Array<[string, string]> {
     CREATED: 'أُنشئ',
     RESERVED: 'محجوز',
     PLANNING: 'إعداد الخطة',
-    PLAN_READY: 'الخطة جاهزة',
+    READY: 'الخطة جاهزة',
     WAITING_ANALYSIS: 'بانتظار التحليل',
     QUEUED: 'في الانتظار',
     RUNNING: 'قيد التنفيذ',
@@ -90,6 +90,6 @@ export function reportStatusOptions(locale: Locale): Array<[string, string]> {
   };
   return Object.entries(labels).map(([code, label]) => [
     code,
-    locale === 'ar' ? label : code.replace(/_/g, ' '),
+    locale === 'ar' ? label : code === 'READY' ? 'PLAN READY' : code.replace(/_/g, ' '),
   ]);
 }

@@ -475,6 +475,28 @@ describe('SmartFix - journey (e2e)', () => {
       expect(planned.status).toBe(200);
       expect(planned.body.reservation.status).toBe('READY');
       expect(await available()).toBe(before - SMARTFIX_PRICE_MINOR);
+      // Reports project the stored READY status before an execution request exists.
+      // Both the paged report and full print export must retain this pending plan.
+      const reportFilters = new URLSearchParams({
+        kind: 'services',
+        service: 'SMARTFIX',
+        status: 'READY',
+        locale: 'ar',
+        timeZone: 'UTC',
+        from: new Date(context.clock.now().getTime() - 60_000).toISOString(),
+        to: new Date(context.clock.now().getTime() + 60_000).toISOString(),
+      });
+      const pending = await context.adminDb.smartFixPlanningReservation.findUniqueOrThrow({
+        where: { id: planned.body.id },
+      });
+      for (const suffix of ['', '/print']) {
+        const report = await student.client.get(`${API}/reports${suffix}?${reportFilters}`);
+        expect(report.status).toBe(200);
+        expect(report.body.total).toBe(1);
+        expect(report.body.detail.rows).toHaveLength(1);
+        expect(report.body.detail.rows[0][1]).toBe(pending.servicePurchaseId);
+        expect(report.body.detail.rows[0][4]).toBe('الخطة جاهزة');
+      }
       const retry = await aiPlan(checkId, quote.quoteId);
       expect(retry.body.id).toBe(planned.body.id);
       expect(mock).toHaveBeenCalledTimes(1);

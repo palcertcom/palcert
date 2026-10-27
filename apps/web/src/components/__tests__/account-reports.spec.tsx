@@ -29,6 +29,36 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 describe('account report exports', () => {
+  it.each(['ar', 'en'] as const)(
+    'filters approval-ready plans using the stored READY status in %s',
+    async (locale) => {
+      vi.mocked(reportsApi.read).mockResolvedValue(view);
+      render(<AccountReports locale={locale} scope="user" base="/reports" />);
+      await screen.findByText('transaction-1');
+      fireEvent.change(
+        screen.getByLabelText(
+          locale === 'ar' ? 'التقارير المالية والخدمات' : 'Financial and service reports',
+        ),
+        { target: { value: 'services' } },
+      );
+      const ready = screen.getByRole('option', {
+        name: locale === 'ar' ? 'الخطة جاهزة' : 'PLAN READY',
+      }) as HTMLOptionElement;
+      fireEvent.change(
+        screen.getByLabelText(locale === 'ar' ? 'حالة التنفيذ' : 'Execution status'),
+        { target: { value: ready.value } },
+      );
+      fireEvent.click(
+        screen.getByRole('button', { name: locale === 'ar' ? 'عرض التقرير' : 'Show report' }),
+      );
+      await waitFor(() =>
+        expect(reportsApi.read).toHaveBeenLastCalledWith(
+          '/reports',
+          expect.objectContaining({ kind: 'services', status: 'READY', locale }),
+        ),
+      );
+    },
+  );
   it('uses the full filtered dataset for print, including records past the current page', async () => {
     vi.mocked(reportsApi.read)
       .mockResolvedValueOnce(view)
