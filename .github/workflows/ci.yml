@@ -674,6 +674,13 @@ jobs:
           node qa/seed-fixture.mjs
           node qa/run.mjs --smoke
 
+      - name: Automatic site hooks and backup/upgrade rehearsal
+        run: |
+          sudo env "GITHUB_ACTIONS=$GITHUB_ACTIONS" \
+            "RUNNER_ENVIRONMENT=$RUNNER_ENVIRONMENT" \
+            "GITHUB_REPOSITORY=$GITHUB_REPOSITORY" "GITHUB_SHA=$GITHUB_SHA" \
+            python3 scripts/release/automatic/ci-site-rehearsal.py
+
       - name: Record runner resources (failure)
         if: failure() || cancelled()
         run: scripts/diagnostics/runner-resources.sh images-failure

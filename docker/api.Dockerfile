@@ -129,7 +129,16 @@ FROM node:22-alpine AS migrate
 ENV NODE_ENV=production
 WORKDIR /app
 RUN addgroup -S palcert && adduser -S palcert -G palcert
+# The same reviewed/scanned migration image supplies the operator's PostgreSQL
+# 17 backup tools. Production needs neither Node nor pg_dump on the host, and
+# a deployment does not build or fetch a sixth, unverified tooling image.
+RUN apk add --no-cache postgresql17-client bash ca-certificates
 COPY --from=build --chown=palcert:palcert /app/migrate ./
+COPY --from=runtime --chown=palcert:palcert /app/node_modules ./operator/node_modules
+COPY --from=build --chown=palcert:palcert /app/apps/api/scripts/backup.mjs /app/apps/api/scripts/verify-backup.mjs /app/apps/api/scripts/restore.mjs /app/apps/api/scripts/verify-restore.mjs ./operator/apps/api/scripts/
+COPY --from=build --chown=palcert:palcert /app/apps/api/scripts/lib ./operator/apps/api/scripts/lib
+COPY --from=build --chown=palcert:palcert /app/packages/database/prisma/migrations ./operator/packages/database/prisma/migrations
+COPY --from=build --chown=palcert:palcert /app/scripts/release/check-service-revenue-rollback.sh ./operator/scripts/release/
 
 ARG APP_COMMIT=""
 ARG APP_BUILT_AT=""
