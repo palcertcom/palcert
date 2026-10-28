@@ -20,6 +20,7 @@ export type OrganizationSectionKey =
   | 'attestations'
   | 'attestation-types'
   | 'payouts'
+  | 'reports'
   | 'verification'
   | 'api-clients'
   | 'webhooks';
@@ -140,6 +141,13 @@ export function allOrganizationSections(
       href: `${base}/attestation-types`,
       label: attestations.nav.types,
       permission: 'attestation:type:manage',
+      group: 'workspace',
+    },
+    {
+      key: 'reports',
+      href: `${base}/reports`,
+      label: locale === 'ar' ? 'التقارير المالية والخدمات' : 'Financial and service reports',
+      permission: 'organization:withdrawal:read',
       group: 'workspace',
     },
     {

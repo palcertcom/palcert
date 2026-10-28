@@ -15,6 +15,7 @@ import {
   WithdrawalRequestForm,
   describeWithdrawalError,
 } from '@/components/withdrawal';
+import { ServiceRevenue } from '@/components/service-revenue';
 import { PageHeader } from '@/components/ui/page-header';
 import { ErrorState, LoadingState } from '@/components/ui/states';
 import type { Locale } from '@/i18n/locales';
@@ -126,6 +127,7 @@ function Payouts({
             )}
           </section>
 
+          <ServiceRevenue organizationId={organizationId} locale={locale} />
           {!canRequest ? (
             <p className="pc-hint">{o.noPermission}</p>
           ) : row === null ? null : (

@@ -36,6 +36,7 @@ export const SECTION_ICONS: Record<OrganizationSectionKey, IconName> = {
   'attestation-types': 'types',
   verification: 'verified',
   payouts: 'balance',
+  reports: 'history',
   'api-clients': 'key',
   webhooks: 'webhook',
 };
@@ -108,6 +109,13 @@ export function buildNavigation(input: {
     ...(input.unreadNotifications !== null && input.unreadNotifications > 0
       ? { badge: input.unreadNotifications }
       : {}),
+  });
+
+  add('balance:read:self', {
+    href: `${base}/reports`,
+    label: locale === 'ar' ? 'تقاريري' : 'My reports',
+    icon: 'history',
+    matchPrefix: true,
   });
 
   const groups: NavGroup[] = [
@@ -209,6 +217,13 @@ export function adminNavigation(locale: Locale, can: ReadonlySet<string>): NavIt
   if (can.has('admin:user:read')) {
     items.push({ href: `${base}/users`, label: m.users, icon: 'team', matchPrefix: true });
   }
+  if (can.has('admin:revenue-share:read'))
+    items.push({
+      href: `${base}/reports`,
+      label: locale === 'ar' ? 'تقارير المنصة' : 'Platform reports',
+      icon: 'history',
+      matchPrefix: true,
+    });
   if (FINANCE_READ.some((permission) => can.has(permission))) {
     items.push({ href: `${base}/finance`, label: m.finance, icon: 'balance', matchPrefix: true });
   }

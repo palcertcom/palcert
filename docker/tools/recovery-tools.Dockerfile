@@ -16,8 +16,9 @@
 FROM node:22-alpine
 
 # postgresql17-client for pg_dump, pg_restore and psql; the rest are what the
-# backup tool shells out to.
-RUN apk add --no-cache postgresql17-client ca-certificates
+# backup tool shells out to. bash runs the release gates written for it
+# (check-service-revenue-rollback.sh) inside the deployment's network.
+RUN apk add --no-cache postgresql17-client ca-certificates bash
 
 WORKDIR /repo
 ENTRYPOINT []

@@ -22,3 +22,6 @@ export * from './integrations/index.js';
 export * from './webhooks/index.js';
 export * from './attestations/index.js';
 export * from './email/index.js';
+
+export * from './finance/revenue-sharing';
+export * from './finance/reports';

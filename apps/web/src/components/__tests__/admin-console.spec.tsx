@@ -163,6 +163,13 @@ describe('staff navigation', () => {
 
   it('offers each staff role the areas it can read', () => {
     const all = ['/en/admin', '/en/admin/organizations', '/en/admin/users', '/en/admin/finance'];
+    // Platform reports, after users: every role that reads institution revenue
+    // shares — administrators, finance and auditors. Support does not.
+    const withReports = (areas: readonly string[]) => [
+      ...areas.slice(0, 3),
+      '/en/admin/reports',
+      ...areas.slice(3),
+    ];
     // Manual top-ups: the queue for every role that reads it, and the payment
     // methods for every role that reads those. Support reads neither.
     const withTopUps = [...all, '/en/admin/top-ups', '/en/admin/payment-methods'];
@@ -183,10 +190,11 @@ describe('staff navigation', () => {
       '/en/admin/email-settings',
       '/en/admin/email-deliveries',
     ];
-    expect(hrefs('PALCERT_ADMIN')).toEqual(withEmail);
-    expect(hrefs('PALCERT_FINANCE')).toEqual(withAttestations);
+    expect(hrefs('PALCERT_ADMIN')).toEqual(withReports(withEmail));
+    expect(hrefs('PALCERT_FINANCE')).toEqual(withReports(withAttestations));
     expect(hrefs('PALCERT_SUPPORT')).toEqual(all);
-    expect(hrefs('PALCERT_AUDITOR')).toEqual(withEmail);
+    expect(hrefs('PALCERT_SUPPORT')).not.toContain('/en/admin/reports');
+    expect(hrefs('PALCERT_AUDITOR')).toEqual(withReports(withEmail));
   });
 
   it('names the trail inside the console', () => {

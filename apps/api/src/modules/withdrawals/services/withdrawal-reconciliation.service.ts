@@ -160,7 +160,11 @@ export class WithdrawalReconciliationService {
              GROUP BY "organization_id", "currency"
           ), entitled AS (
             SELECT "organization_id", "currency", sum("amount_minor") AS "amount"
-              FROM "attestation_revenue_entries" WHERE "account" = 'INSTITUTION'
+              FROM (
+                SELECT "organization_id", "currency", "amount_minor" FROM "attestation_revenue_entries" WHERE "account" = 'INSTITUTION'
+                UNION ALL
+                SELECT "organization_id", "currency", "institution_minor" AS "amount_minor" FROM "service_revenue_entries"
+              ) revenue
              GROUP BY "organization_id", "currency"
           )
           SELECT c."organization_id", c."currency"::text AS "currency",

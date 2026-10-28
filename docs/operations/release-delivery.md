@@ -219,6 +219,39 @@ itself running `apps/api/test/recovery-fixture.e2e-spec.ts` with
 step, because PalCert ships no down-migrations: going back across a migration
 is a restore (§9).
 
+Before a release is frozen, rehearse the database half on its own against a
+copy of the latest production backup:
+
+```
+SOURCE_BACKUP=/backups/palcert-<timestamp> \
+MIGRATE_IMAGE=ghcr.io/<owner>/palcert-migrate@sha256:<digest> \
+  bash scripts/release/rehearse-database-upgrade.sh
+```
+
+It restores the backup's database into a throwaway PostgreSQL 17 on an
+internal Docker network (no published port; it never reads `DATABASE_URL` or
+`DATABASE_ADMIN_URL`) and records, before the upgrade: the migration history
+(`EXPECT_SOURCE`, default 81); a row count and content digest for every table;
+the schema catalog (tables, columns, indexes, functions, triggers, policies,
+enum labels, grants); every customer balance by account, currency and credit
+class, holds, purchases, withdrawal requests, reservations and settlements and
+attestation revenue; and every input of the platform and institution
+withdrawal-funds computations, computed the earlier release's way. It runs the
+candidate's migration image once, as the topology does, then requires: the
+release's history and `verify-restore.mjs`; every pre-existing table unchanged,
+except tables a pending migration inserts into, which may only gain rows;
+nothing in the catalog removed or altered; every balance and commitment
+unchanged; the same withdrawal-funds figures computed the new way; and a
+`COMPATIBLE` service-revenue rollback gate. `summary.md` in `REHEARSAL_WORK`
+lists the backup it ran on and the intended changes: the migrations recorded,
+the rows added, the catalog entries added.
+
+A rehearsal is only as real as its backup. Run on a backup of test data it is
+a **test-data upgrade rehearsal**: useful for the tool and the migrations, but
+not a substitute for the run on a copy of the production backup, which stays a
+separate step before deploying. A database created from nothing is not a
+substitute either: it never meets the rows an upgrade has to keep.
+
 ---
 
 ## 5. Promoting to production
@@ -454,4 +487,5 @@ at all, and one that passed against a URL the API does not serve.
 | recovery without rebuilding | `recovery-from-registry.sh` | the data plane is destroyed for real; the same data is then re-proven through the application (`acceptance.mjs --verify`) |
 | the product works as deployed | `acceptance.mjs` | Checkpoint 20.9: failed on the release stack, which could not store a document |
 | upgrade from the previous schema | `upgrade-rehearsal.sh` | refuses a source already at the release's schema level (it would not be an upgrade) |
+| a real database survives the candidate's migrations | `rehearse-database-upgrade.sh` (on a copy of the production backup) | a migration that rewrites existing rows is refused by the per-table content digest |
 | browser uploads and downloads | `qa/release-checks.mjs` §6 | Checkpoint 20.9: every upload failed with a CSP violation before the storage route |

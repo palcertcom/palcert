@@ -235,6 +235,8 @@ describe('Tenant isolation — schema coverage', () => {
       'certificate_events',
       'compliance_certificates',
       'official_submissions',
+      'service_revenue_entries',
+      'service_revenue_snapshots',
       'submission_comments',
       'submission_decision_events',
       'submission_revisions',

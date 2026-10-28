@@ -624,7 +624,7 @@ const en: WithdrawalMessages = {
   organization: {
     title: 'Earnings & payouts',
     intro:
-      'Your organization’s share of attestation fees, after PalCert’s commission, by currency.',
+      'Your organization’s share of paid services and attestation fees, net of refunds, by currency.',
     earningsTitle: 'Earnings',
     earningsCaption: 'Organization earnings by currency',
     clearingDays: (days) => `Settled earnings become available for payout after ${days} days.`,
@@ -647,7 +647,7 @@ const en: WithdrawalMessages = {
     intro: 'PalCert’s realized revenue by currency, and what of it may be paid out.',
     caption: 'Platform funds by currency',
     sources: {
-      cashServiceRevenue: 'Paid service revenue',
+      cashServiceRevenue: 'Platform share of paid services',
       attestationCommission: 'Attestation commission',
       serviceRefunds: 'Service refunds',
       unrecoveredChargebackLoss: 'Unrecovered chargebacks',
@@ -1110,7 +1110,7 @@ const ar: WithdrawalMessages = {
   },
   organization: {
     title: 'الأرباح والمدفوعات',
-    intro: 'حصة مؤسستك من رسوم التصديق بعد عمولة PalCert، حسب العملة.',
+    intro: 'حصة مؤسستك من الخدمات المدفوعة ورسوم التصديق، بعد الاستردادات، حسب العملة.',
     earningsTitle: 'الأرباح',
     earningsCaption: 'أرباح المؤسسة حسب العملة',
     clearingDays: (days) => `تصبح الأرباح المسوّاة متاحة للدفع بعد ${days} يومًا.`,
@@ -1133,7 +1133,7 @@ const ar: WithdrawalMessages = {
     intro: 'الإيرادات المحقّقة لـ PalCert حسب العملة، وما يمكن دفعه منها.',
     caption: 'أموال المنصة حسب العملة',
     sources: {
-      cashServiceRevenue: 'إيرادات الخدمات المدفوعة',
+      cashServiceRevenue: 'حصة المنصة من الخدمات المدفوعة',
       attestationCommission: 'عمولة التصديق',
       serviceRefunds: 'مبالغ الخدمات المستردّة',
       unrecoveredChargebackLoss: 'استردادات بنكية غير مستعادة',

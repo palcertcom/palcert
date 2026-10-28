@@ -324,7 +324,9 @@ export const ROLE_DEFINITIONS: readonly RoleDefinition[] = [
       // commission each one carries.
       Permission.ADMIN_ATTESTATION_READ,
       Permission.ADMIN_ATTESTATION_COMMISSION_MANAGE,
+      Permission.ADMIN_REVENUE_SHARE_MANAGE,
       Permission.ADMIN_ATTESTATION_FINANCE_READ,
+      Permission.ADMIN_REVENUE_SHARE_READ,
       Permission.ADMIN_EMAIL_SETTINGS_READ,
       Permission.ADMIN_EMAIL_SETTINGS_MANAGE,
       Permission.ADMIN_EMAIL_SETTINGS_TEST,
@@ -366,6 +368,7 @@ export const ROLE_DEFINITIONS: readonly RoleDefinition[] = [
       Permission.FINANCE_PURCHASE_READ,
       Permission.ADMIN_ATTESTATION_COMMISSION_MANAGE,
       Permission.ADMIN_ATTESTATION_FINANCE_READ,
+      Permission.ADMIN_REVENUE_SHARE_READ,
       // Manual top-ups: finance verifies a reported transfer and decides it.
       // It reads the methods it is matching against but does not edit them.
       Permission.ADMIN_PAYMENT_METHOD_READ,
@@ -423,6 +426,7 @@ export const ROLE_DEFINITIONS: readonly RoleDefinition[] = [
       Permission.FINANCE_LEDGER_READ,
       Permission.FINANCE_PURCHASE_READ,
       Permission.ADMIN_ATTESTATION_FINANCE_READ,
+      Permission.ADMIN_REVENUE_SHARE_READ,
       // Read-only, and never the credential: the auditor sees that a provider
       // is configured and what was sent, not how to send.
       Permission.ADMIN_EMAIL_SETTINGS_READ,

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -106,6 +107,16 @@ function Detail() {
           </span>
         }
       />
+      {globalPermissions.has('admin:revenue-share:read') && (
+        <Link
+          className="pc-btn pc-btn-secondary"
+          href={`/${locale}/admin/organizations/${organizationId}/revenue-shares`}
+        >
+          {locale === 'ar'
+            ? 'نسب المؤسسة وإيرادات الخدمات'
+            : 'Institution shares and service revenue'}
+        </Link>
+      )}
       <FormSuccess message={done} />
       {error === null ? null : <ErrorState title={error} />}
 
