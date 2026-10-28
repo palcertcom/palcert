@@ -9,6 +9,7 @@ name: Release
 # because they are the same bytes and not merely the same source.
 on:
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch:
     inputs:
@@ -44,7 +45,7 @@ jobs:
   build:
     name: Build, scan and publish
     needs: [gates]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       # Publishing to the repository's own package registry. No long-lived
@@ -63,10 +64,13 @@ jobs:
         id: ns
         run: echo "owner=${OWNER,,}" >> "$GITHUB_OUTPUT"
 
+      - name: Reserve space for all five release images and scans
+        run: scripts/ci/free-hosted-runner-disk.sh --require-free-gb 25
+
       - uses: docker/setup-buildx-action@v3
 
       - name: Sign in to the registry
-        if: inputs.publish != false
+        if: (github.event_name != 'workflow_dispatch' || inputs.publish)
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -84,8 +88,8 @@ jobs:
           context: .
           file: docker/api.Dockerfile
           target: runtime
-          push: ${{ inputs.publish != false }}
-          load: ${{ inputs.publish == false }}
+          push: ${{ (github.event_name != 'workflow_dispatch' || inputs.publish) }}
+          load: ${{ (github.event_name == 'workflow_dispatch' && !inputs.publish) }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-api:sha-${{ github.sha }}
           build-args: |
@@ -103,8 +107,8 @@ jobs:
           context: .
           file: docker/api.Dockerfile
           target: worker
-          push: ${{ inputs.publish != false }}
-          load: ${{ inputs.publish == false }}
+          push: ${{ (github.event_name != 'workflow_dispatch' || inputs.publish) }}
+          load: ${{ (github.event_name == 'workflow_dispatch' && !inputs.publish) }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-worker:sha-${{ github.sha }}
           build-args: |
@@ -122,8 +126,8 @@ jobs:
           context: .
           file: docker/api.Dockerfile
           target: migrate
-          push: ${{ inputs.publish != false }}
-          load: ${{ inputs.publish == false }}
+          push: ${{ (github.event_name != 'workflow_dispatch' || inputs.publish) }}
+          load: ${{ (github.event_name == 'workflow_dispatch' && !inputs.publish) }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-migrate:sha-${{ github.sha }}
           build-args: |
@@ -140,8 +144,8 @@ jobs:
         with:
           context: .
           file: docker/web.Dockerfile
-          push: ${{ inputs.publish != false }}
-          load: ${{ inputs.publish == false }}
+          push: ${{ (github.event_name != 'workflow_dispatch' || inputs.publish) }}
+          load: ${{ (github.event_name == 'workflow_dispatch' && !inputs.publish) }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-web:sha-${{ github.sha }}
           build-args: |
@@ -158,8 +162,8 @@ jobs:
         with:
           context: .
           file: docker/document-engine.Dockerfile
-          push: ${{ inputs.publish != false }}
-          load: ${{ inputs.publish == false }}
+          push: ${{ (github.event_name != 'workflow_dispatch' || inputs.publish) }}
+          load: ${{ (github.event_name == 'workflow_dispatch' && !inputs.publish) }}
           tags: |
             ${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-document-engine:sha-${{ github.sha }}
           build-args: |
@@ -253,7 +257,7 @@ jobs:
           node scripts/release/verify-manifest.mjs \
             --manifest release-manifest.json \
             --expect-commit "${{ github.sha }}" \
-            ${{ inputs.publish != false && '--registry-check' || '' }}
+            ${{ (github.event_name != 'workflow_dispatch' || inputs.publish) && '--registry-check' || '' }}
 
       # Freeze the verified manifest into one indivisible release set, with
       # the supply-chain evidence recomputed from the reports rather than
@@ -295,7 +299,7 @@ jobs:
       # The human-readable tag is added last, and only to images that already
       # exist by digest. A tag is a label for an artifact, never the artifact.
       - name: Tag the published images with the release version
-        if: inputs.publish != false
+        if: (github.event_name != 'workflow_dispatch' || inputs.publish)
         run: bash scripts/release/tag-release.sh release-manifest.json
 
       - name: Attach the release record to the run
@@ -310,3 +314,18 @@ jobs:
             scan/
           if-no-files-found: error
           retention-days: 90
+
+  promote:
+    name: Promote the merged release
+    needs: [build]
+    # Opt in only after the server adapter, environment and key are installed.
+    # Tags and manual releases NEVER trigger this automatic production path.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.PALCERT_AUTO_DEPLOY == 'true'
+    uses: ./.github/workflows/promote-production.yml
+    permissions:
+      contents: read
+      pull-requests: read
+      packages: read
+      actions: read
+    with:
+      release-version: ${{ needs.build.outputs.release-version }}

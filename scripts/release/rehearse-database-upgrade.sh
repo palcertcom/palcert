@@ -68,6 +68,19 @@ MIGRATIONS="$REPO/packages/database/prisma/migrations"
 EXPECT_RELEASE="${EXPECT_RELEASE:-$(find "$MIGRATIONS" -mindepth 1 -maxdepth 1 -type d -name '[0-9]*' | wc -l | tr -d ' ')}"
 TOOLS_IMAGE="${RECOVERY_TOOLS_IMAGE:-palcert-recovery-tools:local}"
 PG_IMAGE="${POSTGRES_IMAGE:-postgres:17-alpine}"
+EMBEDDED_TOOLS="${RECOVERY_EMBEDDED_TOOLS:-0}"
+AUTOMATIC="${AUTOMATIC_REHEARSAL:-0}"
+limits=()
+if [ "$AUTOMATIC" = 1 ]; then
+  # The production host has 4 GiB. Each short-lived process is bounded, and
+  # only the isolated PostgreSQL overlaps with one operator/migration process.
+  limits=(--memory 512m --memory-swap 512m --cpus 1 --pids-limit 256)
+  if [ "$EXPECT_RELEASE" != 84 ] || { [ "$EXPECT_SOURCE" != 81 ] && [ "$EXPECT_SOURCE" != 84 ]; }; then
+    echo 'rehearsal: unsupported automatic schema transition' >&2
+    exit 65
+  fi
+  [ "$EMBEDDED_TOOLS" = 1 ] || { echo 'rehearsal: automatic runs require embedded tools' >&2; exit 65; }
+fi
 
 [ -f "$SOURCE_BACKUP/backup.json" ] || { echo "rehearsal: $SOURCE_BACKUP is not a backup directory" >&2; exit 64; }
 mkdir -p "$WORK"
@@ -75,7 +88,13 @@ chmod 700 "$WORK"
 SUMMARY="$WORK/summary.md"
 
 # Built on demand, and rebuilt when an older local copy predates bash.
-if ! docker run --rm "$TOOLS_IMAGE" bash -c true > /dev/null 2>&1; then
+if [ "$EMBEDDED_TOOLS" = 1 ]; then
+  # The operator scripts and SDK are part of the scanned migration image.
+  # Do not silently fall back to a host build when that contract is missing.
+  docker run --rm --network none "${limits[@]}" "$TOOLS_IMAGE" \
+    sh -c 'test -f /app/operator/apps/api/scripts/backup.mjs && pg_dump --version | grep -q " 17\."' \
+    > /dev/null
+elif ! docker run --rm "$TOOLS_IMAGE" bash -c true > /dev/null 2>&1; then
   docker build -q -f "$REPO/docker/tools/recovery-tools.Dockerfile" -t "$TOOLS_IMAGE" \
     "$REPO/docker/tools" > /dev/null
 fi
@@ -106,8 +125,12 @@ cleanup() {
 trap cleanup EXIT
 
 tools() { # anything run against the copy runs here, on its private network
-  docker run --rm --network "$name" -v "$REPO:/repo:ro" -v "$WORK:/work" \
-    -v "$(cd "$SOURCE_BACKUP/.." && pwd):/source:ro" -w /repo "$TOOLS_IMAGE" "$@"
+  local tools_root=/repo
+  local operator_identity=()
+  [ "$EMBEDDED_TOOLS" != 1 ] || tools_root=/app/operator
+  [ "$EMBEDDED_TOOLS" != 1 ] || operator_identity=(--user 0:0 --cap-drop ALL --security-opt no-new-privileges)
+  docker run --rm --network "$name" "${limits[@]}" "${operator_identity[@]}" -v "$REPO:/repo:ro" -v "$WORK:/work" \
+    -v "$(cd "$SOURCE_BACKUP/.." && pwd):/source:ro" -w "$tools_root" "$TOOLS_IMAGE" "$@"
 }
 sql() { # one statement, tab-separated, read from the copy
   tools psql "$URL" --no-psqlrc --quiet --tuples-only --no-align --field-separator=$'\t' \
@@ -146,7 +169,7 @@ echo "rehearsal: $(basename "$SOURCE_BACKUP") (label $(backup_fact label)) with 
 # 1. The throwaway database.
 # ---------------------------------------------------------------------------
 docker network create --internal "$name" > /dev/null
-docker run -d --name "$name" --network "$name" \
+docker run -d --name "$name" --network "$name" "${limits[@]}" \
   -e POSTGRES_USER=palcert -e POSTGRES_DB=palcert \
   -e POSTGRES_PASSWORD="$password" -e POSTGRES_APP_PASSWORD="$app_password" \
   -v "$REPO/docker/release-postgres-init.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro" \
@@ -191,6 +214,14 @@ for dir in "$MIGRATIONS"/[0-9]*; do
   migration="$(basename "$dir")"
   grep -qxF "$migration" <<<"$applied_names" || pending+=("$migration")
 done
+if [ "$AUTOMATIC" = 1 ]; then
+  expected_pending='20261023000000_smartfix_ai_reservations 20261024000000_institution_service_revenue 20261025000000_financial_service_reports'
+  if [ "$source_count" = 81 ]; then
+    [ "${pending[*]}" = "$expected_pending" ] || { say FAIL 'unreviewed pending migrations'; exit 65; }
+  else
+    [ "${#pending[@]}" = 0 ] || { say FAIL 'schema changed after the reviewed 84 migrations'; exit 65; }
+  fi
+fi
 expected_writes="$(for migration in "${pending[@]}"; do
   { grep -oiE '^INSERT INTO "?[a-z_]+"?' "$MIGRATIONS/$migration/migration.sql" || true; } |
     awk '{print $3}' | tr -d '"'
@@ -218,12 +249,14 @@ SELECT 'table ' || c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.re
 UNION ALL SELECT 'column ' || table_name || '.' || column_name || ' ' || data_type || ' ' || is_nullable
   FROM information_schema.columns WHERE table_schema = 'public'
 UNION ALL SELECT 'index ' || indexname || ': ' || indexdef FROM pg_indexes WHERE schemaname = 'public'
-UNION ALL SELECT 'function ' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')'
-  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public'
-UNION ALL SELECT 'trigger ' || t.tgname || ' ON ' || c.relname
+UNION ALL SELECT 'function ' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ') ' || md5(pg_get_functiondef(p.oid))
+  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public' AND p.prokind IN ('f', 'p')
+UNION ALL SELECT 'trigger ' || t.tgname || ' ON ' || c.relname || ' ' || md5(pg_get_triggerdef(t.oid))
   FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
  WHERE n.nspname = 'public' AND NOT t.tgisinternal
-UNION ALL SELECT 'policy ' || policyname || ' ON ' || tablename || ' ' || cmd FROM pg_policies WHERE schemaname = 'public'
+UNION ALL SELECT 'policy ' || policyname || ' ON ' || tablename || ' ' || cmd || ' ' || permissive || ' ' || roles::text || ' ' || coalesce(qual, '') || ' ' || coalesce(with_check, '') FROM pg_policies WHERE schemaname = 'public'
+UNION ALL SELECT 'rls ' || c.relname || ' ' || c.relrowsecurity::text || ' ' || c.relforcerowsecurity::text
+  FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p')
 UNION ALL SELECT 'enum ' || t.typname || '.' || e.enumlabel
   FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid JOIN pg_namespace n ON n.oid = t.typnamespace
  WHERE n.nspname = 'public'
@@ -314,7 +347,13 @@ UNION ALL $shared_funds_sql"
 fingerprint > "$WORK/before.tsv"
 catalog > "$WORK/catalog-before.txt"
 sql "$financial_sql" | LC_ALL=C sort > "$WORK/financial-before.tsv"
-sql "$old_funds_sql" | LC_ALL=C sort > "$WORK/funds-before.tsv"
+if [ "$source_count" = 84 ]; then
+  # Revenue history must NOT be evaluated as a hypothetical rollback to the
+  # pre-revenue application. Compare the same current financial semantics.
+  sql "$new_funds_sql" | LC_ALL=C sort > "$WORK/funds-before.tsv"
+else
+  sql "$old_funds_sql" | LC_ALL=C sort > "$WORK/funds-before.tsv"
+fi
 for table in $expected_writes; do rows_of "$table" > "$WORK/rows-before-$table.txt"; done
 say ok "recorded $(wc -l < "$WORK/before.tsv" | tr -d ' ') tables ($(awk -F'\t' '{s+=$2} END {print s+0}' "$WORK/before.tsv") rows), $(wc -l < "$WORK/catalog-before.txt" | tr -d ' ') catalog entries, $(wc -l < "$WORK/financial-before.tsv" | tr -d ' ') balance and commitment totals, $(wc -l < "$WORK/funds-before.tsv" | tr -d ' ') withdrawal-funds inputs"
 
@@ -322,7 +361,7 @@ say ok "recorded $(wc -l < "$WORK/before.tsv" | tr -d ' ') tables ($(awk -F'\t' 
 # 4. The candidate's migration image, as the topology runs it.
 # ---------------------------------------------------------------------------
 started=$(date +%s)
-if docker run --rm --network "$name" \
+if docker run --rm --network "$name" "${limits[@]}" \
      -e DATABASE_ADMIN_URL="$URL?schema=public" \
      -e DATABASE_URL="postgresql://palcert_app:${app_password}@${name}:5432/palcert?schema=public" \
      "$MIGRATE_IMAGE" > "$WORK/migrate.log" 2>&1; then
@@ -330,7 +369,7 @@ if docker run --rm --network "$name" \
 else
   say FAIL "migrate deploy failed"; tail -25 "$WORK/migrate.log" >&2; exit 65
 fi
-if docker run --rm --network "$name" -e DATABASE_ADMIN_URL="$URL?schema=public" \
+if docker run --rm --network "$name" "${limits[@]}" -e DATABASE_ADMIN_URL="$URL?schema=public" \
      -e DATABASE_URL="postgresql://palcert_app:${app_password}@${name}:5432/palcert?schema=public" \
      "$MIGRATE_IMAGE" node_modules/.bin/prisma migrate status --schema prisma/schema.prisma \
      > "$WORK/migrate-status.log" 2>&1; then
@@ -405,7 +444,15 @@ else
   say FAIL "withdrawal-funds inputs changed across the upgrade"; head -20 "$WORK/funds.diff" >&2
 fi
 
-if tools bash scripts/release/check-service-revenue-rollback.sh "$URL" > "$WORK/rollback-gate.log" 2>&1; then
+if [ "$source_count" = 84 ] && [ "${#pending[@]}" = 0 ]; then
+  # A no-schema-change deployment has no rollback-to-81 authorization. Check
+  # equality of the complete catalog instead of testing a forbidden downgrade.
+  if diff -u "$WORK/catalog-before.txt" "$WORK/catalog-after.txt" > "$WORK/catalog.diff"; then
+    say ok 'unchanged schema: existing revenue history preserved; no downgrade authorized'
+  else
+    say FAIL 'a no-schema-change deployment changed the catalog'
+  fi
+elif tools bash scripts/release/check-service-revenue-rollback.sh "$URL" > "$WORK/rollback-gate.log" 2>&1; then
   say ok "service-revenue rollback gate: COMPATIBLE (the migrations created no institution share)"
 else
   say FAIL "service-revenue rollback gate refused right after the upgrade"; tail -12 "$WORK/rollback-gate.log" >&2

@@ -1,0 +1,118 @@
+name: Promote production
+
+on:
+  workflow_call:
+    inputs:
+      release-version:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  staging:
+    name: Stage the published immutable images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.PALCERT_AUTO_DEPLOY == 'true'
+    runs-on: ubuntu-24.04
+    outputs:
+      artifact-name: ${{ steps.evidence.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ inputs.release-version }}
+      - name: Check merged-main authority
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/release/automatic/authorize.mjs
+      - name: Test the exact published images on an isolated stack
+        run: bash scripts/release/automatic/stage.sh
+      - name: Identify this staging evidence
+        id: evidence
+        run: echo "name=staging-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.evidence.outputs.name }}
+          path: staging-deployment.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Stop this disposable staging stack
+        if: always()
+        env:
+          MINIO_IMAGE: palcert/minio-ci:${{ github.run_id }}-${{ github.run_attempt }}
+          MINIO_MC_IMAGE: palcert/minio-ci:${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          if test -f staging.env; then
+            docker compose -p palcert-auto-staging --env-file staging.env \
+              -f docker/docker-compose.release.yml down --volumes --remove-orphans
+          fi
+
+  production:
+    name: Deploy to app.palcert.com
+    needs: [staging]
+    runs-on: ubuntu-24.04
+    environment:
+      name: production
+      url: https://app.palcert.com
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ inputs.release-version }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.staging.outputs.artifact-name }}
+      - name: Recheck current main and its merged PR immediately before deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/release/automatic/authorize.mjs
+      - name: Validate staging evidence and prepare the request
+        run: node scripts/release/automatic/request.mjs
+      - name: Invoke the restricted production deployment command
+        env:
+          PALCERT_DEPLOY_HOST: ${{ vars.PALCERT_DEPLOY_HOST }}
+          PALCERT_DEPLOY_PORT: ${{ vars.PALCERT_DEPLOY_PORT }}
+          PALCERT_DEPLOY_USER: ${{ vars.PALCERT_DEPLOY_USER }}
+          PALCERT_DEPLOY_KEY: ${{ secrets.PALCERT_DEPLOY_KEY }}
+          PALCERT_DEPLOY_KNOWN_HOSTS: ${{ secrets.PALCERT_DEPLOY_KNOWN_HOSTS }}
+        run: bash scripts/release/automatic/send.sh
+      - name: Record verified production outcome
+        run: |
+          node scripts/release/record-deployment.mjs \
+            --manifest release-manifest.json --environment production \
+            --actor "$(node -p "require('./merge-authorization.json').mergedBy")" \
+            --reason "Automatic promotion of merged main: $GITHUB_SHA" \
+            --workflow-run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --outcome success --out deployment-record.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            deployment-record.json
+            deployment-receipt.json
+            merge-authorization.json
+          if-no-files-found: error
+          retention-days: 90
