@@ -322,6 +322,10 @@ jobs:
     # Tags and manual releases NEVER trigger this automatic production path.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.PALCERT_AUTO_DEPLOY == 'true'
     uses: ./.github/workflows/promote-production.yml
+    # Explicitly forward the two environment secret names to the reusable workflow.
+    secrets:
+      PALCERT_DEPLOY_KEY: ${{ secrets.PALCERT_DEPLOY_KEY }}
+      PALCERT_DEPLOY_KNOWN_HOSTS: ${{ secrets.PALCERT_DEPLOY_KNOWN_HOSTS }}
     permissions:
       contents: read
       pull-requests: read

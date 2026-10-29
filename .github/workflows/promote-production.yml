@@ -6,6 +6,11 @@ on:
       release-version:
         required: true
         type: string
+    secrets:
+      PALCERT_DEPLOY_KEY:
+        required: true
+      PALCERT_DEPLOY_KNOWN_HOSTS:
+        required: true
 
 permissions:
   contents: read
