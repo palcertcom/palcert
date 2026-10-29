@@ -738,7 +738,7 @@ describe('Paid document checks - settlement races (e2e)', () => {
         resume();
         const delayed = await pending;
         if (differentQuote) {
-          expect(delayed.status).toBe(409);
+          expect(delayed.status).toBe(422);
           expect(delayed.body.error.code).toBe('IDEMPOTENCY_KEY_REUSED');
         } else {
           expect([200, 202]).toContain(delayed.status);
