@@ -137,6 +137,17 @@ export class DocumentCheckService {
 
     const created = await this.tenant
       .withUser(userId, async (tx) => {
+        if (input.idempotencyKey !== undefined) {
+          // Serialize retries before reading the quote or reserving funds. The
+          // fast-path read above may precede another request's commit; reserve
+          // can then reuse its purchase, whose id is not our preallocated id.
+          // Re-read under this transaction lock and return the whole winning
+          // check, validating the original payload on the same connection.
+          await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`document-check:${userId}:${input.idempotencyKey}`}, 0))::text`;
+          const prior = await this.replayInTransaction(tx, userId, input);
+          if (prior !== null) return prior;
+        }
+
         const version = await this.loadCheckableVersion(tx, input.documentVersionId);
         const quote = await this.loadSpendableQuote(tx, userId, input.priceQuoteId);
 
@@ -212,9 +223,9 @@ export class DocumentCheckService {
       .catch(async (error: unknown) => {
         // Two identical requests arriving at once (§205).
         //
-        // The replay above is a read, so both requests can legitimately see no
-        // existing check and both go on to reserve. The database is what keeps
-        // that safe: `service_purchases_owner_idempotency` and
+        // Retain the unique-conflict fallback for requests from an older
+        // process that does not yet take the idempotency lock. The database
+        // keeps that safe: `service_purchases_owner_idempotency` and
         // `document_checks_owner_idempotency_key` mean the loser's transaction
         // cannot commit, so there is no second purchase, no second reservation
         // and no second check — which was already true before this catch, and is
@@ -280,13 +291,20 @@ export class DocumentCheckService {
     input: CreateCheckInput,
   ): Promise<DocumentCheck | null> {
     if (input.idempotencyKey === undefined) return null;
-    const existing = await this.tenant.withUser(userId, (tx) =>
-      tx.documentCheck.findFirst({
-        where: { ownerUserId: userId, idempotencyKey: input.idempotencyKey },
-      }),
-    );
+    return this.tenant.withUser(userId, (tx) => this.replayInTransaction(tx, userId, input));
+  }
+
+  private async replayInTransaction(
+    tx: TenantClient,
+    userId: string,
+    input: CreateCheckInput,
+  ): Promise<DocumentCheck | null> {
+    if (input.idempotencyKey === undefined) return null;
+    const existing = await tx.documentCheck.findFirst({
+      where: { ownerUserId: userId, idempotencyKey: input.idempotencyKey },
+    });
     if (existing === null) return null;
-    await this.assertSameRequest(userId, existing, input);
+    await this.assertSameRequest(tx, existing, input);
     return existing;
   }
 
@@ -626,19 +644,17 @@ export class DocumentCheckService {
    * old price for a request they did not make.
    */
   private async assertSameRequest(
-    userId: string,
+    tx: TenantClient,
     existing: DocumentCheck,
     input: CreateCheckInput,
   ): Promise<void> {
     const purchase =
       existing.servicePurchaseId === null
         ? null
-        : await this.tenant.withUser(userId, (tx) =>
-            tx.servicePurchase.findUnique({
-              where: { id: existing.servicePurchaseId! },
-              select: { priceQuoteId: true },
-            }),
-          );
+        : await tx.servicePurchase.findUnique({
+            where: { id: existing.servicePurchaseId },
+            select: { priceQuoteId: true },
+          });
 
     if (
       existing.documentVersionId !== input.documentVersionId ||

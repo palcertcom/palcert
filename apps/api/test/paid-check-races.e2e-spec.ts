@@ -28,6 +28,7 @@ import {
 } from './support/test-app';
 import { TenantPrismaService } from '../src/infrastructure/tenant/tenant-prisma.service';
 import { PaidCheckSettlementService } from '../src/modules/checks/services/paid-check-settlement.service';
+import { FormatCompatibilityService } from '../src/modules/checks/services/format-compatibility.service';
 import { CheckEvaluationJobHandler } from '../src/worker/check-evaluation-job.handler';
 import { CheckPrepareJobHandler } from '../src/worker/check-prepare-job.handler';
 import { FinanceSweeper } from '../src/worker/finance-sweeper';
@@ -679,5 +680,85 @@ describe('Paid document checks - settlement races (e2e)', () => {
     expect(a.body.id).toBe(b.body.id);
     expect(await context.adminDb.documentCheck.count()).toBe(1);
     expect(await context.adminDb.servicePurchase.count()).toBe(1);
+    const held = await context.adminDb.creditHold.aggregate({
+      where: { ownerUserId: student.userId },
+      _sum: { amountMinor: true },
+    });
+    expect(held._sum.amountMinor).toBe(300n);
   }, 60_000);
+
+  it.each([false, true])(
+    'rechecks a stale initial replay after another request commits (different quote: %s)',
+    async (differentQuote) => {
+      const versionId = await readyDocx();
+      await ensureCheckPrice(context, 300n);
+      await grantCredit(context, student.userId, 5_000n);
+      const quote = await quoteForCheck(context, student.userId);
+      const delayedQuote = differentQuote ? await quoteForCheck(context, student.userId) : quote;
+      const headers = { 'Idempotency-Key': randomUUID() };
+      const body = {
+        documentVersionId: versionId,
+        standardId: standard.standardId,
+        priceQuoteId: quote.id,
+      };
+      const compatibility = context.app.get(FormatCompatibilityService);
+      const assertCheckable = compatibility.assertCheckable.bind(compatibility);
+      let entered!: () => void;
+      let resume!: () => void;
+      const reachedPreflight = new Promise<void>((resolve) => {
+        entered = resolve;
+      });
+      const resumePreflight = new Promise<void>((resolve) => {
+        resume = resolve;
+      });
+      // Delay exactly one request after its initial replay read, outside any
+      // transaction. Both HTTP requests, billing and PostgreSQL remain real.
+      const spy = jest
+        .spyOn(compatibility, 'assertCheckable')
+        .mockImplementationOnce(async (...args) => {
+          await assertCheckable(...args);
+          entered();
+          await resumePreflight;
+        });
+      const pending = startCheck(
+        context,
+        student,
+        { ...body, priceQuoteId: delayedQuote.id },
+        headers,
+      );
+      try {
+        await Promise.race([
+          reachedPreflight,
+          pending.then(() => {
+            throw new Error('request ended before the concurrency barrier');
+          }),
+        ]);
+        const winner = await startCheck(context, student, body, headers);
+        expect(winner.status).toBe(202);
+        resume();
+        const delayed = await pending;
+        if (differentQuote) {
+          expect(delayed.status).toBe(422);
+          expect(delayed.body.error.code).toBe('IDEMPOTENCY_KEY_REUSED');
+        } else {
+          expect([200, 202]).toContain(delayed.status);
+          expect(delayed.body.id).toBe(winner.body.id);
+        }
+        expect(await context.adminDb.documentCheck.count()).toBe(1);
+        expect(await context.adminDb.servicePurchase.count()).toBe(1);
+        const purchase = await purchaseOf(context, winner.body.id);
+        expect(purchase!.priceQuoteId).toBe(quote.id);
+        expect(purchase!.allocations.reduce((sum, row) => sum + row.amountMinor, 0n)).toBe(300n);
+        const held = await context.adminDb.creditHold.aggregate({
+          where: { ownerUserId: student.userId },
+          _sum: { amountMinor: true },
+        });
+        expect(held._sum.amountMinor).toBe(300n);
+      } finally {
+        resume();
+        await pending.catch(() => undefined);
+        spy.mockRestore();
+      }
+    },
+  );
 });

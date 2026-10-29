@@ -211,7 +211,7 @@ jobs:
             worker=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-worker@${{ steps.worker.outputs.digest }}
             migrate=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-migrate@${{ steps.migrate.outputs.digest }}
             web=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-web@${{ steps.web.outputs.digest }}
-            engine=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-document-engine@${{ steps.engine.outputs.digest }}
+            documentEngine=${{ env.REGISTRY }}/${{ steps.ns.outputs.owner }}/palcert-document-engine@${{ steps.engine.outputs.digest }}
 
       - name: Prove the images carry no fixture secrets
         run: bash scripts/release/check-image-secrets.sh
