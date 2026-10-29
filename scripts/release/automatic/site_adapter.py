@@ -606,9 +606,15 @@ console.log(JSON.stringify(Object.fromEntries(entries)));
             self.wait_public()
 
     def public_health(self):
-        with urllib.request.urlopen(
-            "https://app.palcert.com/health/ready", timeout=30
-        ) as response:
+        # Identify the deployment probe: the edge rejects Python's library default.
+        request = urllib.request.Request(
+            "https://app.palcert.com/health/ready",
+            headers={
+                "User-Agent": "PalCert-Deployment/1.0",
+                "Accept": "application/json",
+            },
+        )
+        with urllib.request.urlopen(request, timeout=30) as response:
             return json.load(response)
 
     def wait_public(self):

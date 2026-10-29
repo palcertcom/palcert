@@ -3,8 +3,11 @@ import json
 import subprocess
 import tempfile
 import unittest
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Thread
 from unittest.mock import Mock, patch
+from urllib.error import HTTPError
 
 import site_adapter as adapter
 import site_config as config
@@ -315,6 +318,55 @@ class RunningConfigurationTests(unittest.TestCase):
                     self.assertRaises(ValueError),
                 ):
                     adapter.history()
+
+    def test_edge_accepts_identified_probe_but_wrong_release_still_fails(self):
+        payload = {"status": "ok", "release": {"commit": "a" * 40}}
+
+        class Edge(BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.headers.get("User-Agent", "").startswith("Python-urllib/"):
+                    self.send_response(403)
+                    self.end_headers()
+                    return
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(payload).encode())
+
+            def log_message(self, *_args):
+                pass
+
+        site = adapter.Site.__new__(adapter.Site)
+        site.request = {"commit": "a" * 40}
+        real_open = adapter.urllib.request.urlopen
+        with ThreadingHTTPServer(("127.0.0.1", 0), Edge) as server:
+            url = f"http://127.0.0.1:{server.server_port}/health/ready"
+            thread = Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                with self.assertRaises(HTTPError) as denied:
+                    real_open(url, timeout=5)
+                self.assertEqual(denied.exception.code, 403)
+
+                def routed_open(request, **kwargs):
+                    # Exercise urllib's real wire headers against the local edge.
+                    # This redirect exists only in the test, never in production.
+                    if isinstance(request, str):
+                        request = adapter.urllib.request.Request(request)
+                    request.full_url = url
+                    return real_open(request, **kwargs)
+
+                with patch.object(
+                    adapter.urllib.request, "urlopen", side_effect=routed_open
+                ):
+                    self.assertEqual(site.public_health(), payload)
+                    site.wait_public()
+                    payload["release"]["commit"] = "b" * 40
+                    with self.assertRaisesRegex(ValueError, "wrong health or release"):
+                        site.wait_public()
+            finally:
+                server.shutdown()
+                thread.join(timeout=5)
 
     def test_public_health_waits_for_startup_but_refuses_wrong_commit(self):
         site = adapter.Site.__new__(adapter.Site)
